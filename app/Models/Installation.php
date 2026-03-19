@@ -12,7 +12,7 @@ class Installation extends Model
         'installation_address', 'roof_type', 'assigned_team', 'status', 'notes',
         'completion_photos', 'proof_photos', 'proof_before_photo', 'proof_during_photo',
         'proof_after_photo', 'proof_meter_photo', 'proof_panel_photo', 'proof_inverter_photo',
-        'proof_submitted', 'proof_submitted_at', 'technician_remarks', 'auto_service_created'
+        'proof_submitted', 'proof_submitted_at', 'technician_remarks', 'auto_service_created', 'installation_checklist'
     ];
 
     protected $casts = [
@@ -23,6 +23,7 @@ class Installation extends Model
         'proof_submitted'   => 'boolean',
         'proof_submitted_at'=> 'datetime',
         'auto_service_created' => 'boolean',
+        'installation_checklist' => 'array',
     ];
 
     public function customer()        { return $this->belongsTo(Customer::class); }

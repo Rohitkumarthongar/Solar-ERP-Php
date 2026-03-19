@@ -94,9 +94,13 @@
 
                         {{-- Customer --}}
                         <td class="px-6 py-4">
-                            <p class="font-medium text-gray-800">{{ $order->customer_name }}</p>
-                            @if($order->customer)
-                                <p class="text-xs text-gray-400">Linked customer</p>
+                            @if($order->customer_id)
+                                <a href="{{ route('admin.customers.show', $order->customer_id) }}" class="font-bold text-gray-900 hover:text-orange-600 transition underline decoration-orange-300 underline-offset-4 decoration-2">
+                                    {{ $order->customer_name }}
+                                </a>
+                                <p class="text-[10px] text-gray-400 mt-1 uppercase font-black tracking-widest opacity-70">Loyalty Client</p>
+                            @else
+                                <p class="font-medium text-gray-800">{{ $order->customer_name }}</p>
                             @endif
                         </td>
 

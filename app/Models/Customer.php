@@ -13,4 +13,5 @@ class Customer extends Model
     public function installations() { return $this->hasMany(Installation::class); }
     public function serviceRequests() { return $this->hasMany(ServiceRequest::class); }
     public function quotations() { return $this->hasMany(Quotation::class); }
+    public function siteVisits() { return $this->hasMany(SiteVisit::class); }
 }

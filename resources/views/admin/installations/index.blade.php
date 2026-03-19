@@ -70,10 +70,16 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4 font-semibold text-indigo-600 uppercase">{{ $inst->installation_number }}</td>
                         <td class="px-6 py-4">
-                            <p class="font-bold text-gray-800">{{ $inst->customer->name ?? 'Unknown' }}</p>
+                            @if($inst->customer_id)
+                                <a href="{{ route('admin.customers.show', $inst->customer_id) }}" class="font-bold text-gray-900 hover:text-indigo-600 underline">
+                                    {{ $inst->customer->name ?? 'Unknown' }}
+                                </a>
+                            @else
+                                <p class="font-bold text-gray-800">{{ $inst->customer->name ?? 'Unknown' }}</p>
+                            @endif
                             @if($inst->salesOrder)
-                            <a href="{{ route('admin.sales-orders.show', $inst->salesOrder->id) }}" class="text-xs text-orange-500 hover:underline">
-                                {{ $inst->salesOrder->order_number }}
+                            <a href="{{ route('admin.sales-orders.show', $inst->salesOrder->id) }}" class="block text-[10px] mt-1 text-orange-600 font-bold hover:underline opacity-80 uppercase tracking-widest">
+                                #{{ $inst->salesOrder->order_number }}
                             </a>
                             @endif
                         </td>

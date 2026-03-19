@@ -77,4 +77,48 @@
         </div>
     </div>
 </section>
+
+@php
+    $mapUrl = !empty($settings['company_map_link']) ? $settings['company_map_link'] : 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d117506.6822237996!2d72.5076606!3d23.02024!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e848aba5bd449%3A0x4fccd11674f987f1!2sAhmedabad%2C%20Gujarat!5e0!3m2!1sen!2sin!4v1710000000000!5m2!1sen!2sin';
+@endphp
+<!-- Map Section -->
+<section class="py-24 bg-[#0f172a] overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="mb-12 text-center fade-up">
+            <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">Visit Us</span>
+            <h2 class="text-4xl font-bold text-white tracking-tight">Locate Our Office</h2>
+        </div>
+        
+        <div class="fade-up">
+            <div class="glass p-4 rounded-[40px] border border-white/5 overflow-hidden h-[500px] shadow-2xl relative">
+                @if(str_contains($mapUrl, '<iframe'))
+                    {!! $mapUrl !!}
+                @else
+                    <iframe 
+                        src="{{ $mapUrl }}" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade"
+                        class="rounded-[30px]"
+                    ></iframe>
+                @endif
+                
+                {{-- Decorative overlay --}}
+                <div class="absolute inset-0 pointer-events-none border-[12px] border-[#111a2e]/50 rounded-[40px]"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Ensure iframe takes full container space if raw HTML is used */
+    iframe {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 30px !important;
+    }
+</style>
 @endsection

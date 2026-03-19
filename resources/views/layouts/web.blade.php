@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'SolarTech Solutions') - Powering a Greener Tomorrow</title>
+    <title>@yield('title', 'SolarTech Solutions') - {{ $settings['company_name'] ?? 'SolarTech Solutions' }}</title>
     <meta name="description" content="@yield('meta_description', 'Premium solar solutions for homes and businesses. Quality panels, inverters, batteries and complete installation services.')">    
+    @if(!empty($settings['company_favicon']))
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $settings['company_favicon']) }}">
+    @endif
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -58,21 +61,32 @@
     <div class="max-w-7xl mx-auto px-4">
         <div class="flex items-center justify-between h-20">
             <a href="{{ route('home') }}" class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                    <i class="fas fa-sun text-white text-lg"></i>
-                </div>
+                @if(!empty($settings['company_logo']))
+                    <div class="w-12 h-12 bg-white rounded-xl p-1.5 flex items-center justify-center shadow-lg shadow-white/5 border border-white/5">
+                        <img src="{{ asset('storage/' . $settings['company_logo']) }}" class="max-h-full max-w-full">
+                    </div>
+                @else
+                    <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                        <i class="fas fa-sun text-white text-lg"></i>
+                    </div>
+                @endif
                 <div>
-                    <span class="font-bold text-xl text-white tracking-tight">{{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[0] }}</span>
-                    <span class="text-amber-500 font-bold text-xl tracking-tight">{{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[1] ?? '' }}</span>
+                    @php 
+                        $parts = explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions');
+                        $first = $parts[0] ?? 'Solar';
+                        $rest = implode(' ', array_slice($parts, 1));
+                    @endphp
+                    <span class="font-bold text-xl text-white tracking-tight">{{ $first }}</span>
+                    <span class="text-amber-500 font-bold text-xl tracking-tight">{{ $rest }}</span>
                 </div>
             </a>
             <!-- Desktop Nav -->
             <div class="hidden md:flex items-center space-x-10">
-                <div class="flex items-center space-x-8">
                     <a href="{{ route('home') }}" class="nav-link text-gray-400 hover:text-white font-bold text-sm uppercase tracking-widest {{ request()->routeIs('home') ? 'active text-white' : '' }}">Home</a>
                     <a href="{{ route('about') }}" class="nav-link text-gray-400 hover:text-white font-bold text-sm uppercase tracking-widest {{ request()->routeIs('about') ? 'active text-white' : '' }}">Why Us</a>
                     <a href="{{ route('products') }}" class="nav-link text-gray-400 hover:text-white font-bold text-sm uppercase tracking-widest {{ request()->routeIs('products*') ? 'active text-white' : '' }}">Products</a>
                     <a href="{{ route('packages') }}" class="nav-link text-gray-400 hover:text-white font-bold text-sm uppercase tracking-widest {{ request()->routeIs('packages') ? 'active text-white' : '' }}">Packages</a>
+                    <a href="{{ route('blogs.index') }}" class="nav-link text-gray-400 hover:text-white font-bold text-sm uppercase tracking-widest {{ request()->routeIs('blogs.*') ? 'active text-white' : '' }}">Resources</a>
                     <a href="{{ route('contact') }}" class="nav-link text-gray-400 hover:text-white font-bold text-sm uppercase tracking-widest {{ request()->routeIs('contact') ? 'active text-white' : '' }}">Contact</a>
                 </div>
                 
@@ -99,6 +113,7 @@
             <a href="{{ route('about') }}" class="block text-gray-300 hover:text-amber-500 font-medium py-2">Why Us</a>
             <a href="{{ route('products') }}" class="block text-gray-300 hover:text-amber-500 font-medium py-2">Products</a>
             <a href="{{ route('packages') }}" class="block text-gray-300 hover:text-amber-500 font-medium py-2">Packages</a>
+            <a href="{{ route('blogs.index') }}" class="block text-gray-300 hover:text-amber-500 font-medium py-2">Resources</a>
             <a href="{{ route('contact') }}" class="block text-gray-300 hover:text-amber-500 font-medium py-2">Contact</a>
             <div class="flex flex-col gap-3 pt-2">
                 <a href="{{ route('get.quote') }}" class="block bg-amber-500 text-white text-center px-5 py-3 rounded-lg font-bold">Get a Quote</a>
@@ -131,18 +146,33 @@
                 India's top-rated solar energy provider. Join thousands of satisfied homeowners and businesses who have saved millions on electricity bills while contributing to a greener planet.
             </p>
             <div class="flex gap-4">
-                @foreach(['facebook-f','twitter','instagram','linkedin-in'] as $icon)
-                <a href="#" class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all text-gray-500">
-                    <i class="fab fa-{{ $icon }} text-sm"></i>
+                @if(!empty($settings['social_facebook']))
+                <a href="{{ $settings['social_facebook'] }}" target="_blank" class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all text-gray-500">
+                    <i class="fab fa-facebook-f text-sm"></i>
                 </a>
-                @endforeach
+                @endif
+                @if(!empty($settings['social_twitter']))
+                <a href="{{ $settings['social_twitter'] }}" target="_blank" class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all text-gray-500">
+                    <i class="fab fa-twitter text-sm"></i>
+                </a>
+                @endif
+                @if(!empty($settings['social_instagram']))
+                <a href="{{ $settings['social_instagram'] }}" target="_blank" class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all text-gray-500">
+                    <i class="fab fa-instagram text-sm"></i>
+                </a>
+                @endif
+                @if(!empty($settings['social_linkedin']))
+                <a href="{{ $settings['social_linkedin'] }}" target="_blank" class="w-10 h-10 glass rounded-xl flex items-center justify-center hover:bg-amber-500 hover:text-white transition-all text-gray-500">
+                    <i class="fab fa-linkedin-in text-sm"></i>
+                </a>
+                @endif
             </div>
         </div>
 
         <div>
             <h4 class="text-white font-black text-xs uppercase tracking-[0.2em] mb-10">Quick Links</h4>
             <div class="grid grid-cols-1 gap-4">
-                @foreach([['Home', 'home'],['Why Us', 'about'],['Hardware', 'products'],['Packages', 'packages'],['Contact', 'contact']] as $link)
+                @foreach([['Home', 'home'],['Why Us', 'about'],['Hardware', 'products'],['Packages', 'packages'],['Resources', 'blogs.index'],['Contact', 'contact']] as $link)
                 <a href="{{ route($link[1]) }}" class="text-gray-500 hover:text-amber-500 transition-colors text-sm font-bold font-inter">{{ $link[0] }}</a>
                 @endforeach
             </div>
@@ -186,6 +216,35 @@
         </div>
     </div>
 </footer>
+
+<!-- Floating Social Media Links -->
+<div class="fixed bottom-6 left-6 z-50 flex flex-col gap-3">
+    @if(!empty($settings['social_whatsapp']))
+    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings['social_whatsapp']) }}" target="_blank" class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform hover:shadow-green-500/50">
+        <i class="fab fa-whatsapp text-2xl"></i>
+    </a>
+    @endif
+    @if(!empty($settings['social_facebook']))
+    <a href="{{ $settings['social_facebook'] }}" target="_blank" class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform hover:shadow-blue-600/50">
+        <i class="fab fa-facebook-f text-xl"></i>
+    </a>
+    @endif
+    @if(!empty($settings['social_instagram']))
+    <a href="{{ $settings['social_instagram'] }}" target="_blank" class="w-12 h-12 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform hover:shadow-pink-500/50">
+        <i class="fab fa-instagram text-xl"></i>
+    </a>
+    @endif
+    @if(!empty($settings['social_twitter']))
+    <a href="{{ $settings['social_twitter'] }}" target="_blank" class="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform hover:shadow-gray-900/50 border border-gray-700">
+        <i class="fab fa-twitter text-xl"></i>
+    </a>
+    @endif
+    @if(!empty($settings['social_linkedin']))
+    <a href="{{ $settings['social_linkedin'] }}" target="_blank" class="w-12 h-12 bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform hover:shadow-blue-700/50">
+        <i class="fab fa-linkedin-in text-xl"></i>
+    </a>
+    @endif
+</div>
 
 </body>
 </html>

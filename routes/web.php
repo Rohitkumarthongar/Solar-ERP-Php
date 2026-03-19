@@ -34,6 +34,8 @@ Route::post('/contact', [WebController::class, 'contactStore'])->name('contact.s
 Route::get('/get-quote', [WebController::class, 'getQuote'])->name('get.quote');
 Route::post('/get-quote', [WebController::class, 'getQuoteStore'])->name('get.quote.store');
 Route::get('/thank-you', [WebController::class, 'thankYou'])->name('thank.you');
+Route::get('/blogs', [\App\Http\Controllers\BlogController::class, 'index'])->name('blogs.index');
+Route::get('/blogs/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blogs.show');
 
 // ── Admin Auth ────────────────────────────────────────────────────────────────
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
@@ -64,6 +66,15 @@ Route::post('/admin/leads/{id}/mature', [LeadController::class, 'markMature'])->
 Route::post('/admin/leads/{id}/convert', [LeadController::class, 'convertToQuotation'])->name('admin.leads.convert');
 Route::post('/admin/leads/{id}/send-sms', [LeadController::class, 'sendSms'])->name('admin.leads.send-sms');
 
+// ── Site Visits ──────────────────────────────────────────────────────────────
+Route::get('/admin/site-visits', [\App\Http\Controllers\Admin\SiteVisitController::class, 'index'])->name('admin.site-visits.index');
+Route::get('/admin/site-visits/create', [\App\Http\Controllers\Admin\SiteVisitController::class, 'create'])->name('admin.site-visits.create');
+Route::post('/admin/site-visits', [\App\Http\Controllers\Admin\SiteVisitController::class, 'store'])->name('admin.site-visits.store');
+Route::get('/admin/site-visits/{id}', [\App\Http\Controllers\Admin\SiteVisitController::class, 'show'])->name('admin.site-visits.show');
+Route::get('/admin/site-visits/{id}/edit', [\App\Http\Controllers\Admin\SiteVisitController::class, 'edit'])->name('admin.site-visits.edit');
+Route::put('/admin/site-visits/{id}', [\App\Http\Controllers\Admin\SiteVisitController::class, 'update'])->name('admin.site-visits.update');
+Route::delete('/admin/site-visits/{id}', [\App\Http\Controllers\Admin\SiteVisitController::class, 'destroy'])->name('admin.site-visits.destroy');
+
 // ── Quotations ────────────────────────────────────────────────────────────────
 Route::get('/admin/quotations', [QuotationController::class, 'index'])->name('admin.quotations.index');
 Route::get('/admin/quotations/create', [QuotationController::class, 'create'])->name('admin.quotations.create');
@@ -85,6 +96,14 @@ Route::get('/admin/sales-orders/{id}/edit', [SalesOrderController::class, 'edit'
 Route::put('/admin/sales-orders/{id}', [SalesOrderController::class, 'update'])->name('admin.sales-orders.update');
 Route::delete('/admin/sales-orders/{id}', [SalesOrderController::class, 'destroy'])->name('admin.sales-orders.destroy');
 Route::get('/admin/sales-orders/{id}/pdf', [SalesOrderController::class, 'downloadPdf'])->name('admin.sales-orders.pdf');
+
+// ── Sales Invoices & Payments ─────────────────────────────────────────────────
+Route::get('/admin/sales-invoices', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'index'])->name('admin.sales-invoices.index');
+Route::get('/admin/sales-invoices/create', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'create'])->name('admin.sales-invoices.create');
+Route::post('/admin/sales-invoices', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'store'])->name('admin.sales-invoices.store');
+Route::get('/admin/sales-invoices/{id}', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'show'])->name('admin.sales-invoices.show');
+Route::post('/admin/sales-invoices/{id}/payment', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'addPayment'])->name('admin.sales-invoices.payment');
+Route::post('/admin/sales-invoices/{id}/remind', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'sendReminder'])->name('admin.sales-invoices.remind');
 
 // ── Purchase Orders ───────────────────────────────────────────────────────────
 Route::get('/admin/purchase-orders', [PurchaseOrderController::class, 'index'])->name('admin.purchase-orders.index');
@@ -196,6 +215,7 @@ Route::post('/admin/settings/sms-templates', [SettingsController::class, 'smsTem
 Route::put('/admin/settings/sms-templates/{id}', [SettingsController::class, 'smsTemplateUpdate'])->name('admin.settings.sms-templates.update');
 Route::delete('/admin/settings/sms-templates/{id}', [SettingsController::class, 'smsTemplateDestroy'])->name('admin.settings.sms-templates.destroy');
 Route::post('/admin/settings/sms/test', [SettingsController::class, 'smsSendTest'])->name('admin.settings.sms.test');
+Route::post('/admin/settings/reset-data', [SettingsController::class, 'resetData'])->name('admin.settings.reset-data');
 Route::get('/admin/settings/print-formats', [PrintFormatController::class, 'index'])->name('admin.settings.print-formats');
 Route::get('/admin/settings/print-formats/create', [PrintFormatController::class, 'create'])->name('admin.settings.print-formats.create');
 Route::post('/admin/settings/print-formats', [PrintFormatController::class, 'store'])->name('admin.settings.print-formats.store');
@@ -220,3 +240,11 @@ Route::post('/admin/teams', [TeamController::class, 'store'])->name('admin.teams
 Route::get('/admin/teams/{id}/edit', [TeamController::class, 'edit'])->name('admin.teams.edit');
 Route::put('/admin/teams/{id}', [TeamController::class, 'update'])->name('admin.teams.update');
 Route::delete('/admin/teams/{id}', [TeamController::class, 'destroy'])->name('admin.teams.destroy');
+
+// ── Blogs (Govt Schemes/Resources) ────────────────────────────────────────────
+Route::get('/admin/blogs', [\App\Http\Controllers\Admin\BlogController::class, 'index'])->name('admin.blogs.index');
+Route::get('/admin/blogs/create', [\App\Http\Controllers\Admin\BlogController::class, 'create'])->name('admin.blogs.create');
+Route::post('/admin/blogs', [\App\Http\Controllers\Admin\BlogController::class, 'store'])->name('admin.blogs.store');
+Route::get('/admin/blogs/{id}/edit', [\App\Http\Controllers\Admin\BlogController::class, 'edit'])->name('admin.blogs.edit');
+Route::put('/admin/blogs/{id}', [\App\Http\Controllers\Admin\BlogController::class, 'update'])->name('admin.blogs.update');
+Route::delete('/admin/blogs/{id}', [\App\Http\Controllers\Admin\BlogController::class, 'destroy'])->name('admin.blogs.destroy');

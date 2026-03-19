@@ -75,12 +75,18 @@
             <a href="{{ route('admin.leads.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.leads*') ? 'active' : '' }}">
                 <i class="fas fa-funnel-dollar w-5"></i><span>Leads / CRM</span>
             </a>
+            <a href="{{ route('admin.site-visits.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.site-visits*') ? 'active' : '' }}">
+                <i class="fas fa-map-marked-alt w-5"></i><span>Site Visits</span>
+            </a>
             <a href="{{ route('admin.quotations.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.quotations*') ? 'active' : '' }}">
                 <i class="fas fa-file-invoice-dollar w-5"></i><span>Quotations</span>
             </a>
             <div class="pt-2 pb-1"><p class="text-orange-300 text-xs font-semibold uppercase tracking-wider px-3">Sales & Purchase</p></div>
             <a href="{{ route('admin.sales-orders.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.sales-orders*') ? 'active' : '' }}">
                 <i class="fas fa-shopping-cart w-5"></i><span>Sales Orders</span>
+            </a>
+            <a href="{{ route('admin.sales-invoices.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.sales-invoices*') ? 'active' : '' }}">
+                <i class="fas fa-file-invoice-dollar w-5"></i><span>Sales Invoices</span>
             </a>
             <a href="{{ route('admin.purchase-orders.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.purchase-orders*') ? 'active' : '' }}">
                 <i class="fas fa-truck w-5"></i><span>Purchase Orders</span>
@@ -120,6 +126,9 @@
                 <i class="fas fa-bell w-5"></i><span>Notifications</span>
                 @php $unreadCount = \App\Models\Notification::where('is_read',false)->count(); @endphp
                 @if($unreadCount > 0)<span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{{ $unreadCount }}</span>@endif
+            </a>
+            <a href="{{ route('admin.blogs.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.blogs*') ? 'active' : '' }}">
+                <i class="fas fa-newspaper w-5"></i><span>Blogs & Schemes</span>
             </a>
             <a href="{{ route('admin.roles.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.roles*') || request()->routeIs('admin.users*') ? 'active' : '' }}">
                 <i class="fas fa-user-shield w-5"></i><span>Roles & Users</span>
@@ -253,12 +262,7 @@
         }
     });
 
-    setTimeout(() => {
-        document.querySelectorAll('.animate-slide').forEach(el => {
-            el.style.opacity = '0'; el.style.transition = 'opacity 0.5s';
-            setTimeout(() => el.remove(), 500);
-        });
-    }, 4000);
+
 </script>
 </body>
 </html>

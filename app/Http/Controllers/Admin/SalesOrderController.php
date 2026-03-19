@@ -27,7 +27,11 @@ class SalesOrderController extends Controller
         $customers = Customer::orderBy('name')->get();
         $products  = Product::where('is_active', true)->get();
         $packages  = Package::where('is_active', true)->orderBy('name')->get();
-        return view('admin.sales-orders.create', compact('customers', 'products', 'packages'));
+        $siteVisit = null;
+        if (request('site_visit_id')) {
+            $siteVisit = \App\Models\SiteVisit::with(['customer', 'lead'])->find(request('site_visit_id'));
+        }
+        return view('admin.sales-orders.create', compact('customers', 'products', 'packages', 'siteVisit'));
     }
 
     public function store(Request $request)
@@ -38,10 +42,10 @@ class SalesOrderController extends Controller
             'customer_email' => 'required|email',
             'customer_phone' => 'required|string',
             'customer_address' => 'required|string',
-            'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
             'items.*.quantity' => 'required|numeric|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0'
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'advance_payment' => 'nullable|numeric|min:0'
         ]);
 
         $orderNumber = 'SO-' . date('Ymd') . '-' . rand(100, 999);
@@ -58,9 +62,11 @@ class SalesOrderController extends Controller
             'tax_amount' => $request->tax_amount ?? 0,
             'discount_amount' => $request->discount_amount ?? 0,
             'final_amount' => $totalAmount + ($request->tax_amount ?? 0) - ($request->discount_amount ?? 0),
+            'advance_payment' => $request->advance_payment ?? 0,
             'status' => 'confirmed',
-            'payment_status' => 'pending',
-            'notes' => $request->notes
+            'payment_status' => ($request->advance_payment > 0) ? 'partial' : 'pending',
+            'notes' => $request->notes,
+            'site_visit_id' => $request->site_visit_id
         ]);
 
         foreach ($request->items as $item) {
@@ -111,7 +117,8 @@ class SalesOrderController extends Controller
             'customer_address' => 'required|string',
             'status' => 'required|in:confirmed,processing,dispatched,completed,cancelled',
             'payment_status' => 'required|in:pending,partial,paid',
-            'items' => 'required|array|min:1'
+            'items' => 'required|array|min:1',
+            'advance_payment' => 'nullable|numeric|min:0'
         ]);
 
         $totalAmount = collect($request->items)->sum(fn($i) => $i['quantity'] * $i['unit_price']);
@@ -120,6 +127,7 @@ class SalesOrderController extends Controller
             'tax_amount' => $request->tax_amount ?? 0,
             'discount_amount' => $request->discount_amount ?? 0,
             'final_amount' => $totalAmount + ($request->tax_amount ?? 0) - ($request->discount_amount ?? 0),
+            'advance_payment' => $request->advance_payment ?? 0,
             'notes' => $request->notes
         ]));
 

@@ -62,14 +62,14 @@ class InstallationController extends Controller
             $this->sms->sendFromTemplate('installation_scheduled', $customer->phone, $customer->name, [
                 'name'                => $customer->name,
                 'installation_number' => $installation->installation_number,
-                'scheduled_date'      => $installation->scheduled_date->format('d M Y'),
+                'scheduled_date'      => \Carbon\Carbon::parse($installation->scheduled_date)->format('d M Y'),
                 'company'             => 'SolarTech Solutions',
             ], 'Installation', $installation->id);
         }
 
         Notification::create([
             'title'        => 'Installation Scheduled',
-            'message'      => 'Installation ' . $installation->installation_number . ' scheduled for ' . $installation->scheduled_date->format('d M Y'),
+            'message'      => 'Installation ' . $installation->installation_number . ' scheduled for ' . \Carbon\Carbon::parse($installation->scheduled_date)->format('d M Y'),
             'type'         => 'installation',
             'related_id'   => $installation->id,
             'related_type' => 'Installation',
@@ -111,7 +111,26 @@ class InstallationController extends Controller
             'completion_date'      => 'nullable|date',
             'notes'                => 'nullable|string',
             'technician_remarks'   => 'nullable|string',
+            'installation_checklist' => 'nullable|array',
         ]);
+
+        if ($request->has('installation_checklist')) {
+            $checklistData = [];
+            foreach ($request->installation_checklist as $task => $data) {
+                $statusFlag = isset($data['status']) && $data['status'] == '1';
+                $photoPath = $installation->installation_checklist[$task]['photo'] ?? null;
+                
+                if ($request->hasFile("installation_checklist.$task.photo")) {
+                    $photoPath = $request->file("installation_checklist.$task.photo")->store('installation-proofs', 'public');
+                }
+
+                $checklistData[$task] = [
+                    'status' => $statusFlag,
+                    'photo'  => $photoPath,
+                ];
+            }
+            $validated['installation_checklist'] = $checklistData;
+        }
 
         // Handle proof photo uploads
         $proofFields = ['proof_before_photo', 'proof_during_photo', 'proof_after_photo', 'proof_meter_photo', 'proof_panel_photo', 'proof_inverter_photo'];

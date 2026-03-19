@@ -35,7 +35,70 @@
     </div>
     @endif
 
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    {{-- Document Flow Status --}}
+    @php
+        $quotation = $order->quotation;
+        $hasLead = ($quotation && $quotation->lead_id) ? true : false;
+        $hasQuotation = $quotation ? true : false;
+        $invoice = \App\Models\SalesInvoice::where('sales_order_id', $order->id)->first();
+        $hasInvoice = $invoice ? true : false;
+
+        $flowStage = 3; // Sales Order
+        if($hasInvoice) $flowStage = 4;
+    @endphp
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+        <h3 class="font-bold text-gray-800 mb-6 text-sm flex items-center gap-2">
+            <i class="fas fa-project-diagram text-orange-500"></i> Document Lifecycle Status
+        </h3>
+        <div class="relative flex items-center justify-between w-full max-w-4xl mx-auto">
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 z-0 rounded-full"></div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-orange-500 z-0 rounded-full transition-all duration-500" style="width: {{ ($flowStage - 1) * 33.33 }}%"></div>
+
+            <!-- Stage 1: Lead -->
+            <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md {{ $hasLead ? 'bg-orange-500' : 'bg-gray-300' }}">
+                    <i class="fas fa-filter text-sm"></i>
+                </div>
+                <span class="text-[10px] font-bold {{ $hasLead ? 'text-orange-600' : 'text-gray-400' }} uppercase tracking-wider">Lead</span>
+            </div>
+
+            <!-- Stage 2: Quotation -->
+            <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md {{ $hasQuotation ? 'bg-orange-500' : 'bg-gray-300' }}">
+                    <i class="fas fa-file-invoice text-sm"></i>
+                </div>
+                <span class="text-[10px] font-bold {{ $hasQuotation ? 'text-orange-600' : 'text-gray-400' }} uppercase tracking-wider">Quotation</span>
+            </div>
+
+            <!-- Stage 3: Sales Order -->
+            <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md bg-orange-500">
+                    <i class="fas fa-shopping-cart text-sm"></i>
+                </div>
+                <span class="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Order</span>
+            </div>
+
+            <!-- Stage 4: Invoice -->
+            <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md {{ $hasInvoice ? 'bg-orange-500' : 'bg-gray-200' }}">
+                    <i class="fas fa-money-check-alt text-sm"></i>
+                </div>
+                <span class="text-[10px] font-bold {{ $hasInvoice ? 'text-orange-600' : 'text-gray-400' }} uppercase tracking-wider">Invoice</span>
+            </div>
+        </div>
+        
+        <div class="mt-8 flex flex-wrap gap-4 justify-center">
+            @if($hasInvoice)
+                <div class="text-sm font-semibold text-green-600 bg-green-50 px-6 py-3 rounded-xl border border-green-100 flex items-center gap-2">
+                    <i class="fas fa-check-double"></i> Invoiced via <a href="{{ route('admin.sales-invoices.show', $invoice->id) }}" class="underline hover:text-green-800">Invoice {{ $invoice->invoice_number }}</a>
+                </div>
+            @else
+                <a href="{{ route('admin.sales-invoices.create', ['sales_order_id' => $order->id]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition flex items-center gap-2">
+                    <i class="fas fa-file-invoice-dollar"></i> Convert to Sales Invoice
+                </a>
+            @endif
+        </div>
+    </div>
 
         {{-- LEFT: Items + Notes --}}
         <div class="xl:col-span-2 space-y-6">
@@ -137,6 +200,10 @@
                             {{ ucfirst($order->payment_status) }}
                         </span>
                     </div>
+                    <div class="flex items-center justify-between border-t border-gray-50 pt-2 mt-2">
+                        <span class="text-gray-500">Advance Paid</span>
+                        <span class="font-bold text-green-600">₹{{ number_format($order->advance_payment, 2) }}</span>
+                    </div>
                     @if($order->quotation)
                     <div class="flex items-center justify-between">
                         <span class="text-gray-500">From Quotation</span>
@@ -155,7 +222,13 @@
                     <i class="fas fa-user text-orange-500"></i> Customer
                 </h3>
                 <div class="space-y-2 text-sm">
-                    <p class="font-semibold text-gray-800">{{ $order->customer_name }}</p>
+                    @if($order->customer_id)
+                        <a href="{{ route('admin.customers.show', $order->customer_id) }}" class="font-bold text-gray-900 hover:text-orange-600 underline">
+                            {{ $order->customer_name }}
+                        </a>
+                    @else
+                        <p class="font-semibold text-gray-800">{{ $order->customer_name }}</p>
+                    @endif
                     <p class="text-gray-500 flex items-center gap-2">
                         <i class="fas fa-envelope w-4 text-gray-400"></i> {{ $order->customer_email }}
                     </p>

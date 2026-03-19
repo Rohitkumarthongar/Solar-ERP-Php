@@ -14,6 +14,8 @@ use App\Models\ServiceRequest;
 use App\Models\Inventory;
 use App\Models\Notification;
 use App\Models\SalaryRecord;
+use App\Models\SalesInvoice;
+use App\Models\PaymentReceipt;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -48,12 +50,24 @@ class DashboardController extends Controller
 
         $leadsByStatus = Lead::selectRaw('status, COUNT(*) as count')->groupBy('status')->get();
 
+        // New for Payment Reminders
+        $outstandingInvoices = SalesInvoice::with('customer')
+            ->where('balance_due', '>', 0)
+            ->orderBy('balance_due', 'desc')
+            ->take(5)
+            ->get();
+        $totalOutstandingAmount = SalesInvoice::sum('balance_due');
+        $recentPayments = PaymentReceipt::with('salesInvoice.customer')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
         return view('admin.dashboard', compact(
             'totalCustomers', 'totalLeads', 'newLeads', 'matureLeads',
             'totalQuotations', 'pendingQuotations', 'totalSalesOrders', 'totalRevenue',
             'pendingInstallations', 'openServices', 'lowStockItems', 'totalPurchaseOrders',
             'recentLeads', 'recentQuotations', 'recentOrders', 'notifications',
-            'monthlySales', 'leadsByStatus'
+            'monthlySales', 'leadsByStatus', 'outstandingInvoices', 'totalOutstandingAmount', 'recentPayments'
         ));
     }
 }

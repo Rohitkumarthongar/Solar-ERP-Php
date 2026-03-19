@@ -111,6 +111,14 @@
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
                         </div>
                         <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Google Maps Embed URL / Location Link</label>
+                            <input type="text" name="company_map_link"
+                                value="{{ $settings['company_map_link'] ?? '' }}"
+                                placeholder="Paste Google Maps Share Link or IFRAME SRC here"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                            <p class="text-[10px] text-gray-400 mt-1">Used to display your location on the contact page.</p>
+                        </div>
+                        <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5">Registered Address</label>
                             <textarea name="company_address" rows="2"
                                 placeholder="Plot No. 1, Industrial Area, City, State - 000000"
@@ -211,6 +219,50 @@
                             <span class="text-sm text-gray-700">{{ $label }}</span>
                         </label>
                         @endforeach
+                    </div>
+                </div>
+
+                {{-- Social Media Links --}}
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
+                        <i class="fas fa-share-alt text-orange-500"></i> Social Media Links
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Facebook URL</label>
+                            <input type="url" name="social_facebook"
+                                value="{{ $settings['social_facebook'] ?? '' }}"
+                                placeholder="https://facebook.com/solartech"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Instagram URL</label>
+                            <input type="url" name="social_instagram"
+                                value="{{ $settings['social_instagram'] ?? '' }}"
+                                placeholder="https://instagram.com/solartech"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Twitter / X URL</label>
+                            <input type="url" name="social_twitter"
+                                value="{{ $settings['social_twitter'] ?? '' }}"
+                                placeholder="https://twitter.com/solartech"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">LinkedIn URL</label>
+                            <input type="url" name="social_linkedin"
+                                value="{{ $settings['social_linkedin'] ?? '' }}"
+                                placeholder="https://linkedin.com/company/solartech"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">WhatsApp Number</label>
+                            <input type="text" name="social_whatsapp"
+                                value="{{ $settings['social_whatsapp'] ?? '' }}"
+                                placeholder="+919876543210 (with country code)"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        </div>
                     </div>
                 </div>
 
@@ -330,6 +382,26 @@
             </div>
         </div>
     </form>
+
+    {{-- Danger Zone --}}
+    <div class="mt-12 max-w-4xl mx-auto">
+        <div class="bg-red-50 border border-red-100 rounded-[30px] p-8">
+            <h3 class="text-lg font-black text-red-800 flex items-center gap-3 mb-2">
+                <i class="fas fa-exclamation-triangle"></i> Danger Zone
+            </h3>
+            <p class="text-sm text-red-600 mb-6 font-medium">Resetting data will permanently delete all records (Leads, Customers, Quotations, Orders, Invoices, etc.) while keeping your business settings and credentials intact.</p>
+            
+            <form action="{{ route('admin.settings.reset-data') }}" method="POST" class="delete-form" 
+                data-title="RESET ALL DATA?" 
+                data-text="This will wipe all business records except settings. This action is IRREVERSIBLE. Are you ABSOLUTELY sure?">
+                @csrf
+                <button type="submit" 
+                    class="bg-white border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white font-black px-6 py-3 rounded-2xl transition-all active:scale-95 flex items-center gap-2">
+                    <i class="fas fa-trash-alt text-xs"></i> <span>Factory Reset (Clear All Data)</span>
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>

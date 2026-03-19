@@ -166,6 +166,15 @@
                             <span>Grand Total</span>
                             <span id="grandTotalDisplay" class="text-orange-600">₹0.00</span>
                         </div>
+                        <div class="flex items-center justify-between text-gray-600 pt-3">
+                            <label class="flex items-center gap-2">
+                                <span class="bg-orange-50 text-orange-600 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">Advance</span>
+                                <input type="number" name="advance_payment" id="advancePayment" min="0" step="0.01"
+                                    value="{{ old('advance_payment', 0) }}"
+                                    class="w-32 border border-gray-200 rounded-lg px-2 py-2 text-sm font-bold text-gray-800 focus:outline-none focus:ring-1 focus:ring-orange-300">
+                            </label>
+                            <span id="advanceDisplay" class="font-bold text-gray-900 italic">₹0.00</span>
+                        </div>
                     </div>
                 </div>
 
@@ -286,6 +295,9 @@
     document.getElementById('addItemBtn').addEventListener('click', () => addItem());
     document.getElementById('taxAmount').addEventListener('input', recalc);
     document.getElementById('discountAmount').addEventListener('input', recalc);
+    document.getElementById('advancePayment').addEventListener('input', function() {
+        document.getElementById('advanceDisplay').textContent = '₹' + (parseFloat(this.value) || 0).toFixed(2);
+    });
 
     // --- Package Loading Logic ---
     const loadPkgBtn = document.getElementById('loadPackageBtn');

@@ -33,6 +33,44 @@
         </div>
     </div>
 
+    {{-- Centralized Document Flowchart --}}
+    <div class="bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-900 p-8 rounded-[40px] shadow-2xl relative overflow-hidden mb-8">
+        <div class="absolute inset-0 opacity-10">
+            <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0 100 C 20 0 50 0 100 100" stroke="white" stroke-width="0.1" fill="none" />
+            </svg>
+        </div>
+        
+        <h3 class="text-indigo-100 text-[10px] font-black uppercase tracking-[0.2em] mb-8 text-center opacity-70">Unified Document Lifecycle</h3>
+        
+        <div class="relative flex flex-wrap justify-center items-center gap-4 md:gap-8 z-10">
+            @php
+                $stages = [
+                    ['label' => 'Lead', 'icon' => 'fas fa-funnel-dollar', 'count' => $customer->leads->count(), 'color' => 'indigo'],
+                    ['label' => 'Quote', 'icon' => 'fas fa-file-invoice-dollar', 'count' => $customer->quotations->count(), 'color' => 'blue'],
+                    ['label' => 'Visit', 'icon' => 'fas fa-map-marker-alt', 'count' => $customer->siteVisits->count(), 'color' => 'orange'],
+                    ['label' => 'Order', 'icon' => 'fas fa-shopping-cart', 'count' => $customer->salesOrders->count(), 'color' => 'green'],
+                    ['label' => 'Install', 'icon' => 'fas fa-tools', 'count' => $customer->installations->count(), 'color' => 'purple'],
+                    ['label' => 'Service', 'icon' => 'fas fa-headset', 'count' => $customer->serviceRequests->count(), 'color' => 'red'],
+                ];
+            @endphp
+
+            @foreach($stages as $index => $stage)
+                <div class="flex flex-col items-center group">
+                    <div class="w-16 h-16 rounded-2xl flex flex-col items-center justify-center transition-all duration-500 border-2 
+                        {{ $stage['count'] > 0 ? 'bg-white/20 border-white/30 backdrop-blur-xl scale-110 shadow-lg shadow-white/5' : 'bg-black/20 border-white/5 opacity-40' }}">
+                        <i class="{{ $stage['icon'] }} text-xl {{ $stage['count'] > 0 ? 'text-white' : 'text-indigo-300' }}"></i>
+                        <span class="text-[10px] font-black mt-1 {{ $stage['count'] > 0 ? 'text-white' : 'text-indigo-400' }}">{{ $stage['count'] }}</span>
+                    </div>
+                    <span class="text-[9px] font-black uppercase tracking-widest mt-3 {{ $stage['count'] > 0 ? 'text-white' : 'text-indigo-400 opacity-50' }}">{{ $stage['label'] }}</span>
+                </div>
+                @if(!$loop->last)
+                    <div class="hidden md:block w-8 h-[2px] bg-white/10 rounded-full"></div>
+                @endif
+            @endforeach
+        </div>
+    </div>
+
     @if(session('success'))
     <div class="bg-green-50 border border-green-200 text-green-700 rounded-xl px-5 py-3 flex items-center gap-3">
         <i class="fas fa-check-circle text-green-500"></i> {{ session('success') }}

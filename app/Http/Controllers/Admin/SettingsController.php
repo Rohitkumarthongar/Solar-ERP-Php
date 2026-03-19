@@ -9,9 +9,54 @@ use App\Models\SmsConfiguration;
 use App\Models\SmsTemplate;
 use App\Models\PrintFormat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SettingsController extends Controller
 {
+    public function resetData()
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        
+        // Define models to be truncated
+        $models = [
+            'leads',
+            'customers',
+            'quotations',
+            'quotation_items',
+            'sales_orders',
+            'sales_order_items',
+            'sales_invoices',
+            'sales_invoice_items',
+            'purchase_orders',
+            'purchase_order_items',
+            'site_visits',
+            'installations',
+            'service_requests',
+            'payment_receipts',
+            'inventory',
+            'inventory_adjustments',
+            'notifications',
+            'sms_logs',
+            'message_logs',
+            'salary_records',
+            'employees',
+            'teams',
+            'blogs',
+            'products',
+            'product_categories',
+            'packages',
+            'users',
+        ];
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        foreach ($models as $table) {
+            DB::table($table)->truncate();
+        }
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        return redirect()->back()->with('success', 'System data has been successfully reset. Settings preserved.');
+    }
+
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');

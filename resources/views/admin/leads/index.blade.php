@@ -38,9 +38,9 @@
                     @forelse($leads as $lead)
                     <tr class="hover:bg-gray-50">
                         <td class="px-5 py-4">
-                            <p class="font-medium text-gray-800">{{ $lead->name }}</p>
-                            <p class="text-gray-400 text-xs">{{ $lead->lead_number }}</p>
-                            <p class="text-gray-400 text-xs capitalize">{{ str_replace('_',' ',$lead->lead_source) }}</p>
+                            <a href="{{ route('admin.leads.show', $lead->id) }}" class="font-bold text-blue-600 hover:underline hover:text-orange-600 transition">{{ $lead->name }}</a>
+                            <p class="text-gray-400 text-xs mt-0.5 tracking-tight font-medium">{{ $lead->lead_number }}</p>
+                            <p class="text-gray-400 text-[10px] uppercase font-black mt-1 tracking-widest opacity-60">{{ str_replace('_',' ',$lead->lead_source) }}</p>
                         </td>
                         <td class="px-5 py-4">
                             <p class="text-gray-700">{{ $lead->phone }}</p>

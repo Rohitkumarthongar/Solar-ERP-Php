@@ -48,6 +48,69 @@
     </div>
     @endif
 
+    {{-- Document Flow Status --}}
+    @php
+        $hasLead = $quotation->lead_id ? true : false;
+        $order = \App\Models\SalesOrder::where('quotation_id', $quotation->id)->first();
+        $hasOrder = $order ? true : false;
+        $invoice = $hasOrder ? \App\Models\SalesInvoice::where('sales_order_id', $order->id)->first() : null;
+        $hasInvoice = $invoice ? true : false;
+
+        $flowStage = 2; // Quotation
+        if($hasOrder) $flowStage = 3;
+        if($hasInvoice) $flowStage = 4;
+    @endphp
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+        <h3 class="font-bold text-gray-800 mb-6 text-sm flex items-center gap-2">
+            <i class="fas fa-project-diagram text-indigo-500"></i> Document Lifecycle Status
+        </h3>
+        <div class="relative flex items-center justify-between w-full">
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 z-0 rounded-full"></div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-indigo-500 z-0 rounded-full transition-all duration-500" style="width: {{ ($flowStage - 1) * 33.33 }}%"></div>
+
+            <!-- Stage 1: Lead -->
+            <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md {{ $hasLead ? 'bg-indigo-500' : 'bg-gray-300' }}">
+                    <i class="fas fa-filter text-sm"></i>
+                </div>
+                <span class="text-xs font-bold {{ $hasLead ? 'text-indigo-600' : 'text-gray-400' }}">Lead</span>
+            </div>
+
+            <!-- Stage 2: Quotation -->
+            <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md bg-indigo-500">
+                    <i class="fas fa-file-invoice text-sm"></i>
+                </div>
+                <span class="text-xs font-bold text-indigo-600">Quotation</span>
+            </div>
+
+            <!-- Stage 3: Sales Order -->
+            <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md {{ $hasOrder ? 'bg-indigo-500' : 'bg-gray-200' }}">
+                    <i class="fas fa-shopping-cart text-sm"></i>
+                </div>
+                <span class="text-xs font-bold {{ $hasOrder ? 'text-indigo-600' : 'text-gray-400' }}">Sales Order</span>
+            </div>
+
+            <!-- Stage 4: Invoice -->
+            <div class="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-md {{ $hasInvoice ? 'bg-indigo-500' : 'bg-gray-200' }}">
+                    <i class="fas fa-money-check-alt text-sm"></i>
+                </div>
+                <span class="text-xs font-bold {{ $hasInvoice ? 'text-indigo-600' : 'text-gray-400' }}">Invoice</span>
+            </div>
+        </div>
+        @if($hasOrder)
+            <div class="mt-6 text-center text-sm font-semibold text-green-600 bg-green-50 p-3 rounded-lg border border-green-100">
+                This quotation has been converted into <a href="{{ route('admin.sales-orders.show', $order->id) }}" class="underline hover:text-green-800">Sales Order {{ $order->order_number }}</a>.
+            </div>
+        @elseif($quotation->status === 'approved')
+            <div class="mt-6 text-center text-sm font-semibold text-blue-600 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                This quotation is approved and ready to be converted into a Sales Order.
+            </div>
+        @endif
+    </div>
+
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         {{-- LEFT: Items + Notes --}}

@@ -157,6 +157,73 @@
                 @endif
             </div>
 
+            {{-- Checklist Block --}}
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="p-6 border-b border-gray-50 flex items-center justify-between">
+                    <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                        <i class="fas fa-tasks text-orange-500"></i> Installation Milestone Checklist
+                    </h3>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Mandatory Review</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-50/50 text-gray-500 font-bold text-[10px] uppercase tracking-wider">
+                            <tr>
+                                <th class="p-4">Process Milestone</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4">Proof of Completion</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50 text-gray-700">
+                            @php
+                                $tasks = [
+                                    'Structure Mounting' => 'Base structure firmly grouted/mounted.',
+                                    'Panel Installation' => 'All PV modules secured with clamps.',
+                                    'Earthing/Grounding' => 'Separate earthing for structure & LA.',
+                                    'DC/AC Cabling' => 'Proper conduit and termination.',
+                                    'Inverter Setup' => 'Inverter mounted and calibrated.',
+                                    'Generation Test' => 'System tested for output generation.'
+                                ];
+                                $checklist = $installation->installation_checklist ?? [];
+                            @endphp
+                            @foreach($tasks as $task => $desc)
+                            <tr>
+                                <td class="p-4">
+                                    <div class="font-bold text-gray-800">{{ $task }}</div>
+                                    <div class="text-[10px] text-gray-400 font-inter">{{ $desc }}</div>
+                                </td>
+                                <td class="p-4">
+                                    @if(isset($checklist[$task]['status']) && $checklist[$checklist[$task]['status']])
+                                        <span class="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-green-100">
+                                            <i class="fas fa-check-circle mr-1"></i> Done
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-0.5 bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest rounded-md border border-gray-100">
+                                            Pending
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="p-4">
+                                    @if(isset($checklist[$task]['photo']))
+                                        <a href="{{ Storage::url($checklist[$task]['photo']) }}" target="_blank" class="w-10 h-10 rounded-lg border border-gray-200 overflow-hidden inline-block group">
+                                            <img src="{{ Storage::url($checklist[$task]['photo']) }}" class="w-full h-full object-cover group-hover:scale-110 transition">
+                                        </a>
+                                    @else
+                                        <span class="text-gray-300 italic text-xs">No image proof</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 bg-orange-50/30 flex justify-center">
+                    <button onclick="document.getElementById('updateChecklistModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-6 py-2 rounded-xl text-xs uppercase tracking-widest transition active:scale-95 shadow-lg shadow-indigo-600/20">
+                        Update Checklist & Upload Photos
+                    </button>
+                </div>
+            </div>
+
             {{-- Proofs Block --}}
             <div class="bg-white rounded-2xl shadow-sm p-6">
                 <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
@@ -284,6 +351,60 @@
 
         </div>
 
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<div id="updateChecklistModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-md" onclick="this.parentElement.classList.add('hidden')"></div>
+    <div class="bg-white rounded-[32px] shadow-2xl w-full max-w-2xl relative z-10 overflow-hidden animate-slide">
+        <div class="p-8">
+            <h3 class="text-2xl font-black text-gray-800 mb-6">Update Milestone Checklist</h3>
+            <form action="{{ route('admin.installations.update', $installation->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                @csrf
+                @method('PUT')
+                
+                {{-- Mirror mandatory fields from original create/edit to pass validation --}}
+                <input type="hidden" name="scheduled_date" value="{{ $installation->scheduled_date->format('Y-m-d') }}">
+                <input type="hidden" name="status" value="{{ $installation->status }}">
+                <input type="hidden" name="system_size_kw" value="{{ $installation->system_size_kw }}">
+                <input type="hidden" name="installation_address" value="{{ $installation->installation_address }}">
+                <input type="hidden" name="roof_type" value="{{ $installation->roof_type }}">
+
+                <div class="max-h-[60vh] overflow-y-auto pr-4 space-y-4">
+                    @php
+                        $tasks = [
+                            'Structure Mounting', 'Panel Installation', 'Earthing/Grounding', 
+                            'DC/AC Cabling', 'Inverter Setup', 'Generation Test'
+                        ];
+                        $checklist = $installation->installation_checklist ?? [];
+                    @endphp
+                    @foreach($tasks as $task)
+                    <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="font-bold text-gray-800">{{ $task }}</label>
+                            <input type="checkbox" name="installation_checklist[{{ $task }}][status]" value="1" 
+                                {{ isset($checklist[$task]['status']) && $checklist[$task]['status'] ? 'checked' : '' }}
+                                class="w-5 h-5 text-orange-600 rounded">
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Update Photo Proof</span>
+                            <input type="file" name="installation_checklist[{{ $task }}][photo]" class="text-xs bg-white border border-gray-200 rounded-lg w-full p-2">
+                            @if(isset($checklist[$task]['photo']))
+                                <p class="text-[9px] text-green-600 mt-1 font-bold"><i class="fas fa-check"></i> Image already exists. Uploading new will replace it.</p>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="this.closest('#updateChecklistModal').classList.add('hidden')" class="flex-1 bg-gray-100 text-gray-500 font-black uppercase text-xs tracking-widest h-14 rounded-2xl active:scale-95 transition">Close</button>
+                    <button type="submit" class="flex-[2] bg-orange-600 text-white font-black uppercase text-xs tracking-widest h-14 rounded-2xl shadow-xl shadow-orange-600/20 active:scale-95 transition">Save Progress</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

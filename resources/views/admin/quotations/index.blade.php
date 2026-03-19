@@ -88,9 +88,14 @@
 
                         {{-- Customer --}}
                         <td class="px-6 py-4">
-                            <p class="font-medium text-gray-800">{{ $quotation->customer_name }}</p>
-                            @if($quotation->customer)
-                                <p class="text-xs text-gray-400">Linked customer</p>
+                            @if($quotation->customer_id)
+                                <a href="{{ route('admin.customers.show', $quotation->customer_id) }}" class="font-bold text-gray-800 hover:text-orange-600 transition underline decoration-orange-200 underline-offset-4">
+                                    {{ $quotation->customer_name }}
+                                </a>
+                                <p class="text-[9px] font-black uppercase text-green-600 tracking-tighter mt-1 italic">Verified Customer</p>
+                            @else
+                                <p class="font-medium text-gray-800">{{ $quotation->customer_name }}</p>
+                                <p class="text-[9px] font-black uppercase text-gray-400 tracking-tighter mt-1 italic">Direct Lead</p>
                             @endif
                         </td>
 

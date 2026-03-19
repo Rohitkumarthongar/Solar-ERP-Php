@@ -56,6 +56,10 @@ class LeadController extends Controller
             'property_type'           => 'nullable|string|max:100',
             'roof_area_sqft'          => 'nullable|string|max:50',
             'has_subsidy'             => 'boolean',
+            'subsidy_status'          => 'nullable|string',
+            'subsidy_amount'          => 'nullable|numeric',
+            'subsidy_ref_number'      => 'nullable|string',
+            'subsidy_notes'           => 'nullable|string',
             'package_id'              => 'nullable|exists:packages,id',
             'estimated_value'         => 'nullable|numeric',
             'roof_type'               => 'nullable|string|max:100',
@@ -137,6 +141,10 @@ class LeadController extends Controller
             'next_follow_up_date'     => 'nullable|date',
             'status'                  => 'required|in:new,contacted,follow_up,mature,converted,lost',
             'customer_id'             => 'nullable|exists:customers,id',
+            'subsidy_status'          => 'nullable|string',
+            'subsidy_amount'          => 'nullable|numeric',
+            'subsidy_ref_number'      => 'nullable|string',
+            'subsidy_notes'           => 'nullable|string',
         ]);
 
         $validated['has_subsidy'] = $request->has('has_subsidy');
@@ -188,6 +196,21 @@ class LeadController extends Controller
 
     private function autoCreateQuotation(Lead $lead): Quotation
     {
+        // 1. Check/Create Customer
+        if (!$lead->customer_id) {
+            $customer = Customer::where('email', $lead->email)->orWhere('phone', $lead->phone)->first();
+            if (!$customer) {
+                $customer = Customer::create([
+                    'name' => $lead->name,
+                    'email' => $lead->email,
+                    'phone' => $lead->phone,
+                    'address' => $lead->address,
+                    'status' => 'active',
+                ]);
+            }
+            $lead->update(['customer_id' => $customer->id, 'status' => 'converted']);
+        }
+
         $quotationNumber = 'QUO-' . date('Ymd') . '-' . rand(100, 999);
         $package         = $lead->package;
         $totalAmount     = $package ? $package->price : ($lead->estimated_value ?? 0);
@@ -237,7 +260,7 @@ class LeadController extends Controller
         app(SmsService::class)->sendFromTemplate('quotation_sent', $lead->phone, $lead->name, [
             'name'             => $lead->name,
             'quotation_number' => $quotationNumber,
-            'amount'           => '₹' . number_format($quotation->final_amount),
+            'amount'           => '₹' . number_format((float)$quotation->final_amount),
             'valid_until'      => now()->addDays(30)->format('d M Y'),
             'company'          => 'SolarTech Solutions',
         ], 'Quotation', $quotation->id);
