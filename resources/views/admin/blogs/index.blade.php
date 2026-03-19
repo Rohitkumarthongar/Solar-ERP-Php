@@ -45,6 +45,11 @@
                         <td class="p-4">
                             <span class="block font-bold text-gray-800">{{ Str::limit($blog->title, 40) }}</span>
                             <span class="text-xs text-gray-400">{{ $blog->slug }}</span>
+                            @if($blog->overview_url)
+                            <span class="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600">
+                                <i class="fas fa-link text-[9px]"></i> Complete Overview Link Added
+                            </span>
+                            @endif
                         </td>
                         <td class="p-4">
                             @if($blog->is_active)

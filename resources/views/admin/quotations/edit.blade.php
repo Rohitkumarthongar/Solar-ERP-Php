@@ -105,6 +105,30 @@
                         </button>
                     </div>
 
+                    {{-- Quick-add from Package --}}
+                    @php $packages = \App\Models\Package::where('is_active', true)->get(); @endphp
+                    @if($packages->count())
+                    <div class="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                        <i class="fas fa-solar-panel text-amber-500 text-sm"></i>
+                        <select id="package_select" class="flex-1 border border-amber-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white">
+                            <option value="">— Load items from Package —</option>
+                            @foreach($packages as $pkg)
+                            <option value="{{ $pkg->id }}"
+                                data-name="{{ $pkg->name }}"
+                                data-price="{{ $pkg->price }}"
+                                data-items="{{ json_encode($pkg->items ?? []) }}"
+                                data-size="{{ $pkg->system_size_kw }}">
+                                {{ $pkg->name }} — {{ $pkg->system_size_kw }} kW — ₹{{ number_format($pkg->price, 0) }}
+                            </option>
+                            @endforeach
+                        </select>
+                        <button type="button" onclick="loadPackage()"
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg transition whitespace-nowrap">
+                            <i class="fas fa-bolt"></i> Add Package
+                        </button>
+                    </div>
+                    @endif
+
                     {{-- Items Table --}}
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm" id="items-table">
@@ -138,6 +162,37 @@
                     <textarea name="notes" rows="3"
                         class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                         placeholder="Any additional terms, conditions, or notes for this quotation…">{{ old('notes', $quotation->notes) }}</textarea>
+                </div>
+
+                {{-- Bill Of Material (BOM) --}}
+                <div class="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <h3 class="font-bold text-gray-700 text-base flex items-center gap-2">
+                            <i class="fas fa-microchip text-teal-500"></i> Bill Of Material (BOM)
+                            <span class="text-xs font-normal text-gray-400">(Internal Technical Details)</span>
+                        </h3>
+                        <button type="button" onclick="addBomItem()"
+                            class="inline-flex items-center gap-1.5 text-xs font-medium bg-teal-50 hover:bg-teal-100 text-teal-600 px-3 py-1.5 rounded-lg transition">
+                            <i class="fas fa-plus"></i> Add BOM Item
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-50 text-gray-500">
+                                    <th class="text-left py-2 font-medium">Product / Description</th>
+                                    <th class="text-center py-2 font-medium w-32">Qty</th>
+                                    <th class="w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="bom-body" class="divide-y divide-gray-50">
+                                {{-- JS will populate --}}
+                            </tbody>
+                        </table>
+                        <p id="bom-empty" class="text-center text-gray-400 text-xs py-4">
+                            No BOM items added. These are internal hardware details.
+                        </p>
+                    </div>
                 </div>
 
             </div>
@@ -228,6 +283,7 @@
     // Products data for item rows
     const products = {!! json_encode($products->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'price' => (float)$p->selling_price])->values()->all()) !!};
     const existingItems = {!! json_encode($quotation->items->map(fn($i) => ['description' => $i->description, 'quantity' => $i->quantity, 'unit_price' => $i->unit_price, 'product_id' => $i->product_id])->values()->all()) !!};
+    const existingBom   = {!! json_encode($quotation->bom_items ?? []) !!};
 
     let itemIndex = 0;
 
@@ -325,6 +381,81 @@
         return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(n);
     }
 
+    function loadPackage() {
+        const sel = document.getElementById('package_select');
+        const opt = sel.options[sel.selectedIndex];
+        if (!opt.value) {
+            showAppAlert('Select a package first to load its billing line and BOM items.', {
+                title: 'Package Required',
+                icon: 'warning'
+            });
+            return;
+        }
+        const name  = opt.getAttribute('data-name');
+        const price = parseFloat(opt.getAttribute('data-price'));
+        const size  = opt.getAttribute('data-size');
+        const items = normalizePackageItems(JSON.parse(opt.getAttribute('data-items') || '[]'));
+        
+        addItem(`${name} — ${size} kW Solar Package`, 1, price);
+        
+        replaceBomFromPackage(items);
+        
+        sel.value = '';
+    }
+
+    function normalizePackageItems(items = []) {
+        return items
+            .map(item => ({
+                description: item.name || item.description || '',
+                quantity: item.quantity || 1
+            }))
+            .filter(item => item.description);
+    }
+
+    function replaceBomFromPackage(items = []) {
+        const body = document.getElementById('bom-body');
+        body.innerHTML = '';
+        bomIdx = 0;
+
+        if (items.length) {
+            items.forEach(item => addBomItem(item.description, item.quantity));
+        }
+
+        checkBomEmpty();
+    }
+
+    let bomIdx = 0;
+    function addBomItem(description = '', quantity = 1) {
+        const body  = document.getElementById('bom-body');
+        const idx   = bomIdx++;
+        const tr    = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50 align-middle';
+        tr.innerHTML = `
+            <td class="py-2.5">
+                <input type="text" name="bom_items[${idx}][description]" value="${description}" required
+                    placeholder="e.g. 550W Mono PERC Panels"
+                    class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-200">
+            </td>
+            <td class="py-2.5 text-center px-4">
+                <input type="number" name="bom_items[${idx}][quantity]" value="${quantity}" min="0" step="0.1" required
+                    class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal-200">
+            </td>
+            <td class="text-right py-2.5">
+                <button type="button" class="text-gray-400 hover:text-red-500 transition" onclick="this.closest('tr').remove(); checkBomEmpty();">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </td>
+        `;
+        body.appendChild(tr);
+        checkBomEmpty();
+    }
+    
+    function checkBomEmpty() {
+        const body  = document.getElementById('bom-body');
+        const empty = document.getElementById('bom-empty');
+        empty.classList.toggle('hidden', body.children.length > 0);
+    }
+
     // Load existing items
     if (existingItems && existingItems.length > 0) {
         existingItems.forEach(item => {
@@ -332,6 +463,11 @@
         });
     } else {
         addEmptyItem();
+    }
+
+    // Load existing BOM
+    if (existingBom && existingBom.length > 0) {
+        existingBom.forEach(b => addBomItem(b.description, b.quantity));
     }
 
     // Run initial calc

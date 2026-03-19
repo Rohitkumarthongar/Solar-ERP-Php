@@ -95,6 +95,17 @@
 
             {{-- HTML Fields --}}
             <div class="space-y-5">
+                <div class="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4 text-sm text-orange-900">
+                    <p class="font-semibold">Template Variables</p>
+                    <p class="mt-1 text-xs leading-6">
+                        `quotation`: use <code>$quotation</code> and <code>$settings</code><br>
+                        `sales_order` / `purchase_order`: use <code>$order</code> and <code>$settings</code><br>
+                        `invoice`: use <code>$invoice</code> and <code>$settings</code><br>
+                        `salary_slip`: use <code>$records</code>, <code>$totalPaid</code>, <code>$month</code>, <code>$year</code>, and <code>$settings</code>
+                    </p>
+                    <p class="mt-2 text-xs text-orange-700">Header and footer now render together with the body in the final print output.</p>
+                </div>
+
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1.5">
                         Header HTML <span class="text-gray-400 font-normal">(optional)</span>

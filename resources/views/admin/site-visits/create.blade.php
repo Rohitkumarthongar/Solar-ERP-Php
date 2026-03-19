@@ -69,6 +69,16 @@
                         @error('assigned_to')<p class="text-red-500 text-[10px] mt-2 font-bold uppercase">{{ $message }}</p>@enderror
                     </div>
 
+                    <div>
+                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Latitude</label>
+                        <input type="number" step="0.0000001" name="latitude" value="{{ old('latitude', $lead->latitude ?? '') }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300" placeholder="23.0225050">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Longitude</label>
+                        <input type="number" step="0.0000001" name="longitude" value="{{ old('longitude', $lead->longitude ?? '') }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300" placeholder="72.5713621">
+                    </div>
+
                     <!-- Discom Update -->
                     <div class="md:col-span-2">
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Discom Details / Update</label>
@@ -88,7 +98,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div>
                                 <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">System Size (kW)</label>
-                                <input type="number" step="0.1" name="system_size_kw" placeholder="e.g. 3.2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
+                                <input type="number" step="0.1" name="system_size_kw" value="{{ old('system_size_kw') }}" placeholder="e.g. 3.2" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
                                 @error('system_size_kw')<p class="text-red-500 text-[10px] mt-2 font-bold uppercase">{{ $message }}</p>@enderror
                             </div>
                             <div>
@@ -100,8 +110,27 @@
                                     <option value="Ground Mount">Ground Mount</option>
                                 </select>
                             </div>
+                            <div>
+                                <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Wiring Length (Est.)</label>
+                                <input type="text" name="wiring_length_estimate" value="{{ old('wiring_length_estimate') }}" placeholder="e.g. 40 meters" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Shadow Analysis</label>
+                                <input type="text" name="shadow_analysis" value="{{ old('shadow_analysis') }}" placeholder="e.g. No shadow after 10 AM" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
+                            </div>
                         </div>
                     </div>
+
+                    <div class="md:col-span-2">
+                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">AC/DC Side Location Info</label>
+                         <textarea name="ac_dc_location" rows="2" placeholder="Where will the inverter and distribution box be placed?" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">{{ old('ac_dc_location') }}</textarea>
+                    </div>
+
+                    @if(!empty($lead?->latitude) && !empty($lead?->longitude))
+                    <div class="md:col-span-2 rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-800">
+                        Lead coordinates will be copied to this site visit: {{ $lead->latitude }}, {{ $lead->longitude }}
+                    </div>
+                    @endif
 
                     <!-- Technical Notes -->
                     <div class="md:col-span-2">

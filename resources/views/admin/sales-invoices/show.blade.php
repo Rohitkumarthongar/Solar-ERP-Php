@@ -4,6 +4,9 @@
 
 @section('content')
 <div class="space-y-6">
+    @php
+        $linkedInstallation = $invoiceInstallation ?? $invoice->salesOrder?->installation;
+    @endphp
 
     <div class="flex flex-wrap gap-4 items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div class="flex items-center gap-3">
@@ -14,10 +17,25 @@
             </div>
         </div>
         <div class="flex gap-2">
-            <button onclick="window.print()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
-                <i class="fas fa-print"></i> Print
-            </button>
+            <a href="{{ route('admin.sales-invoices.pdf', $invoice->id) }}" target="_blank" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                <i class="fas fa-file-pdf text-red-500"></i> Download PDF
+            </a>
+            @if($linkedInstallation)
+            <a href="{{ route('admin.installations.show', $linkedInstallation->id) }}" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm">
+                <i class="fas fa-tools"></i> View Installation
+            </a>
+            @else
+            <a href="{{ route('admin.installations.create', ['sales_invoice_id' => $invoice->id]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm">
+                <i class="fas fa-plus-circle"></i> Create Installation
+            </a>
+            @endif
             @if($invoice->balance_due > 0)
+            <form action="{{ route('admin.sales-invoices.remind', $invoice->id) }}" method="POST">
+                @csrf
+                <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm">
+                    <i class="fas fa-bell"></i> Send Reminder
+                </button>
+            </form>
             <button onclick="document.getElementById('paymentModal').classList.remove('hidden')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm">
                 <i class="fas fa-money-bill-wave"></i> Add Payment
             </button>
@@ -166,6 +184,18 @@
         </div>
 
         <div class="space-y-6">
+            @if($linkedInstallation)
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <h4 class="font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100">Installation Status</h4>
+                <div class="space-y-3 text-sm">
+                    <p><span class="text-gray-500 block text-xs font-semibold uppercase">Installation No.</span> <a href="{{ route('admin.installations.show', $linkedInstallation->id) }}" class="font-semibold text-indigo-600 hover:underline">{{ $linkedInstallation->installation_number }}</a></p>
+                    <p><span class="text-gray-500 block text-xs font-semibold uppercase">Team</span> <span class="font-medium">{{ $linkedInstallation->assigned_team ?? 'TBD' }}</span></p>
+                    <p><span class="text-gray-500 block text-xs font-semibold uppercase">Status</span> <span class="font-medium capitalize">{{ str_replace('_', ' ', $linkedInstallation->status) }}</span></p>
+                    <p><span class="text-gray-500 block text-xs font-semibold uppercase">Scheduled Date</span> <span class="font-medium">{{ optional($linkedInstallation->scheduled_date)->format('d M Y') ?? '-' }}</span></p>
+                </div>
+            </div>
+            @endif
+
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h4 class="font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100">Customer Details</h4>
                 <div class="space-y-3 text-sm">
@@ -205,7 +235,8 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1.5">Amount Recorded (₹)</label>
                     <input type="number" name="amount" value="{{ $invoice->balance_due }}" max="{{ $invoice->balance_due }}" step="0.01" required class="w-full border border-gray-200 rounded-xl px-4 py-3 text-lg font-bold text-gray-900 focus:ring-2 focus:ring-green-400">
-                    <p class="text-xs text-gray-400 mt-1">Balance Due: ₹{{ number_format($invoice->balance_due, 2) }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Enter any partial amount. Remaining due after this payment will still stay pending.</p>
+                    <p class="text-xs text-gray-500 mt-1">Current Balance Due: ₹{{ number_format($invoice->balance_due, 2) }}</p>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1.5">Date</label>
@@ -224,6 +255,10 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1.5">Reference / Transaction Number</label>
                     <input type="text" name="reference_number" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-400" placeholder="e.g. UTR Number">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Payment Notes</label>
+                    <textarea name="notes" rows="2" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-400" placeholder="Optional note for this payment"></textarea>
                 </div>
             </div>
             <div class="mt-8">

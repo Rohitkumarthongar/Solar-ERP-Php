@@ -73,6 +73,7 @@ Route::post('/admin/site-visits', [\App\Http\Controllers\Admin\SiteVisitControll
 Route::get('/admin/site-visits/{id}', [\App\Http\Controllers\Admin\SiteVisitController::class, 'show'])->name('admin.site-visits.show');
 Route::get('/admin/site-visits/{id}/edit', [\App\Http\Controllers\Admin\SiteVisitController::class, 'edit'])->name('admin.site-visits.edit');
 Route::put('/admin/site-visits/{id}', [\App\Http\Controllers\Admin\SiteVisitController::class, 'update'])->name('admin.site-visits.update');
+Route::post('/admin/site-visits/{id}/approve', [\App\Http\Controllers\Admin\SiteVisitController::class, 'approve'])->name('admin.site-visits.approve');
 Route::delete('/admin/site-visits/{id}', [\App\Http\Controllers\Admin\SiteVisitController::class, 'destroy'])->name('admin.site-visits.destroy');
 
 // ── Quotations ────────────────────────────────────────────────────────────────
@@ -102,6 +103,7 @@ Route::get('/admin/sales-invoices', [\App\Http\Controllers\Admin\SalesInvoiceCon
 Route::get('/admin/sales-invoices/create', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'create'])->name('admin.sales-invoices.create');
 Route::post('/admin/sales-invoices', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'store'])->name('admin.sales-invoices.store');
 Route::get('/admin/sales-invoices/{id}', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'show'])->name('admin.sales-invoices.show');
+Route::get('/admin/sales-invoices/{id}/pdf', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'downloadPdf'])->name('admin.sales-invoices.pdf');
 Route::post('/admin/sales-invoices/{id}/payment', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'addPayment'])->name('admin.sales-invoices.payment');
 Route::post('/admin/sales-invoices/{id}/remind', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'sendReminder'])->name('admin.sales-invoices.remind');
 

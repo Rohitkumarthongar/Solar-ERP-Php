@@ -30,6 +30,7 @@ class BlogController extends Controller
             'title' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:500',
             'content' => 'required|string',
+            'overview_url' => 'nullable|url|max:2048',
             'image' => 'nullable|image',
         ]);
 
@@ -60,6 +61,7 @@ class BlogController extends Controller
             'title' => 'required|string|max:255',
             'short_description' => 'nullable|string|max:500',
             'content' => 'required|string',
+            'overview_url' => 'nullable|url|max:2048',
             'image' => 'nullable|image',
         ]);
 

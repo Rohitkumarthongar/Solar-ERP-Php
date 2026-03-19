@@ -9,6 +9,7 @@ use App\Models\SalaryRecord;
 use App\Models\Inventory;
 use App\Models\ServiceRequest;
 use App\Models\Setting;
+use App\Services\PrintFormatRenderer;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -110,7 +111,25 @@ class ReportController extends Controller
         $records = SalaryRecord::with('employee')->where('month', $month)->where('year', $year)->get();
         $totalPaid = $records->sum('net_salary');
         $settings = Setting::pluck('value', 'key')->toArray();
-        $html = view('admin.pdf.report-salary', compact('records', 'totalPaid', 'month', 'year', 'settings'))->render();
+        $renderer = app(PrintFormatRenderer::class);
+        $format = \App\Models\PrintFormat::where('document_type', 'salary_slip')
+            ->where('is_active', true)
+            ->where('is_default', true)
+            ->first();
+
+        try {
+            $html = $renderer->render($format, [
+                'records' => $records,
+                'totalPaid' => $totalPaid,
+                'month' => $month,
+                'year' => $year,
+                'settings' => $settings,
+                'title' => 'Salary Report - ' . $month . '-' . $year,
+            ]) ?? view('admin.pdf.report-salary', compact('records', 'totalPaid', 'month', 'year', 'settings'))->render();
+        } catch (\Throwable $e) {
+            $html = view('admin.pdf.report-salary', compact('records', 'totalPaid', 'month', 'year', 'settings'))->render();
+        }
+
         return response($html)->header('Content-Type', 'text/html');
     }
 }

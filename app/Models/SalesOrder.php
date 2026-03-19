@@ -22,7 +22,8 @@ class SalesOrder extends Model
         'payment_status', // pending, partial, paid
         'notes',
         'advance_payment',
-        'site_visit_id'
+        'site_visit_id',
+        'bom_items'
     ];
 
     protected $casts = [
@@ -30,7 +31,8 @@ class SalesOrder extends Model
         'tax_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'final_amount' => 'decimal:2',
-        'advance_payment' => 'decimal:2'
+        'advance_payment' => 'decimal:2',
+        'bom_items' => 'array'
     ];
 
     public function items() { return $this->hasMany(SalesOrderItem::class); }

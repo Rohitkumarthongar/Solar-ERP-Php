@@ -1,7 +1,7 @@
 @extends('layouts.web')
 @section('title', 'Thank You!')
 @section('content')
-<section class="min-h-screen bg-[#0f172a] flex items-center py-32 relative overflow-hidden">
+<section class="min-h-screen site-bg flex items-center py-32 relative overflow-hidden">
     <!-- Background Decor -->
     <div class="absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-amber-500/10 to-transparent"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
@@ -13,10 +13,10 @@
             <div class="absolute inset-0 rounded-[40px] bg-amber-500 pulse"></div>
         </div>
         
-        <h1 class="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight">
+        <h1 class="text-5xl md:text-7xl font-black site-text-strong mb-6 tracking-tight">
             {{ $type === 'quote' ? 'Success!' : 'Received!' }}
         </h1>
-        <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto font-inter leading-relaxed">
+        <p class="text-xl site-muted mb-12 max-w-2xl mx-auto font-inter leading-relaxed">
             {{ $type === 'quote'
                 ? 'Your custom solar quote request is in our expert queue. We\'ll analyze your property and contact you with a detailed savings plan shortly.'
                 : 'Thank you for reaching out to us. Our dedicated solar team will review your message and get back to you within 24 hours.' }}
@@ -29,21 +29,21 @@
                 ['icon' => 'fas fa-envelope-open-text', 'title' => 'Email', 'desc' => 'Confirmation sent'],
                 ['icon' => 'fas fa-shield-alt', 'title' => 'Service', 'desc' => 'Priority support']
             ] as $card)
-            <div class="glass p-8 rounded-3xl border border-white/5">
+            <div class="glass p-8 rounded-3xl">
                 <div class="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
                     <i class="{{ $card['icon'] }} text-amber-500 text-xl"></i>
                 </div>
-                <h4 class="font-bold text-white mb-1">{{ $card['title'] }}</h4>
-                <p class="text-gray-500 text-xs uppercase font-black tracking-widest">{{ $card['desc'] }}</p>
+                <h4 class="font-bold site-text-strong mb-1">{{ $card['title'] }}</h4>
+                <p class="site-muted text-xs uppercase font-black tracking-widest">{{ $card['desc'] }}</p>
             </div>
             @endforeach
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-6 justify-center pt-8 border-t border-white/5">
+        <div class="flex flex-col sm:flex-row gap-6 justify-center pt-8 border-t site-border">
             <a href="{{ route('home') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-12 py-5 rounded-2xl font-black text-xl transition-all shadow-2xl shadow-amber-500/20 hover:-translate-y-1">
                 Back to Home
             </a>
-            <a href="{{ route('get.quote') }}" class="glass text-white px-12 py-5 rounded-2xl font-black text-xl hover:bg-white/10 transition-all border border-white/10">
+            <a href="{{ route('get.quote') }}" class="glass site-text-strong px-12 py-5 rounded-2xl font-black text-xl transition-all border site-border">
                 New Quote
             </a>
         </div>

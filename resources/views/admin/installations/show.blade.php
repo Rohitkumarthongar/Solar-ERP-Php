@@ -97,6 +97,14 @@
                                 </a>
                             </div>
                             @endif
+                            @if($installation->salesInvoice)
+                            <div class="flex flex-col flex-1">
+                                <span class="text-xs text-gray-400 font-medium">Sales Invoice</span>
+                                <a href="{{ route('admin.sales-invoices.show', $installation->salesInvoice->id) }}" class="font-semibold text-indigo-500 hover:underline">
+                                    {{ $installation->salesInvoice->invoice_number }}
+                                </a>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -119,6 +127,24 @@
                             <span class="text-gray-500">Team</span>
                             <span class="font-semibold text-gray-800">{{ $installation->assigned_team ?? 'TBD' }}</span>
                         </div>
+                        @if($installation->inverter_serial_number)
+                        <div class="flex justify-between gap-4">
+                            <span class="text-gray-500">Inverter Serial</span>
+                            <span class="font-semibold text-gray-800 text-right break-all">{{ $installation->inverter_serial_number }}</span>
+                        </div>
+                        @endif
+                        @if($installation->net_meter_serial_number)
+                        <div class="flex justify-between gap-4">
+                            <span class="text-gray-500">Net Meter Serial</span>
+                            <span class="font-semibold text-gray-800 text-right break-all">{{ $installation->net_meter_serial_number }}</span>
+                        </div>
+                        @endif
+                        @if($installation->initial_meter_reading)
+                        <div class="flex justify-between gap-4">
+                            <span class="text-gray-500">Initial Meter Reading</span>
+                            <span class="font-semibold text-gray-800 text-right">{{ $installation->initial_meter_reading }}</span>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -132,6 +158,16 @@
                     <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100">
                         {{ $installation->installation_address }}
                     </p>
+                    @if($installation->latitude && $installation->longitude)
+                    <div class="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-green-50 p-3 rounded-xl border border-green-100">
+                        <div class="text-sm font-semibold text-green-900">
+                            Coordinates: {{ $installation->latitude }}, {{ $installation->longitude }}
+                        </div>
+                        <a href="https://www.google.com/maps?q={{ $installation->latitude }},{{ $installation->longitude }}" target="_blank" class="inline-flex items-center gap-2 bg-white text-green-700 px-4 py-2 rounded-lg border border-green-200 text-xs font-bold uppercase tracking-widest hover:bg-green-100 transition">
+                            <i class="fas fa-location-arrow"></i> Open Map
+                        </a>
+                    </div>
+                    @endif
                 </div>
 
                 @if($installation->notes)
@@ -157,6 +193,38 @@
                 @endif
             </div>
 
+            @if(!empty($installation->panel_serial_details))
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="p-6 border-b border-gray-50">
+                    <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                        <i class="fas fa-barcode text-indigo-500"></i> Panel Serial Number Register
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-bold">
+                            <tr>
+                                <th class="p-4 text-left">Panel Serial</th>
+                                <th class="p-4 text-left">Module Make</th>
+                                <th class="p-4 text-left">Wattage</th>
+                                <th class="p-4 text-left">String</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($installation->panel_serial_details as $panel)
+                            <tr>
+                                <td class="p-4 font-semibold text-gray-800">{{ $panel['serial_number'] ?? '-' }}</td>
+                                <td class="p-4 text-gray-600">{{ $panel['module_make'] ?? '-' }}</td>
+                                <td class="p-4 text-gray-600">{{ $panel['wattage'] ?? '-' }}</td>
+                                <td class="p-4 text-gray-600">{{ $panel['string_number'] ?? '-' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
+
             {{-- Checklist Block --}}
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
                 <div class="p-6 border-b border-gray-50 flex items-center justify-between">
@@ -179,9 +247,12 @@
                                 $tasks = [
                                     'Structure Mounting' => 'Base structure firmly grouted/mounted.',
                                     'Panel Installation' => 'All PV modules secured with clamps.',
+                                    'Module Serial Mapping' => 'Each installed panel serial number recorded.',
                                     'Earthing/Grounding' => 'Separate earthing for structure & LA.',
                                     'DC/AC Cabling' => 'Proper conduit and termination.',
                                     'Inverter Setup' => 'Inverter mounted and calibrated.',
+                                    'Net Meter Setup' => 'Meter setup captured and labelled correctly.',
+                                    'Insulation / EL Test' => 'Electrical safety test report available.',
                                     'Generation Test' => 'System tested for output generation.'
                                 ];
                                 $checklist = $installation->installation_checklist ?? [];
@@ -193,7 +264,7 @@
                                     <div class="text-[10px] text-gray-400 font-inter">{{ $desc }}</div>
                                 </td>
                                 <td class="p-4">
-                                    @if(isset($checklist[$task]['status']) && $checklist[$checklist[$task]['status']])
+                                    @if(isset($checklist[$task]['status']) && $checklist[$task]['status'])
                                         <span class="px-2 py-0.5 bg-green-50 text-green-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-green-100">
                                             <i class="fas fa-check-circle mr-1"></i> Done
                                         </span>
@@ -246,15 +317,32 @@
                             'proof_after_photo' => 'After (Final)',
                             'proof_meter_photo' => 'Meter Installed',
                             'proof_panel_photo' => 'Panels Focus',
-                            'proof_inverter_photo' => 'Inverter Focus'
+                            'proof_inverter_photo' => 'Inverter Focus',
+                            'structure_panel_photo' => 'Structure Panel Setup',
+                            'ground_setup_photo' => 'Ground Setup',
+                            'roof_setup_photo' => 'Roof Setup',
+                            'panel_angle_photo' => 'Panel Angle',
+                            'site_location_photo' => 'Site Location',
+                            'wiring_photo' => 'Wiring',
+                            'meter_setup_photo' => 'Meter Setup',
+                            'el_test_report' => 'EL Test Report',
+                            'commissioning_report' => 'Commissioning Report',
                         ];
                     @endphp
 
                     @foreach($proofLabels as $field => $label)
                         @if(!empty($installation->$field))
                         <div class="border border-gray-200 rounded-xl overflow-hidden group relative bg-gray-50">
-                            <a href="{{ Storage::url($installation->$field) }}" target="_blank" class="block aspect-square overflow-hidden bg-gray-200">
-                                <img src="{{ Storage::url($installation->$field) }}" alt="{{ $label }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            @php $fileUrl = Storage::url($installation->$field); @endphp
+                            <a href="{{ $fileUrl }}" target="_blank" class="block aspect-square overflow-hidden bg-gray-200">
+                                @if(\Illuminate\Support\Str::endsWith(strtolower($installation->$field), '.pdf'))
+                                <div class="w-full h-full flex flex-col items-center justify-center text-red-500 bg-red-50">
+                                    <i class="fas fa-file-pdf text-4xl mb-2"></i>
+                                    <span class="text-xs font-bold">Open PDF</span>
+                                </div>
+                                @else
+                                <img src="{{ $fileUrl }}" alt="{{ $label }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                @endif
                             </a>
                             <div class="p-2 text-center text-xs font-semibold text-gray-700 bg-white border-t border-gray-200">
                                 {{ $label }}
@@ -375,8 +463,8 @@
                 <div class="max-h-[60vh] overflow-y-auto pr-4 space-y-4">
                     @php
                         $tasks = [
-                            'Structure Mounting', 'Panel Installation', 'Earthing/Grounding', 
-                            'DC/AC Cabling', 'Inverter Setup', 'Generation Test'
+                            'Structure Mounting', 'Panel Installation', 'Module Serial Mapping', 'Earthing/Grounding',
+                            'DC/AC Cabling', 'Inverter Setup', 'Net Meter Setup', 'Insulation / EL Test', 'Generation Test'
                         ];
                         $checklist = $installation->installation_checklist ?? [];
                     @endphp

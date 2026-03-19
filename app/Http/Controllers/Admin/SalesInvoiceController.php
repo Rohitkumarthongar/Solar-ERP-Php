@@ -9,10 +9,13 @@ use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
 use App\Models\SalesOrder;
 use App\Models\Customer;
+use App\Models\Package;
 use App\Models\PaymentReceipt;
 use App\Models\Notification;
 use App\Services\SmsService;
+use App\Services\PrintFormatRenderer;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 class SalesInvoiceController extends Controller
 {
@@ -27,13 +30,14 @@ class SalesInvoiceController extends Controller
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $customers = Customer::all();
+        $packages = Package::where('is_active', true)->orderBy('name')->get();
         $salesOrderId = $request->query('sales_order_id');
         $salesOrder = null;
         if ($salesOrderId) {
             $salesOrder = SalesOrder::with('items')->findOrFail($salesOrderId);
             $customers = Customer::where('id', $salesOrder->customer_id)->get();
         }
-        return view('admin.sales-invoices.create', compact('customers', 'salesOrder'));
+        return view('admin.sales-invoices.create', compact('customers', 'packages', 'salesOrder'));
     }
 
     public function store(Request $request)
@@ -57,9 +61,10 @@ class SalesInvoiceController extends Controller
             'sales_order_id' => $validated['sales_order_id'] ?? null,
             'invoice_number' => $invoiceNum,
             'invoice_date' => $validated['invoice_date'],
-            'due_date' => $validated['due_date'],
+            'due_date' => $validated['due_date'] ?? null,
             'status' => 'unpaid',
-            'notes' => $validated['notes'],
+            'notes' => $validated['notes'] ?? null,
+            'bom_items' => $request->bom_items,
         ]);
 
         $subTotal = 0;
@@ -79,6 +84,7 @@ class SalesInvoiceController extends Controller
         $invoice->update([
             'sub_total' => $subTotal,
             'grand_total' => $grandTotal,
+            'paid_amount' => 0,
             'balance_due' => $grandTotal,
         ]);
 
@@ -88,8 +94,45 @@ class SalesInvoiceController extends Controller
     public function show($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $invoice = SalesInvoice::with(['customer', 'items', 'payments'])->findOrFail($id);
-        return view('admin.sales-invoices.show', compact('invoice'));
+        $with = ['customer', 'items', 'payments', 'salesOrder.installation'];
+        $invoiceInstallation = null;
+
+        if (Schema::hasColumn('installations', 'sales_invoice_id')) {
+            $with[] = 'installation';
+        }
+
+        $invoice = SalesInvoice::with($with)->findOrFail($id);
+
+        if (Schema::hasColumn('installations', 'sales_invoice_id')) {
+            $invoiceInstallation = $invoice->installation;
+        }
+
+        return view('admin.sales-invoices.show', compact('invoice', 'invoiceInstallation'));
+    }
+
+    public function downloadPdf($id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $invoice = SalesInvoice::with(['customer', 'items', 'payments', 'salesOrder'])->findOrFail($id);
+        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        $renderer = app(PrintFormatRenderer::class);
+
+        $format = \App\Models\PrintFormat::where('document_type', 'invoice')
+            ->where('is_active', true)
+            ->where('is_default', true)
+            ->first();
+
+        try {
+            $html = $renderer->render($format, [
+                'invoice' => $invoice,
+                'settings' => $settings,
+                'title' => 'Invoice - ' . $invoice->invoice_number,
+            ]) ?? view('admin.pdf.sales-invoice', compact('invoice', 'settings'))->render();
+        } catch (\Throwable $e) {
+            $html = view('admin.pdf.sales-invoice', compact('invoice', 'settings'))->render();
+        }
+
+        return response($html)->header('Content-Type', 'text/html');
     }
 
     public function addPayment(Request $request, $id)
@@ -106,25 +149,17 @@ class SalesInvoiceController extends Controller
         ]);
 
         $receiptNum = 'REC-' . strtoupper(Str::random(6));
-        $payment = PaymentReceipt::create([
+        PaymentReceipt::create([
             'sales_invoice_id' => $invoice->id,
             'receipt_number' => $receiptNum,
             'payment_date' => $validated['payment_date'],
             'amount' => $validated['amount'],
             'payment_method' => $validated['payment_method'],
-            'reference_number' => $validated['reference_number'],
-            'notes' => $validated['notes'],
+            'reference_number' => $validated['reference_number'] ?? null,
+            'notes' => $validated['notes'] ?? null,
         ]);
 
-        $invoice->paid_amount += $validated['amount'];
-        $invoice->balance_due -= $validated['amount'];
-        
-        if ($invoice->balance_due <= 0) {
-            $invoice->status = 'paid';
-        } else {
-            $invoice->status = 'partially_paid';
-        }
-        $invoice->save();
+        $this->syncInvoiceBalances($invoice);
 
         return redirect()->back()->with('success', 'Payment recorded successfully.');
     }
@@ -150,5 +185,20 @@ class SalesInvoiceController extends Controller
         $sms->send($customer->phone, $message, 'payment_reminder', 'SalesInvoice', $invoice->id);
 
         return redirect()->back()->with('success', 'Payment reminder sent to customer and logged in history.');
+    }
+
+    protected function syncInvoiceBalances(SalesInvoice $invoice): void
+    {
+        $invoice->loadMissing('payments');
+
+        $paidAmount = round((float) $invoice->payments->sum('amount'), 2);
+        $grandTotal = round((float) $invoice->grand_total, 2);
+        $balanceDue = round(max($grandTotal - $paidAmount, 0), 2);
+
+        $invoice->update([
+            'paid_amount' => $paidAmount,
+            'balance_due' => $balanceDue,
+            'status' => $balanceDue <= 0 ? 'paid' : ($paidAmount > 0 ? 'partially_paid' : 'unpaid'),
+        ]);
     }
 }

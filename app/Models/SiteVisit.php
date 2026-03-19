@@ -10,6 +10,8 @@ class SiteVisit extends Model
         'visit_number',
         'customer_id',
         'lead_id',
+        'latitude',
+        'longitude',
         'scheduled_at',
         'status',
         'discom_details',
@@ -20,12 +22,22 @@ class SiteVisit extends Model
         'assigned_to',
         'completed_at',
         'completion_notes',
+        'shadow_analysis',
+        'wiring_length_estimate',
+        'ac_dc_location',
+        'is_approved',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
         'scheduled_at' => 'datetime',
         'completed_at' => 'datetime',
         'has_new_connection' => 'boolean',
+        'is_approved' => 'boolean',
+        'approved_at' => 'datetime',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
     ];
 
     public function customer()

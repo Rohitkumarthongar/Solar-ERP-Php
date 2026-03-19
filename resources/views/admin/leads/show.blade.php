@@ -125,6 +125,10 @@
                                 <p class="text-gray-800 font-medium text-sm leading-relaxed">
                                     {{ $lead->address }}
                                 </p>
+                                @if($lead->latitude && $lead->longitude)
+                                <p class="text-xs text-gray-500 mt-2">Coordinates: {{ $lead->latitude }}, {{ $lead->longitude }}</p>
+                                <a href="https://www.google.com/maps?q={{ $lead->latitude }},{{ $lead->longitude }}" target="_blank" class="text-xs text-indigo-500 hover:underline">Open in Google Maps</a>
+                                @endif
                             </div>
                         </div>
                         
@@ -255,7 +259,14 @@
                         <div class="p-4 border border-gray-100 rounded-xl flex items-center justify-between">
                             <div>
                                 <div class="text-sm font-bold text-gray-800">{{ $visit->visit_number }}</div>
-                                <div class="text-[10px] text-gray-400 font-bold uppercase">{{ $visit->scheduled_at->format('d M, h:i A') }}</div>
+                                <div class="flex items-center gap-2">
+                                    <div class="text-[10px] text-gray-400 font-bold uppercase">{{ $visit->scheduled_at->format('d M, h:i A') }}</div>
+                                    @if($visit->assigned_to)
+                                        <span class="text-[9px] text-orange-500 font-black uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
+                                            <i class="fas fa-user-shield text-[8px] mr-1"></i> {{ $visit->assigned_to }}
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                             <div class="flex items-center gap-3">
                                 <span class="text-[8px] font-black uppercase tracking-tighter px-2 py-0.5 rounded {{ $visit->status == 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' }}">{{ $visit->status }}</span>

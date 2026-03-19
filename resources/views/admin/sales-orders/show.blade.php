@@ -156,6 +156,35 @@
                 </div>
             </div>
 
+            {{-- Bill Of Material (BOM) --}}
+            @if($order->bom_items && count($order->bom_items) > 0)
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
+                <div class="px-6 py-4 border-b border-gray-100 bg-teal-50/30 flex items-center gap-2">
+                    <i class="fas fa-microchip text-teal-600"></i>
+                    <h3 class="font-bold text-gray-800">Bill Of Material (Technical BOM)</h3>
+                    <span class="ml-auto text-[10px] text-teal-600 font-bold uppercase tracking-widest italic">Inventory Specs</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 text-[11px] text-gray-400 font-bold uppercase tracking-wider text-center">
+                            <tr>
+                                <th class="text-left px-6 py-3">Product / Hardware Component</th>
+                                <th class="px-4 py-3 w-32">Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50 uppercase text-[12px]">
+                            @foreach($order->bom_items as $bom)
+                            <tr>
+                                <td class="px-6 py-3 text-gray-600 font-medium">{{ $bom['description'] ?? 'N/A' }}</td>
+                                <td class="px-4 py-3 text-center text-gray-900 font-bold">{{ $bom['quantity'] ?? '0' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
+
             {{-- Notes --}}
             @if($order->notes)
             <div class="bg-white rounded-2xl shadow-sm p-6">

@@ -87,6 +87,17 @@
 
             {{-- HTML Fields --}}
             <div class="space-y-5">
+                <div class="rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4 text-sm text-orange-900">
+                    <p class="font-semibold">Template Variables</p>
+                    <p class="mt-1 text-xs leading-6">
+                        `quotation`: use <code>$quotation</code> and <code>$settings</code><br>
+                        `sales_order` / `purchase_order`: use <code>$order</code> and <code>$settings</code><br>
+                        `invoice`: use <code>$invoice</code> and <code>$settings</code><br>
+                        `salary_slip`: use <code>$records</code>, <code>$totalPaid</code>, <code>$month</code>, <code>$year</code>, and <code>$settings</code>
+                    </p>
+                    <p class="mt-2 text-xs text-orange-700">Header and footer now render together with the body in the final print output.</p>
+                </div>
+
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1.5">
                         Header HTML
@@ -103,7 +114,7 @@
                         <span class="text-gray-400 font-normal ml-1">— Blade/HTML template for the document body</span>
                     </label>
                     <textarea name="body_template" rows="12"
-                        placeholder="<table width='100%'>&#10;  <tr><th>Item</th><th>Qty</th><th>Price</th></tr>&#10;  <!-- items loop here -->&#10;</table>"
+                        placeholder="<h2>{{ \$settings['company_name'] ?? 'Company' }}</h2>&#10;<p><strong>Document:</strong> {{ \$quotation->quotation_number ?? \$order->order_number ?? \$invoice->invoice_number ?? 'Custom Print' }}</p>"
                         class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-orange-300"
                         required>{{ old('body_template') }}</textarea>
                 </div>

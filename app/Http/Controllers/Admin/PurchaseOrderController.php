@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Inventory;
 use App\Models\Notification;
 use App\Models\Setting;
+use App\Services\PrintFormatRenderer;
 use Illuminate\Http\Request;
 
 class PurchaseOrderController extends Controller
@@ -150,9 +151,25 @@ class PurchaseOrderController extends Controller
     public function downloadPdf($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $order = PurchaseOrder::with('items')->findOrFail($id);
+        $order = PurchaseOrder::with(['items'])->findOrFail($id);
         $settings = Setting::pluck('value', 'key')->toArray();
-        $html = view('admin.pdf.purchase-order', compact('order', 'settings'))->render();
+        $renderer = app(PrintFormatRenderer::class);
+
+        $format = \App\Models\PrintFormat::where('document_type', 'purchase_order')
+            ->where('is_active', true)
+            ->where('is_default', true)
+            ->first();
+
+        try {
+            $html = $renderer->render($format, [
+                'order' => $order,
+                'settings' => $settings,
+                'title' => 'Purchase Order - ' . $order->po_number,
+            ]) ?? view('admin.pdf.purchase-order', compact('order', 'settings'))->render();
+        } catch (\Throwable $e) {
+            $html = view('admin.pdf.purchase-order', compact('order', 'settings'))->render();
+        }
+
         return response($html)->header('Content-Type', 'text/html');
     }
 }

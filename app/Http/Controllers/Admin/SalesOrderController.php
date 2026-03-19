@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Package;
 use App\Models\Notification;
 use App\Models\Setting;
+use App\Services\PrintFormatRenderer;
 use Illuminate\Http\Request;
 
 class SalesOrderController extends Controller
@@ -66,7 +67,8 @@ class SalesOrderController extends Controller
             'status' => 'confirmed',
             'payment_status' => ($request->advance_payment > 0) ? 'partial' : 'pending',
             'notes' => $request->notes,
-            'site_visit_id' => $request->site_visit_id
+            'site_visit_id' => $request->site_visit_id,
+            'bom_items' => $request->bom_items
         ]);
 
         foreach ($request->items as $item) {
@@ -128,7 +130,8 @@ class SalesOrderController extends Controller
             'discount_amount' => $request->discount_amount ?? 0,
             'final_amount' => $totalAmount + ($request->tax_amount ?? 0) - ($request->discount_amount ?? 0),
             'advance_payment' => $request->advance_payment ?? 0,
-            'notes' => $request->notes
+            'notes' => $request->notes,
+            'bom_items' => $request->bom_items
         ]));
 
         $order->items()->delete();
@@ -158,7 +161,23 @@ class SalesOrderController extends Controller
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $order = SalesOrder::with(['items', 'customer'])->findOrFail($id);
         $settings = Setting::pluck('value', 'key')->toArray();
-        $html = view('admin.pdf.sales-order', compact('order', 'settings'))->render();
+        $renderer = app(PrintFormatRenderer::class);
+
+        $format = \App\Models\PrintFormat::where('document_type', 'sales_order')
+            ->where('is_active', true)
+            ->where('is_default', true)
+            ->first();
+
+        try {
+            $html = $renderer->render($format, [
+                'order' => $order,
+                'settings' => $settings,
+                'title' => 'Sales Order - ' . $order->order_number,
+            ]) ?? view('admin.pdf.sales-order', compact('order', 'settings'))->render();
+        } catch (\Throwable $e) {
+            $html = view('admin.pdf.sales-order', compact('order', 'settings'))->render();
+        }
+
         return response($html)->header('Content-Type', 'text/html');
     }
 }

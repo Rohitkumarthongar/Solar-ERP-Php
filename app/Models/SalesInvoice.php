@@ -20,11 +20,19 @@ class SalesInvoice extends Model
         'balance_due',
         'status',
         'notes',
+        'bom_items',
     ];
 
     protected $casts = [
         'invoice_date' => 'date',
         'due_date' => 'date',
+        'sub_total' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'grand_total' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'balance_due' => 'decimal:2',
+        'bom_items' => 'array',
     ];
 
     public function customer()
@@ -45,5 +53,10 @@ class SalesInvoice extends Model
     public function payments()
     {
         return $this->hasMany(PaymentReceipt::class);
+    }
+
+    public function installation()
+    {
+        return $this->hasOne(Installation::class);
     }
 }

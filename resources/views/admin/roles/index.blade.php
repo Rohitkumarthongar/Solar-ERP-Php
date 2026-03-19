@@ -45,7 +45,9 @@
 
                 <div class="flex flex-wrap gap-1.5 mb-6">
                     @php
-                        $permissions = json_decode($role->permissions, true) ?? [];
+                        $permissions = is_array($role->permissions)
+                            ? $role->permissions
+                            : (json_decode($role->permissions ?? '[]', true) ?: []);
                         $displayPerms = array_slice($permissions, 0, 5);
                     @endphp
                     @foreach($displayPerms as $perm)

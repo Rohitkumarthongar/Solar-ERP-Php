@@ -25,7 +25,8 @@ class ServiceController extends Controller
         $customers = Customer::orderBy('name')->get();
         $installations = Installation::where('status', 'completed')->with('customer')->get();
         $teams = Team::where('status', 'active')->get();
-        return view('admin.services.create', compact('customers', 'installations', 'teams'));
+        $employees = \App\Models\Employee::where('is_active', true)->get();
+        return view('admin.services.create', compact('customers', 'installations', 'teams', 'employees'));
     }
 
     public function store(Request $request)
@@ -67,7 +68,8 @@ class ServiceController extends Controller
         $customers = Customer::orderBy('name')->get();
         $installations = Installation::where('status', 'completed')->get();
         $teams = Team::where('status', 'active')->get();
-        return view('admin.services.edit', compact('service', 'customers', 'installations', 'teams'));
+        $employees = \App\Models\Employee::where('is_active', true)->get();
+        return view('admin.services.edit', compact('service', 'customers', 'installations', 'teams', 'employees'));
     }
 
     public function update(Request $request, $id)

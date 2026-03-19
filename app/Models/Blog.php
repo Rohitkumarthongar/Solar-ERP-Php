@@ -11,6 +11,7 @@ class Blog extends Model
         'slug',
         'short_description',
         'content',
+        'overview_url',
         'image',
         'is_active',
     ];

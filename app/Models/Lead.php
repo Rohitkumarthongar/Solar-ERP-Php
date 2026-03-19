@@ -11,6 +11,7 @@ class Lead extends Model
         'k_number', 'monthly_electricity_bill', 'required_load_kw',
         'sanctioned_load', 'meter_type', 'property_type', 'roof_area_sqft',
         'has_subsidy', 'address', 'lead_source', 'package_id',
+        'latitude', 'longitude',
         'estimated_value', 'roof_type', 'system_size', 'notes',
         'follow_up_notes', 'next_follow_up_date', 'status', 'assigned_to',
         'sms_sent', 'email_sent', 'last_contacted_at',
@@ -26,6 +27,8 @@ class Lead extends Model
         'next_follow_up_date'      => 'date',
         'last_contacted_at'        => 'datetime',
         'subsidy_amount'           => 'float',
+        'latitude'                => 'decimal:7',
+        'longitude'               => 'decimal:7',
     ];
 
     public function customer()   { return $this->belongsTo(Customer::class); }

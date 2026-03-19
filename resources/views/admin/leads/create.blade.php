@@ -29,6 +29,14 @@
                     <textarea name="address" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500" required>{{ old('address') }}</textarea>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Latitude</label>
+                    <input type="number" step="0.0000001" name="latitude" value="{{ old('latitude') }}" placeholder="e.g. 23.0225050" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Longitude</label>
+                    <input type="number" step="0.0000001" name="longitude" value="{{ old('longitude') }}" placeholder="e.g. 72.5713621" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Lead Source *</label>
                     <select name="lead_source" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500" required>
                         @foreach(['website'=>'Website','referral'=>'Referral','cold_call'=>'Cold Call','social_media'=>'Social Media','exhibition'=>'Exhibition','offline'=>'Offline / Walk-in','other'=>'Other'] as $v=>$l)

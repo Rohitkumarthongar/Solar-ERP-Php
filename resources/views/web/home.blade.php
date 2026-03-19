@@ -50,11 +50,11 @@
 </section>
 
 <!-- Why Choose Us -->
-<section class="py-32 bg-[#0f172a] relative overflow-hidden">
+<section class="py-32 site-bg relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 relative z-10">
         <div class="text-center mb-20 fade-up">
             <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">Why Choose Us</span>
-            <h2 class="text-4xl md:text-5xl font-bold text-white tracking-tight">The {{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[0] }} Advantage</h2>
+            <h2 class="text-4xl md:text-5xl font-bold site-text-strong tracking-tight">The {{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[0] }} Advantage</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -76,8 +76,8 @@
                 <div class="w-24 h-24 bg-{{ $adv['color'] }}-500/10 rounded-[30px] flex items-center justify-center mb-12 border border-{{ $adv['color'] }}-500/20 group-hover:bg-btn-{{ $adv['color'] }} group-hover:bg-amber-500 group-hover:scale-110 transition-all duration-500 shadow-2xl shadow-{{ $adv['color'] }}-500/0 group-hover:shadow-amber-500/30">
                     <i class="{{ $adv['icon'] }} text-amber-500 text-4xl group-hover:text-white transition-colors"></i>
                 </div>
-                <h3 class="text-3xl font-black text-white mb-6 tracking-tight leading-tight transition-colors group-hover:text-amber-500">{{ $adv['title'] }}</h3>
-                <p class="text-gray-400 leading-relaxed font-inter font-medium text-lg opacity-80 group-hover:opacity-100 transition-opacity">
+                <h3 class="text-3xl font-black site-text-strong mb-6 tracking-tight leading-tight transition-colors group-hover:text-amber-500">{{ $adv['title'] }}</h3>
+                <p class="site-muted leading-relaxed font-inter font-medium text-lg opacity-80 group-hover:opacity-100 transition-opacity">
                     {{ $adv['desc'] }}
                 </p>
             </div>
@@ -87,11 +87,11 @@
 </section>
 
 <!-- Energy Solutions -->
-<section class="py-32 bg-[#111a2e]">
+<section class="py-32 site-surface">
     <div class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-20 fade-up">
             <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">Energy Solutions</span>
-            <h2 class="text-4xl md:text-5xl font-bold text-white tracking-tight">Tailored for your specific needs</h2>
+            <h2 class="text-4xl md:text-5xl font-bold site-text-strong tracking-tight">Tailored for your specific needs</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -128,12 +128,12 @@
 </section>
 
 <!-- Featured Products Section -->
-<section class="py-32 bg-[#0f172a] relative overflow-hidden">
+<section class="py-32 site-bg relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 relative z-10">
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
             <div class="fade-up">
                 <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">Our Catalog</span>
-                <h2 class="text-5xl font-bold text-white tracking-tight leading-tight">Elite Performance<br>Solar Components</h2>
+                <h2 class="text-5xl font-bold site-text-strong tracking-tight leading-tight">Elite Performance<br>Solar Components</h2>
             </div>
             <a href="{{ route('products') }}" class="group inline-flex items-center gap-4 bg-amber-500/10 text-amber-500 px-8 py-4 rounded-2xl border border-amber-500/20 hover:bg-amber-500 hover:text-white transition-all font-bold">
                 Browse Full Catalog <i class="fas fa-chevron-right text-xs group-hover:translate-x-2 transition-transform"></i>
@@ -156,13 +156,13 @@
                 <div class="p-8 flex-1 flex flex-col justify-between">
                     <div>
                         <span class="text-amber-500/60 text-[10px] uppercase font-black tracking-[0.2em] block mb-3">{{ $product->productCategory->name ?? 'Hardware' }}</span>
-                        <h3 class="text-xl font-black text-white group-hover:text-amber-500 transition-colors tracking-tight leading-tight mb-4">{{ $product->name }}</h3>
-                        <p class="text-gray-500 text-xs line-clamp-2 font-inter mb-4">{{ Str::limit(strip_tags($product->description), 60) }}</p>
+                        <h3 class="text-xl font-black site-text-strong group-hover:text-amber-500 transition-colors tracking-tight leading-tight mb-4">{{ $product->name }}</h3>
+                        <p class="site-muted text-xs line-clamp-2 font-inter mb-4">{{ Str::limit(strip_tags($product->description), 60) }}</p>
                     </div>
                     <div class="mt-6 flex items-center justify-between pt-8 border-t border-white/5">
                         <div class="flex flex-col">
-                            <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">Price</span>
-                            <span class="text-2xl font-black text-white">₹{{ number_format($product->selling_price) }}</span>
+                            <span class="site-muted text-[10px] uppercase font-bold tracking-widest">Price</span>
+                            <span class="text-2xl font-black site-text-strong">₹{{ number_format($product->selling_price) }}</span>
                         </div>
                         <a href="{{ route('products') }}" class="w-14 h-14 bg-white/5 group-hover:bg-amber-500 rounded-2xl flex items-center justify-center transition-all shadow-xl group-hover:shadow-amber-500/30">
                             <i class="fas fa-shopping-bag text-white text-lg"></i>
@@ -197,4 +197,3 @@
     </div>
 </section>
 @endsection
-

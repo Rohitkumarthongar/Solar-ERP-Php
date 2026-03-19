@@ -31,6 +31,15 @@
                             class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-300">{{ old('content', $blog->content) }}</textarea>
                         @error('content') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                     </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Complete Overview Link</label>
+                        <input type="url" name="overview_url" value="{{ old('overview_url', $blog->overview_url) }}"
+                            placeholder="https://example.com/full-overview"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        <p class="text-[10px] text-gray-400 mt-1">Optional external link for users who want the official or complete overview.</p>
+                        @error('overview_url') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
                 </div>
 
                 <div class="space-y-6 border-t lg:border-t-0 lg:border-l border-gray-100 lg:pl-8 pt-6 lg:pt-0">

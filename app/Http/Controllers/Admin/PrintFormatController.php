@@ -57,12 +57,12 @@ class PrintFormatController extends Controller
         $format = PrintFormat::findOrFail($id);
         $validated = $request->validate([
             'name' => 'required|string',
-            'document_type' => 'required|string',
+            'document_type' => 'required|in:quotation,sales_order,purchase_order,invoice,salary_slip',
             'header_html' => 'nullable|string',
             'footer_html' => 'nullable|string',
             'body_template' => 'required|string',
-            'paper_size' => 'required|string',
-            'orientation' => 'required|string'
+            'paper_size' => 'required|in:A4,A5,Letter',
+            'orientation' => 'required|in:portrait,landscape'
         ]);
         if ($request->has('is_default')) {
             PrintFormat::where('document_type', $validated['document_type'])->where('id', '!=', $id)->update(['is_default' => false]);

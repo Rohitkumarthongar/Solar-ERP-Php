@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
 class RoleController extends Controller
 {
     private $allPermissions = [
-        'dashboard', 'customers', 'leads', 'quotations', 'sales_orders',
+        'dashboard', 'customers', 'leads', 'site_visits', 'quotations', 'sales_orders', 'sales_invoices',
         'purchase_orders', 'products', 'packages', 'inventory', 'installations',
         'services', 'employees', 'reports', 'settings', 'notifications', 'roles'
     ];
@@ -34,7 +34,7 @@ class RoleController extends Controller
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $validated = $request->validate(['name' => 'required|string|unique:roles,name', 'description' => 'nullable|string']);
-        $validated['permissions'] = json_encode($request->permissions ?? []);
+        $validated['permissions'] = $request->permissions ?? [];
         Role::create($validated);
         return redirect()->route('admin.roles.index')->with('success', 'Role created!');
     }
@@ -52,7 +52,7 @@ class RoleController extends Controller
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $role = Role::findOrFail($id);
         $validated = $request->validate(['name' => 'required|string|unique:roles,name,' . $id, 'description' => 'nullable|string']);
-        $validated['permissions'] = json_encode($request->permissions ?? []);
+        $validated['permissions'] = $request->permissions ?? [];
         $role->update($validated);
         return redirect()->route('admin.roles.index')->with('success', 'Role updated!');
     }

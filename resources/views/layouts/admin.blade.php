@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Solar ERP') - {{ \App\Models\Setting::where('key','company_name')->value('value') ?? 'SolarTech Solutions' }}</title>
     @php $settings = \App\Models\Setting::pluck('value', 'key')->toArray(); @endphp
+    @php $adminTheme = $settings['admin_theme'] ?? 'dark'; @endphp
     @if(!empty($settings['company_favicon']))
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $settings['company_favicon']) }}">
     @endif
@@ -12,13 +13,47 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        :root {
+            --admin-bg: #0f172a;
+            --admin-bg-soft: #111827;
+            --admin-surface: #1f2937;
+            --admin-surface-2: #111827;
+            --admin-border: rgba(148, 163, 184, 0.18);
+            --admin-text: #f8fafc;
+            --admin-text-soft: #cbd5e1;
+            --admin-muted: #94a3b8;
+            --admin-sidebar-start: #111827;
+            --admin-sidebar-end: #1e293b;
+            --admin-accent: #f59e0b;
+            --admin-nav-hover: rgba(255,255,255,0.08);
+            --admin-nav-active: rgba(245,158,11,0.16);
+            --admin-panel-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
+        }
+
+        body.admin-theme-light {
+            --admin-bg: #f3f4f6;
+            --admin-bg-soft: #e5e7eb;
+            --admin-surface: #ffffff;
+            --admin-surface-2: #f9fafb;
+            --admin-border: #e5e7eb;
+            --admin-text: #111827;
+            --admin-text-soft: #374151;
+            --admin-muted: #6b7280;
+            --admin-sidebar-start: #fff7ed;
+            --admin-sidebar-end: #ffffff;
+            --admin-accent: #ea580c;
+            --admin-nav-hover: rgba(234,88,12,0.08);
+            --admin-nav-active: rgba(234,88,12,0.14);
+            --admin-panel-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+        }
+
         .sidebar { transition: transform 0.3s ease-in-out; }
         @media (max-width: 1024px) {
             .sidebar { position: fixed; z-index: 50; height: 100vh; transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
         }
-        .nav-item:hover { background: rgba(255,255,255,0.1); }
-        .nav-item.active { background: rgba(255,255,255,0.2); border-left: 3px solid #F59E0B; }
+        .nav-item:hover { background: var(--admin-nav-hover); }
+        .nav-item.active { background: var(--admin-nav-active); border-left: 3px solid var(--admin-accent); }
         
         /* Remove horizontal scrollbar */
         * { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.1) transparent; }
@@ -30,13 +65,76 @@
 
         @keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .animate-slide { animation: slideIn 0.3s ease; }
+
+        body {
+            background: radial-gradient(circle at top, color-mix(in srgb, var(--admin-accent) 12%, transparent), transparent 32%), var(--admin-bg);
+            color: var(--admin-text);
+        }
+
+        body .bg-white,
+        body .bg-gray-50,
+        body .bg-gray-100 {
+            background-color: var(--admin-surface) !important;
+        }
+
+        body .border-gray-50,
+        body .border-gray-100,
+        body .border-gray-200 {
+            border-color: var(--admin-border) !important;
+        }
+
+        body .text-gray-800,
+        body .text-gray-900,
+        body .text-gray-700,
+        body .text-gray-600 {
+            color: var(--admin-text-soft) !important;
+        }
+
+        body .text-gray-500,
+        body .text-gray-400 {
+            color: var(--admin-muted) !important;
+        }
+
+        body .shadow-sm,
+        body .shadow-md,
+        body .shadow-lg,
+        body .shadow-xl {
+            box-shadow: var(--admin-panel-shadow) !important;
+        }
+
+        body.admin-theme-dark .bg-orange-50,
+        body.admin-theme-dark .bg-amber-50,
+        body.admin-theme-dark .bg-teal-50,
+        body.admin-theme-dark .bg-green-50,
+        body.admin-theme-dark .bg-red-50,
+        body.admin-theme-dark .bg-blue-50,
+        body.admin-theme-dark .bg-indigo-50,
+        body.admin-theme-dark .bg-purple-50 {
+            background-color: color-mix(in srgb, var(--admin-accent) 10%, var(--admin-surface)) !important;
+        }
+
+        body.admin-theme-light .sidebar .nav-item,
+        body.admin-theme-light .sidebar .text-white {
+            color: #7c2d12 !important;
+        }
+
+        body.admin-theme-light .sidebar .text-orange-200,
+        body.admin-theme-light .sidebar .text-orange-300 {
+            color: #9a3412 !important;
+        }
+
+        body.admin-theme-light .sidebar .bg-orange-500,
+        body.admin-theme-light .sidebar .bg-yellow-400 {
+            background-color: #fb923c !important;
+            color: #fff7ed !important;
+        }
     </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="admin-theme-{{ $adminTheme }} font-sans">
 <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
-    <div class="sidebar bg-gradient-to-b from-orange-600 to-orange-800 text-white w-64 flex-shrink-0 overflow-y-auto" id="sidebar">
-        <div class="p-4 border-b border-orange-500">
+    <div class="sidebar text-white w-64 flex-shrink-0 overflow-y-auto" id="sidebar" style="background: linear-gradient(to bottom, var(--admin-sidebar-start), var(--admin-sidebar-end));">
+        <div class="p-4 border-b" style="border-color: var(--admin-border);">
             <div class="flex items-center space-x-3">
                 @if(!empty($settings['company_logo']))
                     <div class="w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
@@ -53,7 +151,7 @@
                 </div>
             </div>
         </div>
-        <div class="p-3 border-b border-orange-500">
+        <div class="p-3 border-b" style="border-color: var(--admin-border);">
             <div class="flex items-center space-x-2">
                 <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-sm font-bold">
                     {{ strtoupper(substr(session('admin_user', 'A'), 0, 1)) }}
@@ -137,7 +235,7 @@
                 <i class="fas fa-cog w-5"></i><span>Settings</span>
             </a>
         </nav>
-        <div class="p-4 border-t border-orange-500">
+        <div class="p-4 border-t" style="border-color: var(--admin-border);">
             <form action="{{ route('admin.logout') }}" method="POST">
                 @csrf
                 <button type="submit" class="w-full flex items-center space-x-2 text-orange-200 hover:text-white text-sm p-2 rounded">
@@ -148,7 +246,7 @@
     </div>
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
-        <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        <header class="shadow-sm border-b border-gray-200 px-6 py-3 flex items-center justify-between" style="background: var(--admin-surface);">
             <div class="flex items-center space-x-4">
                 <button onclick="toggleSidebar()" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-bars text-xl"></i>
@@ -175,7 +273,7 @@
         <div class="px-6 pt-4">
             {{-- SweetAlert handles notifications now --}}
         </div>
-        <main class="flex-1 overflow-y-auto p-6">
+            <main class="flex-1 overflow-y-auto p-6">
             @yield('content')
         </main>
     </div>
@@ -214,38 +312,69 @@
     @if(session('success'))
         Swal.fire({
             icon: 'success',
-            title: 'Success!',
+            title: 'Saved',
             text: "{{ session('success') }}",
-            timer: 3500,
+            timer: 3200,
             showConfirmButton: false,
             toast: true,
             position: 'top-end',
-            timerProgressBar: true
+            timerProgressBar: true,
+            background: "{{ $adminTheme === 'light' ? '#ffffff' : '#0f172a' }}",
+            color: "{{ $adminTheme === 'light' ? '#111827' : '#f8fafc' }}",
+            iconColor: '#34d399',
+            customClass: {
+                popup: 'shadow-2xl ring-1 ring-slate-700/60'
+            }
         });
     @endif
 
     @if(session('error'))
         Swal.fire({
             icon: 'error',
-            title: 'Hold on...',
+            title: 'Something Needs Attention',
             text: "{{ session('error') }}",
-            confirmButtonColor: '#F59E0B'
+            confirmButtonColor: '#ea580c',
+            background: '#fff7ed',
+            color: '#7c2d12',
+            customClass: {
+                popup: 'shadow-2xl border border-orange-200'
+            }
         });
     @endif
 
+    const appAlert = Swal.mixin({
+        background: "{{ $adminTheme === 'light' ? '#fffaf5' : '#1f2937' }}",
+        color: "{{ $adminTheme === 'light' ? '#7c2d12' : '#f8fafc' }}",
+        confirmButtonColor: '#ea580c',
+        customClass: {
+            popup: 'shadow-2xl border rounded-[24px]',
+            confirmButton: 'rounded-xl px-5 py-2.5 font-semibold',
+            cancelButton: 'rounded-xl px-5 py-2.5 font-semibold'
+        },
+        buttonsStyling: false
+    });
+
+    function showAppAlert(message, options = {}) {
+        return appAlert.fire({
+            icon: options.icon || 'info',
+            title: options.title || 'Please Check',
+            text: message,
+            confirmButtonText: options.confirmButtonText || 'OK'
+        });
+    }
+
     // Global delete confirmation
     function confirmDelete(title = 'Are you sure?', text = 'This action cannot be undone!') {
-        return Swal.fire({
+        return appAlert.fire({
             title: title,
             text: text,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#EF4444',
-            cancelButtonColor: '#f3f4f6',
-            cancelButtonText: '<span style="color: #4b5563">Cancel</span>',
+            cancelButtonColor: '#fed7aa',
+            cancelButtonText: 'Cancel',
             confirmButtonText: 'Yes, proceed!',
-            background: '#fff',
-            borderRadius: '20px'
+            reverseButtons: true
         });
     }
 

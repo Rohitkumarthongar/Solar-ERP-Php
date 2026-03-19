@@ -191,6 +191,37 @@
                         class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">{{ old('notes') }}</textarea>
                 </div>
 
+                {{-- Bill Of Material (BOM) --}}
+                <div class="bg-white rounded-2xl shadow-sm p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                        <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                            <i class="fas fa-microchip text-teal-500"></i> Bill Of Material (BOM)
+                            <span class="text-xs font-normal text-gray-400">(Technical Specifications)</span>
+                        </h3>
+                        <button type="button" onclick="addBomItem()"
+                            class="inline-flex items-center gap-1.5 text-xs font-medium bg-teal-50 hover:bg-teal-100 text-teal-600 px-3 py-1.5 rounded-lg transition">
+                            <i class="fas fa-plus"></i> Add BOM Item
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-50 text-gray-500">
+                                    <th class="text-left py-2 font-medium">Description</th>
+                                    <th class="text-center py-2 font-medium w-32">Qty</th>
+                                    <th class="w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="bom-body" class="divide-y divide-gray-50">
+                                {{-- JS --}}
+                            </tbody>
+                        </table>
+                        <p id="bom-empty" class="text-center text-gray-400 text-xs py-4">
+                            No technical components listed yet.
+                        </p>
+                    </div>
+                </div>
+
                 <button type="submit"
                     class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="fas fa-save"></i> Create Sales Order
@@ -292,6 +323,60 @@
         recalc();
     }
 
+    let bomIdx = 0;
+    function addBomItem(description = '', quantity = 1) {
+        const body  = document.getElementById('bom-body');
+        const empty = document.getElementById('bom-empty');
+        const idx   = bomIdx++;
+        const tr    = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50 align-middle';
+        tr.innerHTML = `
+            <td class="py-2.5">
+                <input type="text" name="bom_items[${idx}][description]" value="${description}" required
+                    placeholder="e.g. 550W Mono PERC Panels"
+                    class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-200">
+            </td>
+            <td class="py-2.5 text-center px-4">
+                <input type="number" name="bom_items[${idx}][quantity]" value="${quantity}" min="0" step="0.1" required
+                    class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal-200">
+            </td>
+            <td class="text-right py-2.5">
+                <button type="button" class="text-gray-400 hover:text-red-500 transition" onclick="this.closest('tr').remove(); checkBomEmpty();">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </td>
+        `;
+        body.appendChild(tr);
+        checkBomEmpty();
+    }
+    
+    function checkBomEmpty() {
+        const body  = document.getElementById('bom-body');
+        const empty = document.getElementById('bom-empty');
+        empty.classList.toggle('hidden', body.children.length > 0);
+    }
+
+    function normalizePackageItems(items = []) {
+        return items
+            .map(item => ({
+                description: item.name || item.description || '',
+                quantity: item.quantity || 1
+            }))
+            .filter(item => item.description);
+    }
+
+    function replaceBomFromPackage(items = []) {
+        const body = document.getElementById('bom-body');
+        body.innerHTML = '';
+        bomIdx = 0;
+
+        if (items.length) {
+            items.forEach(item => addBomItem(item.description, item.quantity));
+        }
+
+        checkBomEmpty();
+    }
+
     document.getElementById('addItemBtn').addEventListener('click', () => addItem());
     document.getElementById('taxAmount').addEventListener('input', recalc);
     document.getElementById('discountAmount').addEventListener('input', recalc);
@@ -308,44 +393,43 @@
         loadPkgBtn.addEventListener('click', () => {
             const opt = packageSelect.options[packageSelect.selectedIndex];
             if (!opt.value) {
-                alert('Please select a package to load.');
+                showAppAlert('Select a package first to load its order line and BOM items.', {
+                    title: 'Package Required',
+                    icon: 'warning'
+                });
                 return;
             }
             
-            if (confirm('Loading a package will clear existing items. Continue?')) {
-                // Clear existing
-                container.innerHTML = '';
-                itemIndex = 0;
-                
-                // Parse package items and add rows
-                try {
-                    const pkgItems = JSON.parse(opt.dataset.items || '[]');
-                    if (pkgItems.length === 0) {
-                        addItem(); // Add one empty row if package has no items
-                    } else {
-                        pkgItems.forEach(item => {
-                            addItem(item.name || item.description || '', item.quantity || 1, item.unit_price || 0, item.product_id || '');
-                        });
-                    }
-                } catch (e) {
-                    console.error('Error parsing package items', e);
-                    addItem();
-                }
-                
-                recalc();
-            }
+            const pkgName = opt.dataset.name;
+            const pkgPrice = parseFloat(opt.dataset.price) || 0;
+            const items = normalizePackageItems(JSON.parse(opt.dataset.items || '[]'));
+            
+            // Add package as a single line item with the package price
+            addItem(`${pkgName} - Solar System Package`, 1, pkgPrice);
+            
+            // Populate BOM
+            replaceBomFromPackage(items);
+            
+            packageSelect.value = '';
+            recalc();
         });
     }
 
     if (clearPkgBtn) {
         clearPkgBtn.addEventListener('click', () => {
-            if (confirm('Clear all items?')) {
+            confirmDelete('Clear loaded items?', 'This will remove current order rows and BOM items from the form.')
+                .then((result) => {
+                if (result.isConfirmed) {
                 container.innerHTML = '';
                 itemIndex = 0;
+                document.getElementById('bom-body').innerHTML = '';
+                bomIdx = 0;
+                checkBomEmpty();
                 if(packageSelect) packageSelect.value = '';
                 addItem();
                 recalc();
-            }
+                }
+            });
         });
     }
 

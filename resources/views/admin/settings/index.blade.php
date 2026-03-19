@@ -116,7 +116,23 @@
                                 value="{{ $settings['company_map_link'] ?? '' }}"
                                 placeholder="Paste Google Maps Share Link or IFRAME SRC here"
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
-                            <p class="text-[10px] text-gray-400 mt-1">Used to display your location on the contact page.</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Optional. If latitude and longitude are filled below, the contact page will prefer those coordinates for a more accurate map.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Latitude</label>
+                            <input type="text" name="company_latitude"
+                                value="{{ $settings['company_latitude'] ?? '' }}"
+                                placeholder="e.g. 23.0225"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                            <p class="text-[10px] text-gray-400 mt-1">Use decimal format for exact map pin placement.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Longitude</label>
+                            <input type="text" name="company_longitude"
+                                value="{{ $settings['company_longitude'] ?? '' }}"
+                                placeholder="e.g. 72.5714"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                            <p class="text-[10px] text-gray-400 mt-1">Use decimal format for exact map pin placement.</p>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5">Registered Address</label>
@@ -192,6 +208,70 @@
                                 placeholder="1. Prices are valid for the validity period.\n2. Taxes as applicable.\n3. Delivery within 30 working days."
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">{{ $settings['quotation_terms'] ?? '' }}</textarea>
                         </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
+                        <i class="fas fa-palette text-orange-500"></i> Admin Appearance
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="relative flex items-start gap-4 p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-orange-300 transition">
+                            <input type="radio" name="admin_theme" value="dark"
+                                {{ ($settings['admin_theme'] ?? 'dark') === 'dark' ? 'checked' : '' }}
+                                class="mt-1 w-4 h-4 accent-orange-500">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">Dark Theme</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-slate-100">Current Style</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Deep panels, darker background, and stronger contrast for long admin sessions.</p>
+                            </div>
+                        </label>
+                        <label class="relative flex items-start gap-4 p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-orange-300 transition">
+                            <input type="radio" name="admin_theme" value="light"
+                                {{ ($settings['admin_theme'] ?? 'dark') === 'light' ? 'checked' : '' }}
+                                class="mt-1 w-4 h-4 accent-orange-500">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">Light Theme</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Clean</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Brighter workspace with softer surfaces and a lighter navigation feel.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
+                        <i class="fas fa-globe text-orange-500"></i> Website Appearance
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="relative flex items-start gap-4 p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-orange-300 transition">
+                            <input type="radio" name="website_theme" value="dark"
+                                {{ ($settings['website_theme'] ?? 'dark') === 'dark' ? 'checked' : '' }}
+                                class="mt-1 w-4 h-4 accent-orange-500">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">Dark Website</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-slate-100">Bold</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Keeps the current cinematic dark website style with high contrast sections.</p>
+                            </div>
+                        </label>
+                        <label class="relative flex items-start gap-4 p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-orange-300 transition">
+                            <input type="radio" name="website_theme" value="light"
+                                {{ ($settings['website_theme'] ?? 'dark') === 'light' ? 'checked' : '' }}
+                                class="mt-1 w-4 h-4 accent-orange-500">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">Light Website</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Fresh</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Switches the public website to bright surfaces, darker text, and softer cards.</p>
+                            </div>
+                        </label>
                     </div>
                 </div>
 

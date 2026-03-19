@@ -14,6 +14,7 @@ use App\Models\SalesOrderItem;
 use App\Models\Notification;
 use App\Models\EmailTemplate;
 use App\Models\Setting;
+use App\Services\PrintFormatRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
@@ -70,7 +71,8 @@ class QuotationController extends Controller
             'final_amount' => $totalAmount + ($request->tax_amount ?? 0) - ($request->discount_amount ?? 0),
             'status' => 'pending',
             'valid_until' => $validated['valid_until'],
-            'notes' => $validated['notes']
+            'notes' => $validated['notes'],
+            'bom_items' => $request->bom_items
         ]);
 
         foreach ($request->items as $item) {
@@ -131,7 +133,8 @@ class QuotationController extends Controller
             'total_amount' => $totalAmount,
             'tax_amount' => $request->tax_amount ?? 0,
             'discount_amount' => $request->discount_amount ?? 0,
-            'final_amount' => $totalAmount + ($request->tax_amount ?? 0) - ($request->discount_amount ?? 0)
+            'final_amount' => $totalAmount + ($request->tax_amount ?? 0) - ($request->discount_amount ?? 0),
+            'bom_items' => $request->bom_items
         ]));
 
         $quotation->items()->delete();
@@ -161,7 +164,23 @@ class QuotationController extends Controller
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $quotation = Quotation::with(['items', 'customer'])->findOrFail($id);
         $settings = Setting::pluck('value', 'key')->toArray();
-        $html = view('admin.pdf.quotation', compact('quotation', 'settings'))->render();
+        $renderer = app(PrintFormatRenderer::class);
+
+        $format = \App\Models\PrintFormat::where('document_type', 'quotation')
+            ->where('is_active', true)
+            ->where('is_default', true)
+            ->first();
+
+        try {
+            $html = $renderer->render($format, [
+                'quotation' => $quotation,
+                'settings' => $settings,
+                'title' => 'Quotation - ' . $quotation->quotation_number,
+            ]) ?? view('admin.pdf.quotation', compact('quotation', 'settings'))->render();
+        } catch (\Throwable $e) {
+            $html = view('admin.pdf.quotation', compact('quotation', 'settings'))->render();
+        }
+
         return response($html)->header('Content-Type', 'text/html');
     }
 
@@ -173,7 +192,7 @@ class QuotationController extends Controller
         $subject = $template ? $template->subject : 'Your Solar System Quotation - ' . $quotation->quotation_number;
         $body = $template ? str_replace(
             ['{customer_name}', '{quotation_number}', '{total_amount}', '{valid_until}'],
-            [$quotation->customer_name, $quotation->quotation_number, number_format($quotation->final_amount, 2), $quotation->valid_until],
+            [$quotation->customer_name, $quotation->quotation_number, number_format((float)$quotation->final_amount, 2), $quotation->valid_until],
             $template->body
         ) : 'Please find attached your quotation.';
 
@@ -216,7 +235,8 @@ class QuotationController extends Controller
             'discount_amount' => $quotation->discount_amount,
             'final_amount' => $quotation->final_amount,
             'status' => 'confirmed',
-            'notes' => 'Converted from quotation: ' . $quotation->quotation_number
+            'notes' => 'Converted from quotation: ' . $quotation->quotation_number,
+            'bom_items' => $quotation->bom_items,
         ]);
 
         foreach ($quotation->items as $item) {

@@ -40,7 +40,7 @@ class PackageController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
         if ($request->items) {
-            $validated['items'] = json_encode($request->items);
+            $validated['items'] = $request->items;
         }
         Package::create($validated);
         return redirect()->route('admin.packages.index')->with('success', 'Package created!');
@@ -77,7 +77,7 @@ class PackageController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
         if ($request->items) {
-            $validated['items'] = json_encode($request->items);
+            $validated['items'] = $request->items;
         } else {
             $validated['items'] = null; // Clear items if none provided
         }
