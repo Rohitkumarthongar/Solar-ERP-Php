@@ -121,9 +121,9 @@
             color: var(--site-text-strong);
         }
         .twitter-float {
-            background: var(--site-text-strong);
+            background: #111827;
             color: #ffffff;
-            border: 1px solid color-mix(in srgb, var(--site-text-strong) 25%, transparent);
+            border: 1px solid rgba(255, 255, 255, 0.14);
         }
         .website-theme-light .twitter-float {
             background: #e2e8f0;

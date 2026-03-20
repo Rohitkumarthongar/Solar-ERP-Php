@@ -24,4 +24,9 @@ class PaymentReceipt extends Model
     {
         return $this->belongsTo(SalesInvoice::class, 'sales_invoice_id');
     }
+
+    public function salesInvoice()
+    {
+        return $this->belongsTo(SalesInvoice::class, 'sales_invoice_id');
+    }
 }

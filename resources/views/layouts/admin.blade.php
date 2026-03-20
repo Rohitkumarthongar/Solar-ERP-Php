@@ -95,6 +95,51 @@
             color: var(--admin-muted) !important;
         }
 
+        body.admin-theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]),
+        body.admin-theme-dark select,
+        body.admin-theme-dark textarea {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: rgba(148, 163, 184, 0.28) !important;
+        }
+
+        body.admin-theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"])::placeholder,
+        body.admin-theme-dark textarea::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1;
+        }
+
+        body.admin-theme-dark select option {
+            background-color: #ffffff;
+            color: #0f172a;
+        }
+
+        body.admin-theme-dark input[type="file"] {
+            color: var(--admin-text-soft) !important;
+        }
+
+        body.admin-theme-dark input[type="file"]::file-selector-button {
+            background-color: rgba(245, 158, 11, 0.16);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 0.75rem;
+        }
+
+        body.admin-theme-dark table th {
+            color: var(--admin-muted) !important;
+        }
+
+        body.admin-theme-dark table td,
+        body.admin-theme-dark table td p,
+        body.admin-theme-dark table td span,
+        body.admin-theme-dark table td a {
+            color: var(--admin-text-soft);
+        }
+
+        body.admin-theme-dark table td a:hover {
+            color: #fbbf24 !important;
+        }
+
         body .shadow-sm,
         body .shadow-md,
         body .shadow-lg,

@@ -35,8 +35,28 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.settings.print-formats.store') }}" method="POST" class="space-y-6">
+        <form action="{{ route('admin.settings.print-formats.store') }}" method="POST" class="space-y-6" id="print-format-form">
             @csrf
+
+            @if(!empty($presets))
+            <div class="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-4">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-indigo-900">Quick Presets</p>
+                        <p class="text-xs text-indigo-700 mt-1">Load the PDF-style quotation structure directly into the form and then fine-tune anything you want.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($presets as $key => $preset)
+                        <button type="button"
+                            class="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
+                            data-format-preset="{{ $key }}">
+                            <i class="fas fa-layer-group text-xs"></i> {{ $preset['label'] }}
+                        </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
 
             {{-- Basic Info --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -73,15 +93,18 @@
                         <option value="landscape" {{ old('orientation') === 'landscape' ? 'selected' : '' }}>Landscape</option>
                     </select>
                 </div>
-                <div class="flex items-end gap-6">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="is_default" value="1" {{ old('is_default') ? 'checked' : '' }} class="w-4 h-4 text-orange-500 rounded">
-                        <span class="text-sm text-gray-700">Set as Default</span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" name="is_active" value="1" checked class="w-4 h-4 text-orange-500 rounded">
-                        <span class="text-sm text-gray-700">Active</span>
-                    </label>
+                <div class="lg:col-span-4">
+                    <label class="block text-xs font-semibold text-gray-600 mb-2">Format Options</label>
+                    <div class="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:gap-6">
+                        <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="is_default" value="1" {{ old('is_default') ? 'checked' : '' }} class="w-4 h-4 text-orange-500 rounded">
+                            <span class="text-sm text-gray-700">Set as Default</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="w-4 h-4 text-orange-500 rounded">
+                            <span class="text-sm text-gray-700">Active</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -114,7 +137,7 @@
                         <span class="text-gray-400 font-normal ml-1">— Blade/HTML template for the document body</span>
                     </label>
                     <textarea name="body_template" rows="12"
-                        placeholder="<h2>{{ \$settings['company_name'] ?? 'Company' }}</h2>&#10;<p><strong>Document:</strong> {{ \$quotation->quotation_number ?? \$order->order_number ?? \$invoice->invoice_number ?? 'Custom Print' }}</p>"
+                        placeholder="<h2>&#123;&#123; $settings['company_name'] ?? 'Company' &#125;&#125;</h2>&#10;<p><strong>Document:</strong> &#123;&#123; $quotation->quotation_number ?? $order->order_number ?? $invoice->invoice_number ?? 'Custom Print' &#125;&#125;</p>"
                         class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-orange-300"
                         required>{{ old('body_template') }}</textarea>
                 </div>
@@ -141,4 +164,45 @@
         </form>
     </div>
 </div>
+
+@if(!empty($presets))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const presets = @json($presets);
+        const form = document.getElementById('print-format-form');
+
+        if (!form) {
+            return;
+        }
+
+        document.querySelectorAll('[data-format-preset]').forEach((button) => {
+            button.addEventListener('click', function () {
+                const preset = presets[this.dataset.formatPreset];
+
+                if (!preset) {
+                    return;
+                }
+
+                const fieldMap = {
+                    name: preset.name ?? '',
+                    document_type: preset.document_type ?? '',
+                    paper_size: preset.paper_size ?? 'A4',
+                    orientation: preset.orientation ?? 'portrait',
+                    header_html: preset.header_html ?? '',
+                    body_template: preset.body_template ?? '',
+                    footer_html: preset.footer_html ?? '',
+                };
+
+                Object.entries(fieldMap).forEach(([name, value]) => {
+                    const field = form.querySelector(`[name="${name}"]`);
+
+                    if (field) {
+                        field.value = value;
+                    }
+                });
+            });
+        });
+    });
+</script>
+@endif
 @endsection

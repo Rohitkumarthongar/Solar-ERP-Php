@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PrintFormat;
+use App\Support\PrintFormatPresets;
 use Illuminate\Http\Request;
 
 class PrintFormatController extends Controller
@@ -18,7 +19,9 @@ class PrintFormatController extends Controller
     public function create()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        return view('admin.settings.print-format-create');
+        $presets = PrintFormatPresets::all();
+
+        return view('admin.settings.print-format-create', compact('presets'));
     }
 
     public function store(Request $request)
@@ -48,7 +51,9 @@ class PrintFormatController extends Controller
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $format = PrintFormat::findOrFail($id);
-        return view('admin.settings.print-format-edit', compact('format'));
+        $presets = PrintFormatPresets::all();
+
+        return view('admin.settings.print-format-edit', compact('format', 'presets'));
     }
 
     public function update(Request $request, $id)
