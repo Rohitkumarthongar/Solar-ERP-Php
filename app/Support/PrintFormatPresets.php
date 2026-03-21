@@ -34,7 +34,6 @@ class PrintFormatPresets
 
     .quotation-replica .page {
         position: relative;
-        min-height: 1020px;
         page-break-after: always;
         padding: 18px 22px 22px;
         background: #ffffff;

@@ -71,7 +71,7 @@
                         <th class="text-left px-6 py-3 text-gray-500 font-medium hidden lg:table-cell">Valid Until</th>
                         <th class="text-right px-6 py-3 text-gray-500 font-medium">Amount</th>
                         <th class="text-center px-6 py-3 text-gray-500 font-medium">Status</th>
-                        <th class="text-center px-6 py-3 text-gray-500 font-medium">Actions</th>
+                        <th class="text-center px-6 py-3 text-gray-500 font-medium min-w-[140px]">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -149,7 +149,7 @@
                         </td>
 
                         {{-- Actions --}}
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
                             <div class="flex items-center justify-center gap-2">
                                 <a href="{{ route('admin.quotations.show', $quotation->id) }}"
                                     title="View"
