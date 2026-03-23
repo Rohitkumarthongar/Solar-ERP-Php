@@ -261,6 +261,9 @@
             <a href="{{ route('admin.teams.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.teams*') ? 'active' : '' }}">
                 <i class="fas fa-users-cog w-5"></i><span>Teams</span>
             </a>
+            <a href="{{ route('admin.expenses.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.expenses*') ? 'active' : '' }}">
+                <i class="fas fa-money-bill-wave w-5"></i><span>Direct Expenses</span>
+            </a>
             <a href="{{ route('admin.reports.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
                 <i class="fas fa-chart-bar w-5"></i><span>Reports</span>
             </a>

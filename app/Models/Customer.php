@@ -29,4 +29,7 @@ class Customer extends Model
     public function serviceRequests() { return $this->hasMany(ServiceRequest::class); }
     public function quotations() { return $this->hasMany(Quotation::class); }
     public function siteVisits() { return $this->hasMany(SiteVisit::class); }
+    public function loan() { return $this->hasOne(CustomerLoan::class); }
+    public function subsidy() { return $this->hasOne(CustomerSubsidy::class); }
+    public function discom() { return $this->hasOne(CustomerDiscom::class); }
 }

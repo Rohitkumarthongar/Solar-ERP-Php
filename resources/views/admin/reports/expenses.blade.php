@@ -73,6 +73,13 @@
                          </div>
                          <span class="font-black text-gray-800 tracking-tighter">₹{{ number_format($serviceExpenses, 2) }}</span>
                     </div>
+                    <div class="flex items-center justify-between text-sm py-2 px-4 rounded-xl bg-purple-50 border border-purple-100">
+                         <div class="flex items-center gap-2">
+                             <div class="w-2.5 h-2.5 bg-purple-400 rounded-full"></div>
+                             <span class="text-gray-600 font-medium">Direct Expenses</span>
+                         </div>
+                         <span class="font-black text-gray-800 tracking-tighter">₹{{ number_format($directExpenses, 2) }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -110,6 +117,16 @@
                         </div>
                         <div class="w-full bg-white h-2.5 rounded-full overflow-hidden border border-gray-100">
                             <div class="bg-blue-400 h-full" style="width: {{ ($serviceExpenses/$max)*100 }}%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-gray-600 uppercase">Direct Expenses</span>
+                            <span class="text-xs font-black text-purple-600">{{ number_format(($directExpenses/$max)*100, 1) }}%</span>
+                        </div>
+                        <div class="w-full bg-white h-2.5 rounded-full overflow-hidden border border-gray-100">
+                            <div class="bg-purple-400 h-full" style="width: {{ ($directExpenses/$max)*100 }}%"></div>
                         </div>
                     </div>
                 </div>

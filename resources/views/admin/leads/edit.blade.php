@@ -1,12 +1,13 @@
 @extends('layouts.admin')
-@section('title', 'Add Lead')
-@section('page-title', 'Add New Lead')
+@section('title', 'Edit Lead')
+@section('page-title', 'Edit Lead')
 @section('content')
 <div class="max-w-4xl mx-auto">
 <div class="bg-white rounded-xl shadow-sm p-8">
-    <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fas fa-funnel-dollar text-orange-500 mr-2"></i>Lead Information</h2>
-    <form action="{{ route('admin.leads.store') }}" method="POST" class="space-y-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-6"><i class="fas fa-funnel-dollar text-orange-500 mr-2"></i>Edit Lead Information</h2>
+    <form action="{{ route('admin.leads.update', $lead->id) }}" method="POST" class="space-y-6">
         @csrf
+        @method('PUT')
         <!-- Contact Info -->
         <div class="bg-blue-50 rounded-xl p-5">
             <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-user mr-2"></i>Contact Details</h3>

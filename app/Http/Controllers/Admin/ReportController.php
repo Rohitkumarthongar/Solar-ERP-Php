@@ -9,6 +9,7 @@ use App\Models\SalaryRecord;
 use App\Models\Inventory;
 use App\Models\ServiceRequest;
 use App\Models\Setting;
+use App\Models\Expense;
 use App\Services\PrintFormatRenderer;
 use Illuminate\Http\Request;
 
@@ -54,8 +55,9 @@ class ReportController extends Controller
         $purchases = PurchaseOrder::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->sum('final_amount');
         $salaries = SalaryRecord::whereBetween('payment_date', [$from, $to])->sum('net_salary');
         $serviceExpenses = ServiceRequest::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->sum('service_cost');
-        $totalExpenses = $purchases + $salaries + $serviceExpenses;
-        return view('admin.reports.expenses', compact('purchases', 'salaries', 'serviceExpenses', 'totalExpenses', 'from', 'to'));
+        $directExpenses = Expense::whereBetween('expense_date', [$from, $to])->sum('amount');
+        $totalExpenses = $purchases + $salaries + $serviceExpenses + $directExpenses;
+        return view('admin.reports.expenses', compact('purchases', 'salaries', 'serviceExpenses', 'directExpenses', 'totalExpenses', 'from', 'to'));
     }
 
     public function salary(Request $request)
@@ -130,6 +132,54 @@ class ReportController extends Controller
             $html = view('admin.pdf.report-salary', compact('records', 'totalPaid', 'month', 'year', 'settings'))->render();
         }
 
+        return response($html)->header('Content-Type', 'text/html');
+    }
+
+    public function profitLoss(Request $request)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $from = $request->from ?? date('Y-m-01');
+        $to = $request->to ?? date('Y-m-d');
+        
+        $sales = SalesOrder::where('status', 'completed')
+            ->whereBetween('updated_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->sum('final_amount');
+            
+        $purchases = PurchaseOrder::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->sum('final_amount');
+        $salaries = SalaryRecord::whereBetween('payment_date', [$from, $to])->sum('net_salary');
+        $serviceExpenses = ServiceRequest::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->sum('service_cost');
+        $directExpenses = Expense::whereBetween('expense_date', [$from, $to])->sum('amount');
+        
+        $totalExpenses = $purchases + $salaries + $serviceExpenses + $directExpenses;
+        $profit = $sales - $totalExpenses;
+
+        return view('admin.reports.profit-loss', compact(
+            'sales', 'purchases', 'salaries', 'serviceExpenses', 'directExpenses', 'totalExpenses', 'profit', 'from', 'to'
+        ));
+    }
+
+    public function profitLossPdf(Request $request)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $from = $request->from ?? date('Y-m-01');
+        $to = $request->to ?? date('Y-m-d');
+        
+        $sales = SalesOrder::where('status', 'completed')
+            ->whereBetween('updated_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->sum('final_amount');
+            
+        $purchases = PurchaseOrder::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->sum('final_amount');
+        $salaries = SalaryRecord::whereBetween('payment_date', [$from, $to])->sum('net_salary');
+        $serviceExpenses = ServiceRequest::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->sum('service_cost');
+        $directExpenses = Expense::whereBetween('expense_date', [$from, $to])->sum('amount');
+        
+        $totalExpenses = $purchases + $salaries + $serviceExpenses + $directExpenses;
+        $profit = $sales - $totalExpenses;
+        
+        $settings = Setting::pluck('value', 'key')->toArray();
+        $html = view('admin.pdf.report-profit-loss', compact(
+            'sales', 'purchases', 'salaries', 'serviceExpenses', 'directExpenses', 'totalExpenses', 'profit', 'from', 'to', 'settings'
+        ))->render();
         return response($html)->header('Content-Type', 'text/html');
     }
 }

@@ -47,7 +47,7 @@ class CustomerController extends Controller
     public function show($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $customer = Customer::with(['leads', 'salesOrders', 'installations', 'serviceRequests'])->findOrFail($id);
+        $customer = Customer::with(['leads', 'salesOrders', 'installations', 'serviceRequests', 'loan', 'subsidy', 'discom'])->findOrFail($id);
         return view('admin.customers.show', compact('customer'));
     }
 
@@ -82,5 +82,66 @@ class CustomerController extends Controller
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         Customer::findOrFail($id)->delete();
         return redirect()->route('admin.customers.index')->with('success', 'Customer deleted!');
+    }
+
+    public function updateDiscom(Request $request, $id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $customer = Customer::findOrFail($id);
+        $validated = $request->validate([
+            'discom_name' => 'nullable|string',
+            'k_number' => 'nullable|string',
+            'sanctioned_load' => 'nullable|string',
+            'required_load_kw' => 'nullable|string',
+            'meter_type' => 'nullable|string',
+            'property_type' => 'nullable|string',
+            'roof_area_sqft' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+        
+        \App\Models\CustomerDiscom::updateOrCreate(
+            ['customer_id' => $customer->id],
+            $validated
+        );
+        return redirect()->back()->with('success', 'Discom Details updated successfully');
+    }
+
+    public function updateLoan(Request $request, $id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $customer = Customer::findOrFail($id);
+        $validated = $request->validate([
+            'bank_name' => 'nullable|string',
+            'loan_amount' => 'nullable|numeric',
+            'account_number' => 'nullable|string',
+            'ifsc_code' => 'nullable|string',
+            'loan_status' => 'nullable|string',
+            'loan_notes' => 'nullable|string',
+        ]);
+
+        \App\Models\CustomerLoan::updateOrCreate(
+            ['customer_id' => $customer->id],
+            $validated
+        );
+        return redirect()->back()->with('success', 'Loan Details updated successfully');
+    }
+
+    public function updateSubsidy(Request $request, $id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $customer = Customer::findOrFail($id);
+        $validated = $request->validate([
+            'subsidy_status' => 'nullable|string',
+            'subsidy_amount' => 'nullable|numeric',
+            'reference_number' => 'nullable|string',
+            'portal_application_no' => 'nullable|string',
+            'subsidy_notes' => 'nullable|string',
+        ]);
+
+        \App\Models\CustomerSubsidy::updateOrCreate(
+            ['customer_id' => $customer->id],
+            $validated
+        );
+        return redirect()->back()->with('success', 'Subsidy Details updated successfully');
     }
 }

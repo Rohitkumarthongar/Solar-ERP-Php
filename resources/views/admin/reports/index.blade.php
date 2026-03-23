@@ -98,6 +98,28 @@
                 </div>
             </div>
         </div>
+
+        {{-- Profit & Loss --}}
+        <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl shadow-sm overflow-hidden border border-indigo-200 group hover:border-indigo-400 transition duration-300 relative">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-200 rounded-full opacity-50"></div>
+            <div class="p-6 relative">
+                <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white mb-4 shadow-md group-hover:bg-indigo-700 transition duration-300">
+                    <i class="fas fa-chart-pie text-xl"></i>
+                </div>
+                <h3 class="font-bold text-gray-800 mb-2"><i class="fas fa-star text-amber-500 text-xs mr-1"></i> Profit & Loss Statement</h3>
+                <p class="text-xs text-gray-600 mb-6 leading-relaxed">Comprehensive P&L report subtracting all expenses (sales, purchases, payroll, services & direct expenses) from revenue.</p>
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('admin.reports.profit-loss') }}" 
+                        class="flex-1 bg-indigo-600 text-white text-xs font-bold py-2.5 rounded-lg text-center shadow-sm hover:bg-indigo-700 transition">
+                        Generate P&L
+                    </a>
+                    <a href="{{ route('admin.reports.profit-loss.pdf') }}" target="_blank"
+                        class="px-3 py-2.5 bg-white text-indigo-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition border border-indigo-100 shadow-sm" title="PDF Export">
+                        <i class="fas fa-file-pdf"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
         
     </div>
 

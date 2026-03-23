@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Admin\PrintFormatController;
 use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\WebController;
@@ -45,6 +46,14 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+// ── Direct Expenses ───────────────────────────────────────────────────────────
+Route::get('/admin/direct-expenses', [ExpenseController::class, 'index'])->name('admin.expenses.index');
+Route::get('/admin/direct-expenses/create', [ExpenseController::class, 'create'])->name('admin.expenses.create');
+Route::post('/admin/direct-expenses', [ExpenseController::class, 'store'])->name('admin.expenses.store');
+Route::get('/admin/direct-expenses/{id}/edit', [ExpenseController::class, 'edit'])->name('admin.expenses.edit');
+Route::put('/admin/direct-expenses/{id}', [ExpenseController::class, 'update'])->name('admin.expenses.update');
+Route::delete('/admin/direct-expenses/{id}', [ExpenseController::class, 'destroy'])->name('admin.expenses.destroy');
+
 // ── Customers ─────────────────────────────────────────────────────────────────
 Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customers.index');
 Route::get('/admin/customers/create', [CustomerController::class, 'create'])->name('admin.customers.create');
@@ -53,6 +62,9 @@ Route::get('/admin/customers/{id}', [CustomerController::class, 'show'])->name('
 Route::get('/admin/customers/{id}/edit', [CustomerController::class, 'edit'])->name('admin.customers.edit');
 Route::put('/admin/customers/{id}', [CustomerController::class, 'update'])->name('admin.customers.update');
 Route::delete('/admin/customers/{id}', [CustomerController::class, 'destroy'])->name('admin.customers.destroy');
+Route::post('/admin/customers/{id}/discom', [CustomerController::class, 'updateDiscom'])->name('admin.customers.discom');
+Route::post('/admin/customers/{id}/loan', [CustomerController::class, 'updateLoan'])->name('admin.customers.loan');
+Route::post('/admin/customers/{id}/subsidy', [CustomerController::class, 'updateSubsidy'])->name('admin.customers.subsidy');
 
 // ── Leads ─────────────────────────────────────────────────────────────────────
 Route::get('/admin/leads', [LeadController::class, 'index'])->name('admin.leads.index');
@@ -230,10 +242,12 @@ Route::get('/admin/reports', [ReportController::class, 'index'])->name('admin.re
 Route::get('/admin/reports/sales', [ReportController::class, 'sales'])->name('admin.reports.sales');
 Route::get('/admin/reports/purchase', [ReportController::class, 'purchase'])->name('admin.reports.purchase');
 Route::get('/admin/reports/expenses', [ReportController::class, 'expenses'])->name('admin.reports.expenses');
+Route::get('/admin/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('admin.reports.profit-loss');
 Route::get('/admin/reports/salary', [ReportController::class, 'salary'])->name('admin.reports.salary');
 Route::get('/admin/reports/inventory', [ReportController::class, 'inventory'])->name('admin.reports.inventory');
 Route::get('/admin/reports/sales/pdf', [ReportController::class, 'salesPdf'])->name('admin.reports.sales.pdf');
 Route::get('/admin/reports/purchase/pdf', [ReportController::class, 'purchasePdf'])->name('admin.reports.purchase.pdf');
+Route::get('/admin/reports/profit-loss/pdf', [ReportController::class, 'profitLossPdf'])->name('admin.reports.profit-loss.pdf');
 Route::get('/admin/reports/salary/pdf', [ReportController::class, 'salaryPdf'])->name('admin.reports.salary.pdf');
 // ── Teams ─────────────────────────────────────────────────────────────────────
 Route::get('/admin/teams', [TeamController::class, 'index'])->name('admin.teams.index');

@@ -62,6 +62,7 @@ class LeadController extends Controller
             'subsidy_amount'          => 'nullable|numeric',
             'subsidy_ref_number'      => 'nullable|string',
             'subsidy_notes'           => 'nullable|string',
+            'requires_loan'           => 'boolean',
             'package_id'              => 'nullable|exists:packages,id',
             'estimated_value'         => 'nullable|numeric',
             'roof_type'               => 'nullable|string|max:100',
@@ -74,6 +75,7 @@ class LeadController extends Controller
 
         $validated['lead_number']  = 'LEAD-' . date('Ymd') . '-' . rand(100, 999);
         $validated['has_subsidy']  = $request->has('has_subsidy');
+        $validated['requires_loan'] = $request->has('requires_loan');
         $validated['assigned_to']  = session('admin_user_id');
         $lead = Lead::create($validated);
 
@@ -145,13 +147,16 @@ class LeadController extends Controller
             'next_follow_up_date'     => 'nullable|date',
             'status'                  => 'required|in:new,contacted,follow_up,mature,converted,lost',
             'customer_id'             => 'nullable|exists:customers,id',
+            'has_subsidy'             => 'boolean',
             'subsidy_status'          => 'nullable|string',
             'subsidy_amount'          => 'nullable|numeric',
             'subsidy_ref_number'      => 'nullable|string',
             'subsidy_notes'           => 'nullable|string',
+            'requires_loan'           => 'boolean',
         ]);
 
         $validated['has_subsidy'] = $request->has('has_subsidy');
+        $validated['requires_loan'] = $request->has('requires_loan');
         $lead->update($validated);
 
         if ($oldStatus !== 'mature' && $validated['status'] === 'mature') {
@@ -213,6 +218,29 @@ class LeadController extends Controller
                 ]);
             }
             $lead->update(['customer_id' => $customer->id, 'status' => 'converted']);
+            
+            // Auto-create related documents
+            \App\Models\CustomerDiscom::firstOrCreate(['customer_id' => $customer->id], [
+                'k_number' => $lead->k_number,
+                'sanctioned_load' => $lead->sanctioned_load,
+                'required_load_kw' => $lead->required_load_kw,
+                'meter_type' => $lead->meter_type,
+                'property_type' => $lead->property_type,
+                'roof_area_sqft' => $lead->roof_area_sqft,
+            ]);
+
+            if ($lead->requires_loan) {
+                \App\Models\CustomerLoan::firstOrCreate(['customer_id' => $customer->id]);
+            }
+
+            if ($lead->has_subsidy) {
+                \App\Models\CustomerSubsidy::firstOrCreate(['customer_id' => $customer->id], [
+                    'subsidy_status' => $lead->subsidy_status ?? 'not_applied',
+                    'subsidy_amount' => $lead->subsidy_amount,
+                    'reference_number' => $lead->subsidy_ref_number,
+                    'subsidy_notes' => $lead->subsidy_notes,
+                ]);
+            }
         }
 
         $quotationNumber = 'QUO-' . date('Ymd') . '-' . rand(100, 999);

@@ -144,7 +144,105 @@
                 @endif
             </div>
 
-            {{-- Leads & Sales Orders --}}
+            {{-- Discom, Loan, Subsidy Forms --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {{-- Discom Form --}}
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-purple-100">
+                    <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 mb-3 flex items-center gap-2">
+                        <i class="fas fa-bolt text-purple-500"></i> Discom Details
+                    </h3>
+                    <form action="{{ route('admin.customers.discom', $customer->id) }}" method="POST">
+                        @csrf
+                        <div class="space-y-3 text-xs focus-within:text-purple-600">
+                            <div>
+                                <label class="block text-gray-600 mb-1">Discom Name</label>
+                                <input type="text" name="discom_name" value="{{ $customer->discom->discom_name ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-purple-500 focus:ring-purple-500 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">K-Number</label>
+                                <input type="text" name="k_number" value="{{ $customer->discom->k_number ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-purple-500 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">Sanctioned Load</label>
+                                <input type="text" name="sanctioned_load" value="{{ $customer->discom->sanctioned_load ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-purple-500 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">Required Load (kW)</label>
+                                <input type="text" name="required_load_kw" value="{{ $customer->discom->required_load_kw ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-purple-500 text-xs">
+                            </div>
+                            <button type="submit" class="w-full bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white font-bold py-2 rounded-lg transition">Save</button>
+                        </div>
+                    </form>
+                </div>
+
+                {{-- Loan Form --}}
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-blue-100">
+                    <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 mb-3 flex items-center gap-2">
+                        <i class="fas fa-university text-blue-500"></i> Loan Details
+                    </h3>
+                    <form action="{{ route('admin.customers.loan', $customer->id) }}" method="POST">
+                        @csrf
+                        <div class="space-y-3 text-xs focus-within:text-blue-600">
+                            <div>
+                                <label class="block text-gray-600 mb-1">Bank Name</label>
+                                <input type="text" name="bank_name" value="{{ $customer->loan->bank_name ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-blue-500 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">Loan Amount</label>
+                                <input type="number" step="0.01" name="loan_amount" value="{{ $customer->loan->loan_amount ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-blue-500 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">Account Number</label>
+                                <input type="text" name="account_number" value="{{ $customer->loan->account_number ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-blue-500 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">Loan Status</label>
+                                <select name="loan_status" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-blue-500 text-xs">
+                                    <option value="pending" {{ ($customer->loan->loan_status ?? '') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="approved" {{ ($customer->loan->loan_status ?? '') == 'approved' ? 'selected' : '' }}>Approved</option>
+                                    <option value="rejected" {{ ($customer->loan->loan_status ?? '') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                    <option value="disbursed" {{ ($customer->loan->loan_status ?? '') == 'disbursed' ? 'selected' : '' }}>Disbursed</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white font-bold py-2 rounded-lg transition">Save</button>
+                        </div>
+                    </form>
+                </div>
+
+                {{-- Subsidy Form --}}
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-orange-100">
+                    <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 mb-3 flex items-center gap-2">
+                        <i class="fas fa-hand-holding-usd text-orange-500"></i> Subsidy Details
+                    </h3>
+                    <form action="{{ route('admin.customers.subsidy', $customer->id) }}" method="POST">
+                        @csrf
+                        <div class="space-y-3 text-xs focus-within:text-orange-600">
+                            <div>
+                                <label class="block text-gray-600 mb-1">Status</label>
+                                <select name="subsidy_status" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-orange-500 text-xs">
+                                    <option value="not_applied" {{ ($customer->subsidy->subsidy_status ?? '') == 'not_applied' ? 'selected' : '' }}>Not Applied</option>
+                                    <option value="applied" {{ ($customer->subsidy->subsidy_status ?? '') == 'applied' ? 'selected' : '' }}>Applied</option>
+                                    <option value="approved" {{ ($customer->subsidy->subsidy_status ?? '') == 'approved' ? 'selected' : '' }}>Approved</option>
+                                    <option value="received" {{ ($customer->subsidy->subsidy_status ?? '') == 'received' ? 'selected' : '' }}>Received</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">Subsidy Amount</label>
+                                <input type="number" step="0.01" name="subsidy_amount" value="{{ $customer->subsidy->subsidy_amount ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-orange-500 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">Reference No.</label>
+                                <input type="text" name="reference_number" value="{{ $customer->subsidy->reference_number ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-orange-500 text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-gray-600 mb-1">Portal Application No.</label>
+                                <input type="text" name="portal_application_no" value="{{ $customer->subsidy->portal_application_no ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-orange-500 text-xs">
+                            </div>
+                            <button type="submit" class="w-full bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white font-bold py-2 rounded-lg transition">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {{-- Leads --}}
                 <div class="bg-white rounded-2xl shadow-sm p-6">
