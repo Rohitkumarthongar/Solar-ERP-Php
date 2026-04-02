@@ -18,7 +18,8 @@ class TeamController extends Controller
     public function create()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        return view('admin.teams.create');
+        $employees = \App\Models\Employee::where('is_active', true)->get();
+        return view('admin.teams.create', compact('employees'));
     }
 
     public function store(Request $request)
@@ -26,7 +27,11 @@ class TeamController extends Controller
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:teams,name',
+            'leader_id' => 'nullable|exists:employees,id',
             'description' => 'nullable|string',
+            'installation_rate' => 'required|numeric|min:0',
+            'site_visit_rate' => 'required|numeric|min:0',
+            'service_rate' => 'required|numeric|min:0',
             'status' => 'required|in:active,inactive'
         ]);
 
@@ -38,7 +43,8 @@ class TeamController extends Controller
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $team = Team::findOrFail($id);
-        return view('admin.teams.edit', compact('team'));
+        $employees = \App\Models\Employee::where('is_active', true)->get();
+        return view('admin.teams.edit', compact('team', 'employees'));
     }
 
     public function update(Request $request, $id)
@@ -47,7 +53,11 @@ class TeamController extends Controller
         $team = Team::findOrFail($id);
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:teams,name,' . $id,
+            'leader_id' => 'nullable|exists:employees,id',
             'description' => 'nullable|string',
+            'installation_rate' => 'required|numeric|min:0',
+            'site_visit_rate' => 'required|numeric|min:0',
+            'service_rate' => 'required|numeric|min:0',
             'status' => 'required|in:active,inactive'
         ]);
 

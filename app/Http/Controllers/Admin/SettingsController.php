@@ -33,12 +33,13 @@ class SettingsController extends Controller
             'installations',
             'service_requests',
             'payment_receipts',
-            'inventory',
+            'inventories',
             'inventory_adjustments',
             'notifications',
             'sms_logs',
             'message_logs',
             'salary_records',
+            'daily_wage_records',
             'employees',
             'teams',
             'blogs',
@@ -46,13 +47,38 @@ class SettingsController extends Controller
             'product_categories',
             'packages',
             'users',
+            'expenses',
+            'customer_loans',
+            'customer_subsidies',
+            'customer_discoms',
         ];
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        foreach ($models as $table) {
-            DB::table($table)->truncate();
+        // Get database driver
+        $driver = DB::getDriverName();
+
+        // Disable foreign key checks based on database driver
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF;');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         }
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        // Truncate tables (skip if table doesn't exist)
+        foreach ($models as $table) {
+            try {
+                DB::table($table)->truncate();
+            } catch (\Exception $e) {
+                // Skip if table doesn't exist
+                continue;
+            }
+        }
+
+        // Re-enable foreign key checks based on database driver
+        if ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON;');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
 
         return redirect()->back()->with('success', 'System data has been successfully reset. Settings preserved.');
     }

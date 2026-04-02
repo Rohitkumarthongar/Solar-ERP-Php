@@ -67,7 +67,11 @@
                 <td class="amount">₹{{ number_format($serviceExpenses, 2) }}</td>
             </tr>
             <tr>
-                <td>Direct / Miscellaneous Expenses</td>
+                <td>Team Installation Wages</td>
+                <td class="amount">₹{{ number_format($teamPayments, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Other Direct/Misc Expenses</td>
                 <td class="amount">₹{{ number_format($directExpenses, 2) }}</td>
             </tr>
             <tr class="total-row expense-color">

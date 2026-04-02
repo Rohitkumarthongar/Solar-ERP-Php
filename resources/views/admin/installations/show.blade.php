@@ -225,6 +225,65 @@
             </div>
             @endif
 
+            @if(!empty($installation->inverter_serial_details))
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="p-6 border-b border-gray-50">
+                    <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                        <i class="fas fa-microchip text-indigo-500"></i> Inverter Serial Number Register
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-bold">
+                            <tr>
+                                <th class="p-4 text-left">Inverter Serial</th>
+                                <th class="p-4 text-left">Make / Brand</th>
+                                <th class="p-4 text-left">Capacity</th>
+                                <th class="p-4 text-left">Phase</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($installation->inverter_serial_details as $inverter)
+                            <tr>
+                                <td class="p-4 font-semibold text-gray-800">{{ $inverter['serial_number'] ?? '-' }}</td>
+                                <td class="p-4 text-gray-600">{{ $inverter['make'] ?? '-' }}</td>
+                                <td class="p-4 text-gray-600">{{ $inverter['capacity'] ?? '-' }}</td>
+                                <td class="p-4 text-gray-600">{{ $inverter['phase'] ?? '-' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
+
+            @php
+                $hasDiscomApp = $installation->customer->discom && $installation->customer->discom->workflow_status != 'not_started';
+            @endphp
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-sm mb-1">Compliance & Applications</h3>
+                    <p class="text-xs text-gray-500">Generate DCR certificates and Work Completion Applications.</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    @if($hasDiscomApp)
+                        <a href="{{ route('admin.installations.dcr', $installation->id) }}" target="_blank"
+                            class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition shadow-lg shadow-emerald-600/20">
+                            <i class="fas fa-certificate text-xs"></i> Create DCR PDF
+                        </a>
+                        <a href="{{ route('admin.installations.work-application', $installation->id) }}" target="_blank"
+                            class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition shadow-lg shadow-amber-500/20">
+                            <i class="fas fa-file-invoice text-xs"></i> Work Application
+                        </a>
+                    @else
+                        <button onclick="alert('Please submit the DISCOM application first for this customer to enable compliance documents.')"
+                            class="inline-flex items-center gap-2 bg-gray-400 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl cursor-not-allowed">
+                            <i class="fas fa-lock text-xs"></i> Action Required: DISCOM App
+                        </button>
+                    @endif
+                </div>
+            </div>
+
             {{-- Checklist Block --}}
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
                 <div class="p-6 border-b border-gray-50 flex items-center justify-between">

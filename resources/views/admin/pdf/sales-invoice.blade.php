@@ -74,18 +74,18 @@
             <div class="party-name">{{ $invoice->customer->name ?? 'Customer' }}</div>
             <div class="party-detail">
                 {{ $invoice->customer->email ?? '' }}<br>
-                {{ $invoice->customer->phone ?? '' }}
+                {{ $invoice->customer->phone ?? '' }}<br>
+                {{ $invoice->customer->address ?? '' }}
             </div>
         </div>
         <div class="party-card">
-            <div class="party-label">Reference</div>
-            <div class="party-name">{{ $invoice->salesOrder->order_number ?? 'Direct Invoice' }}</div>
+            <div class="party-label">From</div>
+            <div class="party-name">{{ $settings['company_name'] ?? 'SolarTech ERP' }}</div>
             <div class="party-detail">
-                @if($invoice->salesOrder)
-                    Linked Sales Order
-                @else
-                    Standalone Billing
-                @endif
+                @if(!empty($settings['company_email'])){{ $settings['company_email'] }}<br>@endif
+                @if(!empty($settings['company_phone'])){{ $settings['company_phone'] }}<br>@endif
+                @if(!empty($settings['gst_number']))GST: {{ $settings['gst_number'] }}<br>@endif
+                @if(!empty($settings['pan_number']))PAN: {{ $settings['pan_number'] }}@endif
             </div>
         </div>
     </div>

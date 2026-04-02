@@ -31,7 +31,15 @@ class EmployeeController extends Controller
             'phone' => 'required|string',
             'department' => 'required|in:sales,installation,service,admin,accounts',
             'designation' => 'required|string',
-            'basic_salary' => 'required|numeric|min:0',
+            'employment_type' => 'required|in:permanent,contract,daily_wage',
+            'basic_salary' => 'nullable|numeric|min:0',
+            'contract_start_date' => 'nullable|date',
+            'contract_end_date' => 'nullable|date|after:contract_start_date',
+            'contract_amount' => 'nullable|numeric|min:0',
+            'daily_wage_rate' => 'nullable|numeric|min:0',
+            'installation_rate' => 'nullable|numeric|min:0',
+            'site_visit_rate' => 'nullable|numeric|min:0',
+            'service_rate' => 'nullable|numeric|min:0',
             'joining_date' => 'required|date',
             'address' => 'nullable|string',
             'is_active' => 'boolean'
@@ -45,7 +53,7 @@ class EmployeeController extends Controller
     public function show($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $employee = Employee::with('salaryRecords')->findOrFail($id);
+        $employee = Employee::with(['salaryRecords', 'taskPayments.taskable'])->findOrFail($id);
         return view('admin.employees.show', compact('employee'));
     }
 
@@ -66,7 +74,15 @@ class EmployeeController extends Controller
             'phone' => 'required|string',
             'department' => 'required|string',
             'designation' => 'required|string',
-            'basic_salary' => 'required|numeric|min:0',
+            'employment_type' => 'required|in:permanent,contract,daily_wage',
+            'basic_salary' => 'nullable|numeric|min:0',
+            'contract_start_date' => 'nullable|date',
+            'contract_end_date' => 'nullable|date|after:contract_start_date',
+            'contract_amount' => 'nullable|numeric|min:0',
+            'daily_wage_rate' => 'nullable|numeric|min:0',
+            'installation_rate' => 'nullable|numeric|min:0',
+            'site_visit_rate' => 'nullable|numeric|min:0',
+            'service_rate' => 'nullable|numeric|min:0',
             'joining_date' => 'required|date',
             'address' => 'nullable|string'
         ]);

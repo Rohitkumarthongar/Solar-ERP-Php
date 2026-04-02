@@ -40,11 +40,20 @@ class PurchaseOrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
             'items.*.quantity' => 'required|numeric|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0'
+            'items.*.unit_price' => 'required|numeric|min:0',
+            'invoice_attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240'
         ]);
 
         $poNumber = 'PO-' . date('Ymd') . '-' . rand(100, 999);
         $totalAmount = collect($request->items)->sum(fn($i) => $i['quantity'] * $i['unit_price']);
+
+        // Handle invoice attachments
+        $invoiceAttachments = [];
+        if ($request->hasFile('invoice_attachments')) {
+            foreach ($request->file('invoice_attachments') as $file) {
+                $invoiceAttachments[] = $file->store('purchase-invoices', 'public');
+            }
+        }
 
         $order = PurchaseOrder::create([
             'po_number' => $poNumber,
@@ -57,7 +66,8 @@ class PurchaseOrderController extends Controller
             'final_amount' => $totalAmount + ($request->tax_amount ?? 0),
             'status' => 'pending',
             'expected_delivery' => $validated['expected_delivery'],
-            'notes' => $request->notes
+            'notes' => $request->notes,
+            'invoice_attachments' => $invoiceAttachments
         ]);
 
         foreach ($request->items as $item) {

@@ -313,7 +313,7 @@
     
     <div class="max-w-7xl mx-auto px-4 mt-24 pt-12 border-t site-border flex flex-col md:flex-row justify-between items-center gap-6">
         <p class="site-subtle text-[10px] uppercase font-black tracking-widest leading-loose text-center md:text-left">
-            © {{ date('Y') }} {{ $settings['company_name'] ?? 'SolarVolt Solutions' }}. Built with ❤️ by <a href="https://laracopilot.com/" target="_blank" class="text-amber-500 hover:underline">LaraCopilot</a>.
+            © {{ date('Y') }} {{ $settings['company_name'] ?? 'SolarVolt Solutions' }}. Built with ❤️ by <a href="https://kodaic.cloud/" target="_blank" class="text-amber-500 hover:underline">Kodaic</a>.
         </p>
         <div class="flex gap-8 text-[10px] uppercase font-black tracking-widest site-subtle">
             <a href="#" class="hover:text-amber-500 transition-colors">Privacy Policy</a>

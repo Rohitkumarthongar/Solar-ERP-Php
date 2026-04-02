@@ -61,7 +61,7 @@
                         </div>
                         <div class="flex flex-col">
                             <span class="text-sm font-bold text-gray-700 capitalize italic">{{ str_replace('_', ' ', $perm) }}</span>
-                            <span class="text-[9px] text-gray-400 font-medium uppercase tracking-widest">Portal Access</span>
+                            <span class="text-[9px] text-gray-400 font-medium uppercase tracking-widest">{{ $perm === 'all_forms' ? 'Unrestricted System Path' : 'Portal Access' }}</span>
                         </div>
                     </label>
                     @endforeach

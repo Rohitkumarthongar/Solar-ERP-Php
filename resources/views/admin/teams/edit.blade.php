@@ -27,11 +27,21 @@
                         <i class="fas fa-edit text-indigo-500"></i> Personnel Matrix
                     </h3>
                 </div>
-                <div class="p-8 grid grid-cols-1 gap-6">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-widest">Modified Team Title <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-widest">Team Identity <span class="text-red-500">*</span></label>
                         <input type="text" name="name" value="{{ old('name', $team->name) }}" required
                             class="w-full border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 font-bold text-gray-800 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-widest">Team Leader / Responsible Person <span class="text-red-500">*</span></label>
+                        <select name="leader_id" required class="w-full border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 font-bold text-gray-800 transition appearance-none">
+                            <option value="">Select Leader</option>
+                            @foreach($employees as $employee)
+                                <option value="{{ $employee->id }}" {{ old('leader_id', $team->leader_id) == $employee->id ? 'selected' : '' }}>
+                                    {{ $employee->name }} ({{ $employee->employee_code }})
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-widest">Crew Description</label>
@@ -55,6 +65,34 @@
                              <option value="active" {{ old('status', $team->status) == 'active' ? 'selected' : '' }}>🟢 Fully Active</option>
                              <option value="inactive" {{ old('status', $team->status) == 'inactive' ? 'selected' : '' }}>🔴 Standby / Inactive</option>
                         </select>
+                    </div>
+
+                    <div class="pt-4 border-t border-white/10 mt-4 space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-indigo-300">Installation Rate (Per Site)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300 font-bold text-sm">₹</span>
+                                <input type="number" name="installation_rate" value="{{ old('installation_rate', $team->installation_rate) }}" step="0.01" required
+                                    class="w-full bg-indigo-600 text-white rounded-xl pl-10 pr-4 py-3 text-base font-black border-none focus:ring-2 focus:ring-white transition">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-indigo-300">Site Visit Rate (Per Visit)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300 font-bold text-sm">₹</span>
+                                <input type="number" name="site_visit_rate" value="{{ old('site_visit_rate', $team->site_visit_rate) }}" step="0.01" required
+                                    class="w-full bg-indigo-600 text-white rounded-xl pl-10 pr-4 py-3 text-base font-black border-none focus:ring-2 focus:ring-white transition">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-indigo-300">Service Rate (Per Resolved Ticket)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300 font-bold text-sm">₹</span>
+                                <input type="number" name="service_rate" value="{{ old('service_rate', $team->service_rate) }}" step="0.01" required
+                                    class="w-full bg-indigo-600 text-white rounded-xl pl-10 pr-4 py-3 text-base font-black border-none focus:ring-2 focus:ring-white transition">
+                            </div>
+                        </div>
+                        <p class="text-[9px] text-indigo-200 mt-2 font-medium italic">Fixed payments recorded as expenses per completed task.</p>
                     </div>
                  </div>
             </div>

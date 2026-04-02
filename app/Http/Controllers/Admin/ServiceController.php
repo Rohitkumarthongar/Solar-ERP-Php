@@ -39,8 +39,18 @@ class ServiceController extends Controller
             'priority' => 'required|in:low,medium,high,urgent',
             'description' => 'required|string',
             'scheduled_date' => 'nullable|date',
-            'assigned_to' => 'nullable|string'
+            'assigned_to' => 'nullable|string',
+            'assigned_employee_id' => 'nullable|exists:employees,id',
+            'assigned_team_id' => 'nullable|exists:teams,id',
         ]);
+
+        if (isset($validated['assigned_employee_id'])) {
+            $emp = \App\Models\Employee::find($validated['assigned_employee_id']);
+            $validated['assigned_to'] = $emp ? $emp->name : null;
+        } elseif (isset($validated['assigned_team_id'])) {
+            $team = \App\Models\Team::find($validated['assigned_team_id']);
+            $validated['assigned_to'] = $team ? $team->name : null;
+        }
         $validated['ticket_number'] = 'SRV-' . date('Ymd') . '-' . rand(100, 999);
         $validated['status'] = 'open';
         $service = ServiceRequest::create($validated);
@@ -83,10 +93,54 @@ class ServiceController extends Controller
             'description' => 'required|string',
             'scheduled_date' => 'nullable|date',
             'assigned_to' => 'nullable|string',
+            'assigned_employee_id' => 'nullable|exists:employees,id',
+            'assigned_team_id' => 'nullable|exists:teams,id',
             'resolution_notes' => 'nullable|string',
             'service_cost' => 'nullable|numeric'
         ]);
+
+        if (isset($validated['assigned_employee_id'])) {
+            $emp = \App\Models\Employee::find($validated['assigned_employee_id']);
+            $validated['assigned_to'] = $emp ? $emp->name : null;
+        } elseif (isset($validated['assigned_team_id'])) {
+            $team = \App\Models\Team::find($validated['assigned_team_id']);
+            $validated['assigned_to'] = $team ? $team->name : null;
+        }
+
+        $oldStatus = $service->status;
         $service->update($validated);
+
+        if ($oldStatus !== 'resolved' && in_array($validated['status'], ['resolved', 'closed'])) {
+            // Task payment
+            $rate = 0;
+            $payeeId = null;
+
+            if ($service->assigned_employee_id) {
+                $payeeId = $service->assigned_employee_id;
+                $rate = $service->assignedEmployee->service_rate ?? 0;
+            } elseif ($service->assigned_team_id) {
+                $team = $service->team;
+                if ($team && $team->leader_id) {
+                    $payeeId = $team->leader_id;
+                    $rate = $team->service_rate ?? 0;
+                }
+            }
+
+            if ($payeeId && $rate > 0) {
+                \App\Models\TaskPayment::updateOrCreate(
+                    [
+                        'employee_id' => $payeeId,
+                        'taskable_type' => get_class($service),
+                        'taskable_id' => $service->id,
+                    ],
+                    [
+                        'amount' => $rate,
+                        'status' => 'pending',
+                        'notes' => 'Auto-generated payment for service resolution.'
+                    ]
+                );
+            }
+        }
         return redirect()->route('admin.services.show', $id)->with('success', 'Service request updated!');
     }
 

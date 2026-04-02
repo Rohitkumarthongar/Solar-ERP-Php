@@ -10,6 +10,7 @@ use App\Models\SalesInvoice;
 use App\Models\ServiceRequest;
 use App\Models\Notification;
 use App\Models\Team;
+use App\Models\Expense;
 use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -102,12 +103,18 @@ class InstallationController extends Controller
             'roof_type'            => 'required|string',
             'notes'                => 'nullable|string',
             'assigned_team'        => 'nullable|string',
+            'assigned_team_id'     => 'nullable|exists:teams,id',
             'technician_remarks'   => 'nullable|string',
             'panel_serial_details' => 'nullable|array',
             'panel_serial_details.*.serial_number' => 'nullable|string',
             'panel_serial_details.*.module_make' => 'nullable|string',
             'panel_serial_details.*.wattage' => 'nullable|string',
             'panel_serial_details.*.string_number' => 'nullable|string',
+            'inverter_serial_details' => 'nullable|array',
+            'inverter_serial_details.*.serial_number' => 'nullable|string',
+            'inverter_serial_details.*.make' => 'nullable|string',
+            'inverter_serial_details.*.capacity' => 'nullable|string',
+            'inverter_serial_details.*.phase' => 'nullable|string',
             'inverter_serial_number' => 'nullable|string',
             'net_meter_serial_number' => 'nullable|string',
             'initial_meter_reading' => 'nullable|string',
@@ -132,6 +139,12 @@ class InstallationController extends Controller
 
         $validated['installation_number'] = 'INST-' . date('Ymd') . '-' . rand(100, 999);
         $validated['status']              = 'scheduled';
+        
+        if (isset($validated['assigned_team_id'])) {
+            $team = \App\Models\Team::find($validated['assigned_team_id']);
+            $validated['assigned_team'] = $team ? $team->name : null;
+        }
+
         $validated = $this->prepareInstallationPayload($request, $validated);
         $installation = Installation::create($validated);
 
@@ -190,6 +203,7 @@ class InstallationController extends Controller
             'roof_type'            => 'required|string',
             'sales_invoice_id'     => 'nullable|exists:sales_invoices,id',
             'assigned_team'        => 'nullable|string',
+            'assigned_team_id'     => 'nullable|exists:teams,id',
             'completion_date'      => 'nullable|date',
             'notes'                => 'nullable|string',
             'technician_remarks'   => 'nullable|string',
@@ -199,6 +213,7 @@ class InstallationController extends Controller
             'panel_serial_details.*.module_make' => 'nullable|string',
             'panel_serial_details.*.wattage' => 'nullable|string',
             'panel_serial_details.*.string_number' => 'nullable|string',
+            'inverter_serial_details' => 'nullable|array',
             'inverter_serial_number' => 'nullable|string',
             'net_meter_serial_number' => 'nullable|string',
             'initial_meter_reading' => 'nullable|string',
@@ -220,14 +235,59 @@ class InstallationController extends Controller
             'commissioning_report' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf',
         ]);
 
+        if (isset($validated['assigned_team_id'])) {
+            $team = \App\Models\Team::find($validated['assigned_team_id']);
+            $validated['assigned_team'] = $team ? $team->name : null;
+        }
+
         $validated = $this->prepareInstallationPayload($request, $validated, $installation);
 
         $installation->update($validated);
 
-        // Auto-create AMC service when installation completes
+        // Auto-create AMC service and record team wage expense when installation completes
         if ($oldStatus !== 'completed' && $validated['status'] === 'completed' && !$installation->auto_service_created) {
             $this->autoCreateMaintenanceService($installation);
             $installation->update(['auto_service_created' => true]);
+
+            // Record Team Wage Expense / Task Payment if a team is assigned
+            if ($installation->assigned_team_id) {
+                $team = $installation->team;
+                if ($team && $team->installation_rate > 0 && $team->leader_id) {
+                    \App\Models\TaskPayment::updateOrCreate(
+                        [
+                            'employee_id' => $team->leader_id,
+                            'taskable_type' => get_class($installation),
+                            'taskable_id' => $installation->id,
+                        ],
+                        [
+                            'amount' => $team->installation_rate,
+                            'status' => 'pending',
+                            'notes' => 'Auto-generated payment for installation completion.'
+                        ]
+                    );
+
+                    Expense::create([
+                        'title'        => 'Installation Wage: ' . $installation->installation_number,
+                        'category'     => 'Team Payment',
+                        'amount'       => $team->installation_rate,
+                        'expense_date' => date('Y-m-d'),
+                        'description'  => 'Installation wage for ' . $team->name . ' on ' . $installation->installation_number . 
+                                         ' (Lead: ' . ($team->leader->name ?? 'N/A') . ')',
+                    ]);
+                }
+            }elseif ($installation->assigned_team) { // Fallback for legacy
+                $team = Team::where('name', $installation->assigned_team)->first();
+                if ($team && $team->installation_rate > 0) {
+                    Expense::create([
+                        'title'        => 'Installation Wage: ' . $installation->installation_number,
+                        'category'     => 'Team Payment',
+                        'amount'       => $team->installation_rate,
+                        'expense_date' => date('Y-m-d'),
+                        'description'  => 'Installation wage for ' . $team->name . ' on ' . $installation->installation_number . 
+                                         ' (Customer: ' . ($installation->customer->name ?? 'N/A') . ')',
+                    ]);
+                }
+            }
 
             // SMS customer
             $customer = $installation->customer;
@@ -250,6 +310,22 @@ class InstallationController extends Controller
         return redirect()->route('admin.installations.show', $id)->with('success', 'Installation updated!');
     }
 
+    public function dcr($id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $installation = Installation::with(['customer.discom'])->findOrFail($id);
+        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        return view('admin.pdf.dcr_certificate', compact('installation', 'settings'));
+    }
+
+    public function workApplication($id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $installation = Installation::with(['customer.discom'])->findOrFail($id);
+        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        return view('admin.pdf.work_application', compact('installation', 'settings'));
+    }
+
     public function destroy($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
@@ -269,6 +345,7 @@ class InstallationController extends Controller
             'description'    => 'Auto-scheduled 3-month AMC check for installation ' . $installation->installation_number . '. System size: ' . $installation->system_size_kw . ' kW.',
             'scheduled_date' => now()->addMonths(3)->toDateString(),
             'assigned_to'    => $installation->assigned_team,
+            'assigned_team_id' => $installation->assigned_team_id,
         ]);
     }
 
@@ -300,6 +377,21 @@ class InstallationController extends Controller
                     'module_make' => trim((string) ($row['module_make'] ?? '')),
                     'wattage' => trim((string) ($row['wattage'] ?? '')),
                     'string_number' => trim((string) ($row['string_number'] ?? '')),
+                ];
+
+                return array_filter($clean, fn ($value) => $value !== '');
+            })
+            ->filter(fn ($row) => !empty($row))
+            ->values()
+            ->all();
+
+        $validated['inverter_serial_details'] = collect($request->input('inverter_serial_details', []))
+            ->map(function ($row) {
+                $clean = [
+                    'serial_number' => trim((string) ($row['serial_number'] ?? '')),
+                    'make' => trim((string) ($row['make'] ?? '')),
+                    'capacity' => trim((string) ($row['capacity'] ?? '')),
+                    'phase' => trim((string) ($row['phase'] ?? '')),
                 ];
 
                 return array_filter($clean, fn ($value) => $value !== '');

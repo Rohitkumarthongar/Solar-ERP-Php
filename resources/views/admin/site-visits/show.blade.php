@@ -110,22 +110,36 @@
                     @endif
                 </div>
 
+                @php
+                    $isReportComplete = !empty($siteVisit->shadow_analysis) && 
+                                       !empty($siteVisit->wiring_length_estimate) && 
+                                       !empty($siteVisit->roof_details) && 
+                                       !empty($siteVisit->ac_dc_location) && 
+                                       !empty($siteVisit->completion_notes);
+                @endphp
+
                 @if($siteVisit->status !== 'completed' && !$siteVisit->is_approved)
                 <div class="bg-gray-50 p-6 flex items-center justify-between border-t border-gray-100 px-8">
                     <div>
                          @if(session('admin_role') === 'admin')
-                            <form action="{{ route('admin.site-visits.approve', $siteVisit->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3 rounded-xl shadow-lg transition uppercase text-xs tracking-widest flex items-center gap-3 active:scale-95">
-                                    <i class="fas fa-check-circle text-lg"></i> Approve Visit Report
-                                </button>
-                            </form>
+                            @if($isReportComplete)
+                                <form action="{{ route('admin.site-visits.approve', $siteVisit->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-3 rounded-xl shadow-lg transition uppercase text-xs tracking-widest flex items-center gap-3 active:scale-95">
+                                        <i class="fas fa-check-circle text-lg"></i> Approve Visit Report
+                                    </button>
+                                </form>
+                            @else
+                                <div class="flex items-center gap-2 text-orange-600 font-black text-[10px] uppercase tracking-widest">
+                                    <i class="fas fa-info-circle"></i> Complete technical report to unlock approval
+                                </div>
+                            @endif
                          @else
                              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Waiting for Admin Approval</p>
                          @endif
                     </div>
                     <button onclick="document.getElementById('completeVisitModal').classList.toggle('hidden')" class="bg-green-600 hover:bg-green-700 text-white font-black px-8 py-3 rounded-xl shadow-lg transition uppercase text-xs tracking-widest flex items-center gap-3 active:scale-95">
-                        <i class="fas fa-edit text-lg"></i> Update Report / Details
+                        <i class="fas fa-edit text-lg"></i> {{ $isReportComplete ? 'Revise Report' : 'Complete Technical Report' }}
                     </button>
                 </div>
                 @elseif($siteVisit->is_approved)

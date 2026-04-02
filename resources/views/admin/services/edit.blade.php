@@ -70,22 +70,25 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase italic">Assigned Crew</label>
-                                <select name="assigned_to"
-                                    class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 font-bold bg-orange-50/10">
-                                    <option value="">— Unassigned —</option>
-                                    <optgroup label="Specialist Teams">
-                                        @foreach($teams as $team)
-                                            <option value="{{ $team->name }}" {{ old('assigned_to', $service->assigned_to) == $team->name ? 'selected' : '' }}>{{ $team->name }}</option>
-                                        @endforeach
-                                    </optgroup>
-                                    <optgroup label="Individual Employees">
-                                        @foreach($employees as $emp)
-                                            <option value="{{ $emp->name }}" {{ old('assigned_to', $service->assigned_to) == $emp->name ? 'selected' : '' }}>
-                                                {{ $emp->name }} ({{ ucfirst($emp->department) }})
-                                            </option>
-                                        @endforeach
-                                    </optgroup>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-widest italic">Assign to Team</label>
+                                <select name="assigned_team_id"
+                                    class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 font-bold bg-orange-50/20">
+                                    <option value="">— No Team —</option>
+                                    @foreach($teams as $team)
+                                        <option value="{{ $team->id }}" {{ old('assigned_team_id', $service->assigned_team_id) == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-widest italic">Assign to Employee</label>
+                                <select name="assigned_employee_id"
+                                    class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 font-bold bg-orange-50/20">
+                                    <option value="">— No Employee —</option>
+                                    @foreach($employees as $emp)
+                                        <option value="{{ $emp->id }}" {{ old('assigned_employee_id', $service->assigned_employee_id) == $emp->id ? 'selected' : '' }}>
+                                            {{ $emp->name }} ({{ ucfirst($emp->department) }})
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>

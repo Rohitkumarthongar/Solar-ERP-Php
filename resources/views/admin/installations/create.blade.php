@@ -120,35 +120,145 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm p-6">
-                    <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
-                        <i class="fas fa-barcode text-indigo-500"></i> Panel Serial Mapping
-                    </h3>
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                                <i class="fas fa-solar-panel text-orange-500"></i> Solar Panel Serial Numbers
+                            </h3>
+                            <p class="text-xs text-gray-500 mt-1">Add serial number for each panel to be installed</p>
+                        </div>
+                        <button type="button" onclick="addPanelRow()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-2">
+                            <i class="fas fa-plus-circle"></i> Add Panel Row
+                        </button>
+                    </div>
+
                     @php
-                        $panelRows = old('panel_serial_details', array_fill(0, 8, ['serial_number' => '', 'module_make' => '', 'wattage' => '', 'string_number' => '']));
+                        $panelRows = old('panel_serial_details', []);
+                        // Start with 1 empty row if no old data
+                        if (empty($panelRows)) {
+                            $panelRows = [['serial_number' => '', 'module_make' => '', 'wattage' => '', 'string_number' => '']];
+                        }
                     @endphp
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="text-xs uppercase tracking-wider text-gray-500 bg-gray-50">
+
+                    <div class="overflow-x-auto bg-gray-50 rounded-xl p-4">
+                        <table class="w-full text-sm" id="panelTable">
+                            <thead class="text-xs uppercase tracking-wider text-gray-500 bg-gray-100">
                                 <tr>
+                                    <th class="px-3 py-2 text-left w-8">#</th>
                                     <th class="px-3 py-2 text-left">Panel Serial No.</th>
                                     <th class="px-3 py-2 text-left">Module Make</th>
-                                    <th class="px-3 py-2 text-left">Wattage</th>
+                                    <th class="px-3 py-2 text-left">Wattage (W)</th>
                                     <th class="px-3 py-2 text-left">String No.</th>
+                                    <th class="px-3 py-2 text-center w-16">Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="panelTableBody">
                                 @foreach($panelRows as $index => $row)
-                                <tr class="border-t border-gray-100">
-                                    <td class="p-2"><input type="text" name="panel_serial_details[{{ $index }}][serial_number]" value="{{ $row['serial_number'] ?? '' }}" class="w-full border border-gray-200 rounded-lg px-3 py-2"></td>
-                                    <td class="p-2"><input type="text" name="panel_serial_details[{{ $index }}][module_make]" value="{{ $row['module_make'] ?? '' }}" class="w-full border border-gray-200 rounded-lg px-3 py-2"></td>
-                                    <td class="p-2"><input type="text" name="panel_serial_details[{{ $index }}][wattage]" value="{{ $row['wattage'] ?? '' }}" class="w-full border border-gray-200 rounded-lg px-3 py-2" placeholder="e.g. 550W"></td>
-                                    <td class="p-2"><input type="text" name="panel_serial_details[{{ $index }}][string_number]" value="{{ $row['string_number'] ?? '' }}" class="w-full border border-gray-200 rounded-lg px-3 py-2" placeholder="e.g. String-1"></td>
+                                <tr class="border-t border-gray-200 panel-row">
+                                    <td class="p-2 text-center text-gray-500 font-bold">{{ $index + 1 }}</td>
+                                    <td class="p-2">
+                                        <input type="text" name="panel_serial_details[{{ $index }}][serial_number]" value="{{ $row['serial_number'] ?? '' }}"
+                                            placeholder="e.g. SN123456789"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="text" name="panel_serial_details[{{ $index }}][module_make]" value="{{ $row['module_make'] ?? '' }}"
+                                            placeholder="e.g. Tata Solar"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="number" name="panel_serial_details[{{ $index }}][wattage]" value="{{ $row['wattage'] ?? '' }}"
+                                            placeholder="e.g. 550"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                                    </td>
+                                    <td class="p-2">
+                                        <input type="text" name="panel_serial_details[{{ $index }}][string_number]" value="{{ $row['string_number'] ?? '' }}"
+                                            placeholder="e.g. String 1"
+                                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                                    </td>
+                                    <td class="p-2 text-center">
+                                        <button type="button" onclick="removePanelRow(this)" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+                    <p class="text-xs text-gray-500 mt-3 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        <span>Click "Add Panel Row" to add more panels. Total panels: <strong id="panelCount">{{ count($panelRows) }}</strong></span>
+                    </p>
                 </div>
+
+                <script>
+                let panelIndex = {{ count($panelRows) }};
+
+                function addPanelRow() {
+                    const tbody = document.getElementById('panelTableBody');
+                    const rowNumber = tbody.querySelectorAll('.panel-row').length + 1;
+                    
+                    const newRow = `
+                        <tr class="border-t border-gray-200 panel-row">
+                            <td class="p-2 text-center text-gray-500 font-bold">${rowNumber}</td>
+                            <td class="p-2">
+                                <input type="text" name="panel_serial_details[${panelIndex}][serial_number]"
+                                    placeholder="e.g. SN123456789"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                            </td>
+                            <td class="p-2">
+                                <input type="text" name="panel_serial_details[${panelIndex}][module_make]"
+                                    placeholder="e.g. Tata Solar"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                            </td>
+                            <td class="p-2">
+                                <input type="number" name="panel_serial_details[${panelIndex}][wattage]"
+                                    placeholder="e.g. 550"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                            </td>
+                            <td class="p-2">
+                                <input type="text" name="panel_serial_details[${panelIndex}][string_number]"
+                                    placeholder="e.g. String 1"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                            </td>
+                            <td class="p-2 text-center">
+                                <button type="button" onclick="removePanelRow(this)" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    
+                    tbody.insertAdjacentHTML('beforeend', newRow);
+                    panelIndex++;
+                    updatePanelCount();
+                    updateRowNumbers();
+                }
+
+                function removePanelRow(button) {
+                    const row = button.closest('.panel-row');
+                    if (document.querySelectorAll('.panel-row').length > 1) {
+                        row.remove();
+                        updatePanelCount();
+                        updateRowNumbers();
+                    } else {
+                        alert('At least one panel row is required!');
+                    }
+                }
+
+                function updateRowNumbers() {
+                    const rows = document.querySelectorAll('.panel-row');
+                    rows.forEach((row, index) => {
+                        row.querySelector('td:first-child').textContent = index + 1;
+                    });
+                }
+
+                function updatePanelCount() {
+                    const count = document.querySelectorAll('.panel-row').length;
+                    document.getElementById('panelCount').textContent = count;
+                }
+                </script>
             </div>
             
             {{-- Right Column --}}
@@ -169,11 +279,11 @@
                         
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase">Assigned Service Team</label>
-                            <select name="assigned_team"
+                            <select name="assigned_team_id"
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold bg-indigo-50/30">
                                 <option value="">— Unassigned / TBD —</option>
                                 @foreach($teams as $team)
-                                    <option value="{{ $team->name }}" {{ old('assigned_team') == $team->name ? 'selected' : '' }}>{{ $team->name }}</option>
+                                    <option value="{{ $team->id }}" {{ (old('assigned_team_id') ?? $prefill['assigned_team_id'] ?? '') == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                                 @endforeach
                             </select>
                             <p class="text-[10px] text-gray-400 mt-1 italic font-medium">Create more teams in <a href="{{ route('admin.teams.index') }}" class="text-indigo-600 hover:underline">Team Management</a></p>

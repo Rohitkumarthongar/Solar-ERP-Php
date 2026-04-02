@@ -17,6 +17,12 @@
                 <p class="text-sm text-gray-400 mt-0.5">Real-time stock value and low inventory warnings.</p>
             </div>
         </div>
+        <div class="flex gap-3">
+            <a href="{{ route('admin.reports.inventory.export') }}"
+                class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a>
+        </div>
     </div>
 
     {{-- Stats Grid --}}
@@ -118,5 +124,34 @@
         </div>
     </div>
 
+    {{-- Report Summary Section --}}
+    <div class="bg-gray-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+        <h3 class="text-xs font-black uppercase tracking-[0.25em] mb-6 opacity-60">Inventory Health Summary</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Asset Capitalization</p>
+                <p class="text-2xl font-black text-blue-400">₹{{ number_format($totalValue, 2) }}</p>
+                <p class="text-[10px] text-gray-500">Locked in existing stock</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Supply Chain Risk</p>
+                <p class="text-2xl font-black text-red-400">{{ $lowStock->count() }} Items</p>
+                <p class="text-[10px] text-gray-500">Below safety thresholds</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">SKU Diversification</p>
+                <p class="text-2xl font-black text-indigo-400">{{ $inventories->count() }}</p>
+                <p class="text-[10px] text-gray-500">Unique product categories</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Inventory Health</p>
+                <p class="text-2xl font-black text-green-400">
+                    {{ $inventories->count() > 0 ? number_format((($inventories->count() - $lowStock->count()) / $inventories->count()) * 100, 0) : 100 }}%
+                </p>
+                <p class="text-[10px] text-gray-500">Optimal stock availability</p>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

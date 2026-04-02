@@ -104,6 +104,39 @@
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
                         </div>
 
+                        <div class="pt-4 border-t border-gray-100 space-y-4">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-400">Task-Based Performance Rates</h4>
+                            
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Installation Rate (Per Site)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                        <input type="number" name="installation_rate" value="{{ old('installation_rate', $employee->installation_rate) }}" min="0" step="0.01"
+                                            class="w-full pl-8 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-600">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Site Visit Rate (Per Visit)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                        <input type="number" name="site_visit_rate" value="{{ old('site_visit_rate', $employee->site_visit_rate) }}" min="0" step="0.01"
+                                            class="w-full pl-8 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-600">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Service Rate (Per Call)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                        <input type="number" name="service_rate" value="{{ old('service_rate', $employee->service_rate) }}" min="0" step="0.01"
+                                            class="w-full pl-8 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold text-indigo-600">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex items-center gap-3 pt-4 border-t border-gray-50">
                             <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $employee->is_active) ? 'checked' : '' }}
                                 class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">

@@ -55,7 +55,7 @@
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
                     @php
-                        $assigned = json_decode($role->permissions ?? '[]', true);
+                        $assigned = $role->permissions ?? [];
                     @endphp
                     @foreach($permissions as $perm)
                     <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition border border-transparent hover:border-gray-100">
@@ -66,7 +66,7 @@
                         </div>
                         <div class="flex flex-col">
                             <span class="text-sm font-bold text-gray-700 capitalize">{{ str_replace('_', ' ', $perm) }}</span>
-                            <span class="text-[9px] text-gray-400 font-medium uppercase tracking-widest">Module Access</span>
+                            <span class="text-[9px] text-gray-400 font-medium uppercase tracking-widest">{{ $perm === 'all_forms' ? 'Full System Access' : 'Module Access' }}</span>
                         </div>
                     </div>
                     @endforeach

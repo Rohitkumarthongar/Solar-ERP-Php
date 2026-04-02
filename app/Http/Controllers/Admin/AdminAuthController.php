@@ -27,13 +27,20 @@ class AdminAuthController extends Controller
         $user = AdminUser::where('email', $request->email)->where('is_active', true)->first();
 
         if ($user && Hash::check($request->password, $user->password)) {
+            // Get combined permissions (user-specific OR role-inherited)
+            $permissions = $user->permissions ?? [];
+            if (empty($permissions) && $user->role_id) {
+                $role = \App\Models\Role::find($user->role_id);
+                $permissions = $role->permissions ?? [];
+            }
+
             session([
                 'admin_logged_in' => true,
                 'admin_user' => $user->name,
                 'admin_email' => $user->email,
                 'admin_user_id' => $user->id,
-                'admin_role' => $user->role,
-                'admin_permissions' => $user->permissions ?? []
+                'admin_role' => strtolower($user->role),
+                'admin_permissions' => $permissions
             ]);
             return redirect()->route('admin.dashboard');
         }

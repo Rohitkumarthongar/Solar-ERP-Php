@@ -12,8 +12,8 @@ class RoleController extends Controller
 {
     private $allPermissions = [
         'dashboard', 'customers', 'leads', 'site_visits', 'quotations', 'sales_orders', 'sales_invoices',
-        'purchase_orders', 'products', 'packages', 'inventory', 'installations',
-        'services', 'employees', 'reports', 'settings', 'notifications', 'roles'
+        'purchase_orders', 'product_categories', 'products', 'packages', 'inventory', 'installations',
+        'services', 'employees', 'teams', 'expenses', 'reports', 'notifications', 'blogs', 'roles', 'settings', 'all_forms'
     ];
 
     public function index()

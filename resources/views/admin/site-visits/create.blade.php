@@ -27,6 +27,9 @@
                                     {{ $lead->name }} ({{ $lead->lead_number }})
                                 </div>
                                 <input type="hidden" name="lead_id" value="{{ $lead->id }}">
+                                @if($lead->customer_id)
+                                <input type="hidden" name="customer_id" value="{{ $lead->customer_id }}">
+                                @endif
                             </div>
                             @elseif(request('customer_id'))
                             <div>
@@ -50,6 +53,60 @@
                         </div>
                     </div>
 
+                    @if(isset($lead))
+                    {{-- Simplified form when coming from lead --}}
+                    <div class="md:col-span-2 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Quick Schedule Mode:</strong> Fill in basic details now. The assigned technician will complete technical details and upload photos after the visit.
+                        </p>
+                    </div>
+
+                    <!-- Scheduled At -->
+                    <div>
+                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Visit Date & Time <span class="text-red-500">*</span></label>
+                        <input type="datetime-local" name="scheduled_at" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
+                        @error('scheduled_at')<p class="text-red-500 text-[10px] mt-2 font-bold uppercase">{{ $message }}</p>@enderror
+                    </div>
+
+                    <!-- Assigned To -->
+                    <div>
+                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Assigned Technician/Employee <span class="text-red-500">*</span></label>
+                        <select name="assigned_employee_id" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
+                            <option value="">-- Choose Employee --</option>
+                            @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}" {{ old('assigned_employee_id') == $employee->id ? 'selected' : '' }}>{{ $employee->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('assigned_employee_id')<p class="text-red-500 text-[10px] mt-2 font-bold uppercase">{{ $message }}</p>@enderror
+                    </div>
+
+                    @if($lead->address)
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Site Address</label>
+                        <div class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700">
+                            {{ $lead->address }}
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($lead->latitude && $lead->longitude)
+                    <div class="md:col-span-2 rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-800">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        Lead coordinates will be auto-filled: {{ $lead->latitude }}, {{ $lead->longitude }}
+                    </div>
+                    <input type="hidden" name="latitude" value="{{ $lead->latitude }}">
+                    <input type="hidden" name="longitude" value="{{ $lead->longitude }}">
+                    @endif
+
+                    <!-- Optional Notes -->
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Instructions for Technician (Optional)</label>
+                        <textarea name="technical_notes" rows="3" placeholder="Any specific instructions or things to check during the visit..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300"></textarea>
+                    </div>
+
+                    @else
+                    {{-- Full form when not from lead --}}
                     <!-- Scheduled At -->
                     <div>
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Visit Date & Time</label>
@@ -60,23 +117,23 @@
                     <!-- Assigned To -->
                     <div>
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Assigned Technician/Employee</label>
-                        <select name="assigned_to" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
+                        <select name="assigned_employee_id" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
                             <option value="">-- Choose Employee --</option>
                             @foreach($employees as $employee)
-                            <option value="{{ $employee->name }}">{{ $employee->name }}</option>
+                            <option value="{{ $employee->id }}" {{ old('assigned_employee_id') == $employee->id ? 'selected' : '' }}>{{ $employee->name }}</option>
                             @endforeach
                         </select>
-                        @error('assigned_to')<p class="text-red-500 text-[10px] mt-2 font-bold uppercase">{{ $message }}</p>@enderror
+                        @error('assigned_employee_id')<p class="text-red-500 text-[10px] mt-2 font-bold uppercase">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Latitude</label>
-                        <input type="number" step="0.0000001" name="latitude" value="{{ old('latitude', $lead->latitude ?? '') }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300" placeholder="23.0225050">
+                        <input type="number" step="0.0000001" name="latitude" value="{{ old('latitude') }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300" placeholder="23.0225050">
                     </div>
 
                     <div>
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Longitude</label>
-                        <input type="number" step="0.0000001" name="longitude" value="{{ old('longitude', $lead->longitude ?? '') }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300" placeholder="72.5713621">
+                        <input type="number" step="0.0000001" name="longitude" value="{{ old('longitude') }}" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300" placeholder="72.5713621">
                     </div>
 
                     <!-- Discom Update -->
@@ -126,17 +183,12 @@
                          <textarea name="ac_dc_location" rows="2" placeholder="Where will the inverter and distribution box be placed?" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">{{ old('ac_dc_location') }}</textarea>
                     </div>
 
-                    @if(!empty($lead?->latitude) && !empty($lead?->longitude))
-                    <div class="md:col-span-2 rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-800">
-                        Lead coordinates will be copied to this site visit: {{ $lead->latitude }}, {{ $lead->longitude }}
-                    </div>
-                    @endif
-
                     <!-- Technical Notes -->
                     <div class="md:col-span-2">
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Technical Notes</label>
                         <textarea name="technical_notes" rows="4" placeholder="Any specific technical challenges, shadowing issues, structural concerns..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300"></textarea>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

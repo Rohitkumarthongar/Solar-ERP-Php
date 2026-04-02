@@ -208,80 +208,232 @@
             </div>
         </div>
         <nav class="p-3 space-y-1">
+            @can_access('dashboard')
             <a href="{{ route('admin.dashboard') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="fas fa-tachometer-alt w-5"></i><span>Dashboard</span>
             </a>
+            @endcan_access
+
+            @can_access('customers')
+            @php $crmHeader = true; @endphp
+            @endcan_access
+            @can_access('leads')
+            @php $crmHeader = true; @endphp
+            @endcan_access
+            @can_access('site_visits')
+            @php $crmHeader = true; @endphp
+            @endcan_access
+            @can_access('quotations')
+            @php $crmHeader = true; @endphp
+            @endcan_access
+
+            @if(isset($crmHeader))
             <div class="pt-2 pb-1"><p class="text-orange-300 text-xs font-semibold uppercase tracking-wider px-3">CRM</p></div>
+            @endif
+
+            @can_access('customers')
             <a href="{{ route('admin.customers.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.customers*') ? 'active' : '' }}">
                 <i class="fas fa-users w-5"></i><span>Customers</span>
             </a>
+            @endcan_access
+
+            @can_access('leads')
             <a href="{{ route('admin.leads.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.leads*') ? 'active' : '' }}">
                 <i class="fas fa-funnel-dollar w-5"></i><span>Leads / CRM</span>
             </a>
+            @endcan_access
+
+            @can_access('site_visits')
             <a href="{{ route('admin.site-visits.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.site-visits*') ? 'active' : '' }}">
                 <i class="fas fa-map-marked-alt w-5"></i><span>Site Visits</span>
             </a>
+            @endcan_access
+
+            @can_access('quotations')
             <a href="{{ route('admin.quotations.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.quotations*') ? 'active' : '' }}">
                 <i class="fas fa-file-invoice-dollar w-5"></i><span>Quotations</span>
             </a>
+            @endcan_access
+
+            @can_access('sales_orders')
+            @php $salesHeader = true; @endphp
+            @endcan_access
+            @can_access('sales_invoices')
+            @php $salesHeader = true; @endphp
+            @endcan_access
+            @can_access('purchase_orders')
+            @php $salesHeader = true; @endphp
+            @endcan_access
+
+            @if(isset($salesHeader))
             <div class="pt-2 pb-1"><p class="text-orange-300 text-xs font-semibold uppercase tracking-wider px-3">Sales & Purchase</p></div>
+            @endif
+
+            @can_access('sales_orders')
             <a href="{{ route('admin.sales-orders.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.sales-orders*') ? 'active' : '' }}">
                 <i class="fas fa-shopping-cart w-5"></i><span>Sales Orders</span>
             </a>
+            @endcan_access
+
+            @can_access('sales_invoices')
             <a href="{{ route('admin.sales-invoices.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.sales-invoices*') ? 'active' : '' }}">
                 <i class="fas fa-file-invoice-dollar w-5"></i><span>Sales Invoices</span>
             </a>
+            @endcan_access
+
+            @can_access('purchase_orders')
             <a href="{{ route('admin.purchase-orders.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.purchase-orders*') ? 'active' : '' }}">
                 <i class="fas fa-truck w-5"></i><span>Purchase Orders</span>
             </a>
+            @endcan_access
+
+            @can_access('product_categories')
+            @php $productHeader = true; @endphp
+            @endcan_access
+            @can_access('products')
+            @php $productHeader = true; @endphp
+            @endcan_access
+            @can_access('packages')
+            @php $productHeader = true; @endphp
+            @endcan_access
+            @can_access('inventory')
+            @php $productHeader = true; @endphp
+            @endcan_access
+
+            @if(isset($productHeader))
             <div class="pt-2 pb-1"><p class="text-orange-300 text-xs font-semibold uppercase tracking-wider px-3">Products</p></div>
+            @endif
+
+            @can_access('product_categories')
             <a href="{{ route('admin.product-categories.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.product-categories*') ? 'active' : '' }}">
                 <i class="fas fa-tags w-5"></i><span>Categories</span>
             </a>
+            @endcan_access
+
+            @can_access('products')
             <a href="{{ route('admin.products.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.products*') ? 'active' : '' }}">
                 <i class="fas fa-solar-panel w-5"></i><span>Products</span>
             </a>
+            @endcan_access
+
+            @can_access('packages')
             <a href="{{ route('admin.packages.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.packages*') ? 'active' : '' }}">
                 <i class="fas fa-box-open w-5"></i><span>Packages</span>
             </a>
+            @endcan_access
+
+            @can_access('inventory')
             <a href="{{ route('admin.inventory.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.inventory*') ? 'active' : '' }}">
                 <i class="fas fa-warehouse w-5"></i><span>Inventory</span>
             </a>
+            @endcan_access
+
+            @can_access('installations')
+            @php $opsHeader = true; @endphp
+            @endcan_access
+            @can_access('services')
+            @php $opsHeader = true; @endphp
+            @endcan_access
+
+            @if(isset($opsHeader))
             <div class="pt-2 pb-1"><p class="text-orange-300 text-xs font-semibold uppercase tracking-wider px-3">Operations</p></div>
+            @endif
+
+            @can_access('installations')
             <a href="{{ route('admin.installations.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.installations*') ? 'active' : '' }}">
                 <i class="fas fa-tools w-5"></i><span>Installations</span>
             </a>
+            @endcan_access
+
+            @can_access('services')
             <a href="{{ route('admin.services.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.services*') ? 'active' : '' }}">
                 <i class="fas fa-headset w-5"></i><span>Service Requests</span>
             </a>
+            @endcan_access
+
+            @can_access('employees')
+            @php $hrHeader = true; @endphp
+            @endcan_access
+            @can_access('teams')
+            @php $hrHeader = true; @endphp
+            @endcan_access
+            @can_access('expenses')
+            @php $hrHeader = true; @endphp
+            @endcan_access
+            @can_access('reports')
+            @php $hrHeader = true; @endphp
+            @endcan_access
+
+            @if(isset($hrHeader))
             <div class="pt-2 pb-1"><p class="text-orange-300 text-xs font-semibold uppercase tracking-wider px-3">HR & Finance</p></div>
+            @endif
+
+            @can_access('employees')
             <a href="{{ route('admin.employees.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.employees*') ? 'active' : '' }}">
                 <i class="fas fa-user-tie w-5"></i><span>Employees</span>
             </a>
+            @endcan_access
+
+            @can_access('teams')
             <a href="{{ route('admin.teams.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.teams*') ? 'active' : '' }}">
                 <i class="fas fa-users-cog w-5"></i><span>Teams</span>
             </a>
+            @endcan_access
+
+            @can_access('expenses')
             <a href="{{ route('admin.expenses.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.expenses*') ? 'active' : '' }}">
                 <i class="fas fa-money-bill-wave w-5"></i><span>Direct Expenses</span>
             </a>
+            @endcan_access
+
+            @can_access('reports')
             <a href="{{ route('admin.reports.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
                 <i class="fas fa-chart-bar w-5"></i><span>Reports</span>
             </a>
+            @endcan_access
+
+            @can_access('notifications')
+            @php $sysHeader = true; @endphp
+            @endcan_access
+            @can_access('blogs')
+            @php $sysHeader = true; @endphp
+            @endcan_access
+            @can_access('roles')
+            @php $sysHeader = true; @endphp
+            @endcan_access
+            @can_access('settings')
+            @php $sysHeader = true; @endphp
+            @endcan_access
+
+            @if(isset($sysHeader))
             <div class="pt-2 pb-1"><p class="text-orange-300 text-xs font-semibold uppercase tracking-wider px-3">System</p></div>
+            @endif
+
+            @can_access('notifications')
             <a href="{{ route('admin.notifications.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.notifications*') ? 'active' : '' }}">
                 <i class="fas fa-bell w-5"></i><span>Notifications</span>
                 @php $unreadCount = \App\Models\Notification::where('is_read',false)->count(); @endphp
                 @if($unreadCount > 0)<span class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{{ $unreadCount }}</span>@endif
             </a>
+            @endcan_access
+
+            @can_access('blogs')
             <a href="{{ route('admin.blogs.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.blogs*') ? 'active' : '' }}">
                 <i class="fas fa-newspaper w-5"></i><span>Blogs & Schemes</span>
             </a>
+            @endcan_access
+
+            @can_access('roles')
             <a href="{{ route('admin.roles.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.roles*') || request()->routeIs('admin.users*') ? 'active' : '' }}">
                 <i class="fas fa-user-shield w-5"></i><span>Roles & Users</span>
             </a>
+            @endcan_access
+
+            @can_access('settings')
             <a href="{{ route('admin.settings.index') }}" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-sm {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
                 <i class="fas fa-cog w-5"></i><span>Settings</span>
             </a>
+            @endcan_access
         </nav>
         <div class="p-4 border-t" style="border-color: var(--admin-border);">
             <form action="{{ route('admin.logout') }}" method="POST">

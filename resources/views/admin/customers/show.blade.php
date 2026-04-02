@@ -147,32 +147,41 @@
             {{-- Discom, Loan, Subsidy Forms --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {{-- Discom Form --}}
-                <div class="bg-white rounded-2xl shadow-sm p-5 border border-purple-100">
-                    <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 mb-3 flex items-center gap-2">
-                        <i class="fas fa-bolt text-purple-500"></i> Discom Details
-                    </h3>
-                    <form action="{{ route('admin.customers.discom', $customer->id) }}" method="POST">
-                        @csrf
-                        <div class="space-y-3 text-xs focus-within:text-purple-600">
-                            <div>
-                                <label class="block text-gray-600 mb-1">Discom Name</label>
-                                <input type="text" name="discom_name" value="{{ $customer->discom->discom_name ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-purple-500 focus:ring-purple-500 text-xs">
+                {{-- Discom Card --}}
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-purple-100 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 mb-3 flex items-center gap-2">
+                            <i class="fas fa-bolt text-purple-500"></i> Discom Details
+                        </h3>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-500 uppercase font-semibold">Status</span>
+                                <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+                                    {{ str_replace('_', ' ', $customer->discom->workflow_status ?? 'NOT STARTED') }}
+                                </span>
                             </div>
-                            <div>
-                                <label class="block text-gray-600 mb-1">K-Number</label>
-                                <input type="text" name="k_number" value="{{ $customer->discom->k_number ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-purple-500 text-xs">
+                            
+                            @if($customer->discom)
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-400">DISCOM:</span>
+                                    <span class="font-bold text-gray-700">{{ $customer->discom->discom_name ?? 'N/A' }}</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-400">K-Number:</span>
+                                    <span class="font-mono text-gray-700">{{ $customer->discom->k_number ?? 'N/A' }}</span>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-600 mb-1">Sanctioned Load</label>
-                                <input type="text" name="sanctioned_load" value="{{ $customer->discom->sanctioned_load ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-purple-500 text-xs">
-                            </div>
-                            <div>
-                                <label class="block text-gray-600 mb-1">Required Load (kW)</label>
-                                <input type="text" name="required_load_kw" value="{{ $customer->discom->required_load_kw ?? '' }}" class="w-full border-gray-300 rounded px-3 py-1.5 focus:border-purple-500 text-xs">
-                            </div>
-                            <button type="submit" class="w-full bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white font-bold py-2 rounded-lg transition">Save</button>
+                            @else
+                                <p class="text-xs text-gray-400 italic">No DISCOM details configured.</p>
+                            @endif
                         </div>
-                    </form>
+                    </div>
+                    
+                    <a href="{{ route('admin.customers.discom', $customer->id) }}" class="w-full bg-purple-600 text-white text-center font-bold py-2.5 rounded-xl transition hover:bg-purple-700 shadow-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-tasks"></i> Advanced Management
+                    </a>
                 </div>
 
                 {{-- Loan Form --}}

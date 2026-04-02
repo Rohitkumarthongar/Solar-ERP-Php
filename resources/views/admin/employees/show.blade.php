@@ -68,6 +68,19 @@
                     <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Basic Salary</p>
                     <span class="font-bold text-indigo-600">₹{{ number_format($employee->basic_salary, 2) }}</span>
                 </div>
+                <!-- Task Specific Rates -->
+                <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 flex flex-col justify-center">
+                    <p class="text-[9px] text-indigo-400 font-black uppercase tracking-tighter mb-1">Installation Rate</p>
+                    <span class="font-black text-gray-800">₹{{ number_format($employee->installation_rate, 0) }}</span>
+                </div>
+                <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 flex flex-col justify-center">
+                    <p class="text-[9px] text-indigo-400 font-black uppercase tracking-tighter mb-1">Site Visit Rate</p>
+                    <span class="font-black text-gray-800">₹{{ number_format($employee->site_visit_rate, 0) }}</span>
+                </div>
+                <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 flex flex-col justify-center">
+                    <p class="text-[9px] text-indigo-400 font-black uppercase tracking-tighter mb-1">Service Rate</p>
+                    <span class="font-black text-gray-800">₹{{ number_format($employee->service_rate, 0) }}</span>
+                </div>
             </div>
 
             {{-- Experience & Role --}}
@@ -137,6 +150,70 @@
                 </div>
             </div>
 
+            {{-- Task Payment Tracking --}}
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-indigo-50/30">
+                    <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                        <i class="fas fa-tasks text-indigo-500"></i> Performance Task Payments
+                    </h3>
+                    <span class="text-[10px] font-black text-indigo-600 bg-white px-2 py-1 rounded border border-indigo-100 uppercase">Tracked Rewards</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead class="bg-gray-50 text-gray-400 font-bold uppercase text-[9px] border-b border-gray-50">
+                            <tr>
+                                <th class="px-6 py-3">Task / Reference</th>
+                                <th class="px-6 py-3">Type</th>
+                                <th class="px-6 py-3">Date</th>
+                                <th class="px-6 py-3">Reward</th>
+                                <th class="px-6 py-3 text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @forelse($employee->taskPayments->sortByDesc('created_at')->take(10) as $taskPay)
+                            <tr class="hover:bg-gray-50/50 transition">
+                                <td class="px-6 py-3">
+                                    <span class="font-bold text-gray-800">
+                                        @if($taskPay->taskable_type == 'App\Models\Installation')
+                                            {{ $taskPay->taskable->installation_number ?? 'Unknown Installation' }}
+                                        @elseif($taskPay->taskable_type == 'App\Models\SiteVisit')
+                                            {{ $taskPay->taskable->visit_number ?? 'Unknown Visit' }}
+                                        @elseif($taskPay->taskable_type == 'App\Models\ServiceRequest')
+                                            {{ $taskPay->taskable->ticket_number ?? 'Unknown Service' }}
+                                        @else
+                                            Task #{{ $taskPay->taskable_id }}
+                                        @endif
+                                    </span>
+                                </td>
+                                <td class="px-6 py-3 capitalize text-gray-500">
+                                    @php
+                                        $typeName = str_replace(['App\Models\\', 'Request'], '', $taskPay->taskable_type);
+                                        $typeName = preg_replace('/(?<!^)[A-Z]/', ' $0', $typeName);
+                                    @endphp
+                                    {{ $typeName }}
+                                </td>
+                                <td class="px-6 py-3 text-gray-500">{{ $taskPay->created_at->format('d M, Y') }}</td>
+                                <td class="px-6 py-3 font-black text-indigo-600">₹{{ number_format($taskPay->amount, 2) }}</td>
+                                <td class="px-6 py-3 text-right">
+                                    @if($taskPay->status == 'paid')
+                                        <span class="bg-green-100 text-green-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase">Paid</span>
+                                    @else
+                                        <span class="bg-orange-100 text-orange-700 text-[8px] font-black px-1.5 py-0.5 rounded uppercase">Pending</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center text-gray-300 italic font-medium">
+                                    No task payments recorded yet. Complete assigned tasks to earn rewards.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
 
         {{-- Sidebar Stats Card --}}
@@ -148,12 +225,16 @@
                 <div class="space-y-5">
                     <div>
                         <p class="text-[10px] text-white/40 font-medium">Total Lifetime Earnings</p>
-                        <p class="text-2xl font-black">₹{{ number_format($employee->salaryRecords->sum('net_salary'), 2) }}</p>
+                        <p class="text-2xl font-black">₹{{ number_format($employee->salaryRecords->sum('net_salary') + $employee->taskPayments->where('status', 'paid')->sum('amount'), 2) }}</p>
                     </div>
                     <div class="flex items-center justify-between border-t border-white/10 pt-4">
                         <div>
-                            <p class="text-[10px] text-white/40 font-medium">Total Settlements</p>
+                            <p class="text-[10px] text-white/40 font-medium">Salary Settlements</p>
                             <p class="text-lg font-bold">{{ $employee->salaryRecords->count() }} Payments</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] text-white/40 font-medium">Unpaid Tasks</p>
+                            <p class="text-lg font-bold text-orange-400">₹{{ number_format($employee->taskPayments->where('status', 'pending')->sum('amount'), 2) }}</p>
                         </div>
                     </div>
                 </div>

@@ -22,5 +22,11 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             \URL::forceScheme('https');
         }
+
+        \Blade::if('can_access', function ($permission) {
+            $role = str_replace(' ', '', strtolower(session('admin_role', '')));
+            if ($role === 'superadmin') return true;
+            return in_array($permission, session('admin_permissions', []));
+        });
     }
 }

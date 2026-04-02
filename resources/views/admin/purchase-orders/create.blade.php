@@ -24,7 +24,7 @@
     </div>
     @endif
 
-    <form action="{{ route('admin.purchase-orders.store') }}" method="POST">
+    <form action="{{ route('admin.purchase-orders.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
@@ -99,6 +99,20 @@
             </div>
 
             <div class="space-y-5">
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-3 mb-4 flex items-center gap-2">
+                        <i class="fas fa-file-invoice text-purple-500"></i> Invoice Attachments
+                    </h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Upload Invoice/Documents</label>
+                            <input type="file" name="invoice_attachments[]" multiple accept="image/*,application/pdf"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                            <p class="text-xs text-gray-500 mt-1">Upload supplier invoice, receipts, or related documents (PDF, JPG, PNG)</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm p-6">
                     <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-3 mb-4 flex items-center gap-2">
                         <i class="fas fa-sticky-note text-purple-500"></i> Notes

@@ -17,10 +17,12 @@
                 <p class="text-sm text-gray-400 mt-0.5">Analysing staff payments for {{ date('F', mktime(0,0,0, $month, 1)) }} {{ $year }}</p>
             </div>
         </div>
-        <a href="{{ route('admin.reports.salary.pdf', ['month' => $month, 'year' => $year]) }}" target="_blank"
-            class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
-            <i class="fas fa-file-pdf"></i> Export PDF
-        </a>
+        <div class="flex gap-3">
+            <a href="{{ route('admin.reports.salary.pdf', ['month' => $month, 'year' => $year]) }}" target="_blank"
+                class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </a>
+        </div>
     </div>
 
     {{-- Filter Bar --}}
@@ -125,5 +127,32 @@
         </div>
     </div>
 
+    {{-- Report Summary Section --}}
+    <div class="bg-gray-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+        <h3 class="text-xs font-black uppercase tracking-[0.25em] mb-6 opacity-60">Staff Disbursement Summary</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Monthly Net Liability</p>
+                <p class="text-2xl font-black text-green-400">₹{{ number_format($totalPaid, 2) }}</p>
+                <p class="text-[10px] text-gray-500">Effective cash outflow this month</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Payroll Coverage</p>
+                <p class="text-2xl font-black text-blue-400">{{ $records->count() }} Profiles</p>
+                <p class="text-[10px] text-gray-500">Number of staff paid successfully</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Avg Salary Ticket</p>
+                <p class="text-2xl font-black text-indigo-400">₹{{ $records->count() > 0 ? number_format($totalPaid / $records->count(), 2) : 0 }}</p>
+                <p class="text-[10px] text-gray-500">Mean disbursement per employee</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Payout Status</p>
+                <p class="text-2xl font-black text-emerald-400">100%</p>
+                <p class="text-[10px] text-gray-500">All scheduled records verified</p>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

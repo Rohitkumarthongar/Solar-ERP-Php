@@ -32,6 +32,10 @@
         </div>
         
         <div class="flex gap-2">
+            <a href="{{ route('admin.site-visits.create', ['lead_id' => $lead->id]) }}"
+                class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition shadow-sm">
+                <i class="fas fa-map-marker-alt"></i> Schedule Site Visit
+            </a>
             @if($lead->status !== 'converted')
                 <form action="{{ route('admin.leads.convert', $lead->id) }}" method="POST">
                     @csrf

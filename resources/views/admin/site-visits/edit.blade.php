@@ -42,13 +42,13 @@
                     <!-- Assigned To -->
                     <div>
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Assigned Technician/Employee</label>
-                        <select name="assigned_to" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
+                        <select name="assigned_employee_id" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
                             <option value="">-- Choose Employee --</option>
                             @foreach($employees as $employee)
-                            <option value="{{ $employee->name }}" {{ $siteVisit->assigned_to == $employee->name ? 'selected' : '' }}>{{ $employee->name }}</option>
+                            <option value="{{ $employee->id }}" {{ $siteVisit->assigned_employee_id == $employee->id ? 'selected' : '' }}>{{ $employee->name }}</option>
                             @endforeach
                         </select>
-                        @error('assigned_to')<p class="text-red-500 text-[10px] mt-2 font-bold uppercase">{{ $message }}</p>@enderror
+                        @error('assigned_employee_id')<p class="text-red-500 text-[10px] mt-2 font-bold uppercase">{{ $message }}</p>@enderror
                     </div>
 
                     <div>

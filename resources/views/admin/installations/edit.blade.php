@@ -78,11 +78,11 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-widest italic">Assigned Crew</label>
-                                <select name="assigned_team"
+                                <select name="assigned_team_id"
                                     class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold bg-indigo-50/50">
                                     <option value="">— Unassigned —</option>
                                     @foreach($teams as $team)
-                                        <option value="{{ $team->name }}" {{ old('assigned_team', $installation->assigned_team) == $team->name ? 'selected' : '' }}>{{ $team->name }}</option>
+                                        <option value="{{ $team->id }}" {{ old('assigned_team_id', $installation->assigned_team_id) == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -138,32 +138,276 @@
                             <input type="text" name="initial_meter_reading" value="{{ old('initial_meter_reading', $installation->initial_meter_reading) }}" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
                         </div>
                     </div>
-                    @php
-                        $panelRows = old('panel_serial_details', $installation->panel_serial_details ?: array_fill(0, 8, ['serial_number' => '', 'module_make' => '', 'wattage' => '', 'string_number' => '']));
-                    @endphp
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="text-xs uppercase tracking-wider text-gray-500 bg-gray-50">
-                                <tr>
-                                    <th class="px-3 py-2 text-left">Panel Serial No.</th>
-                                    <th class="px-3 py-2 text-left">Module Make</th>
-                                    <th class="px-3 py-2 text-left">Wattage</th>
-                                    <th class="px-3 py-2 text-left">String No.</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($panelRows as $index => $row)
-                                <tr class="border-t border-gray-100">
-                                    <td class="p-2"><input type="text" name="panel_serial_details[{{ $index }}][serial_number]" value="{{ $row['serial_number'] ?? '' }}" class="w-full border border-gray-200 rounded-lg px-3 py-2"></td>
-                                    <td class="p-2"><input type="text" name="panel_serial_details[{{ $index }}][module_make]" value="{{ $row['module_make'] ?? '' }}" class="w-full border border-gray-200 rounded-lg px-3 py-2"></td>
-                                    <td class="p-2"><input type="text" name="panel_serial_details[{{ $index }}][wattage]" value="{{ $row['wattage'] ?? '' }}" class="w-full border border-gray-200 rounded-lg px-3 py-2"></td>
-                                    <td class="p-2"><input type="text" name="panel_serial_details[{{ $index }}][string_number]" value="{{ $row['string_number'] ?? '' }}" class="w-full border border-gray-200 rounded-lg px-3 py-2"></td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+
+                    {{-- Panel Serial Numbers Section --}}
+                    <div class="border-t border-gray-100 pt-5 mt-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-gray-700 text-sm flex items-center gap-2">
+                                    <i class="fas fa-solar-panel text-orange-500"></i> Solar Panel Serial Numbers
+                                </h4>
+                                <p class="text-xs text-gray-500 mt-1">Add serial number for each panel installed</p>
+                            </div>
+                            <button type="button" onclick="addPanelRow()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-2">
+                                <i class="fas fa-plus-circle"></i> Add Panel Row
+                            </button>
+                        </div>
+
+                        @php
+                            $panelRows = old('panel_serial_details', $installation->panel_serial_details ?: []);
+                            // If no panels exist, start with at least 1 empty row
+                            if (empty($panelRows)) {
+                                $panelRows = [['serial_number' => '', 'module_make' => '', 'wattage' => '', 'string_number' => '']];
+                            }
+                        @endphp
+
+                        <div class="overflow-x-auto bg-gray-50 rounded-xl p-4">
+                            <table class="w-full text-sm" id="panelTable">
+                                <thead class="text-xs uppercase tracking-wider text-gray-500 bg-gray-100">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left w-8">#</th>
+                                        <th class="px-3 py-2 text-left">Panel Serial No. <span class="text-red-500">*</span></th>
+                                        <th class="px-3 py-2 text-left">Module Make</th>
+                                        <th class="px-3 py-2 text-left">Wattage (W)</th>
+                                        <th class="px-3 py-2 text-left">String No.</th>
+                                        <th class="px-3 py-2 text-center w-16">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="panelTableBody">
+                                    @foreach($panelRows as $index => $row)
+                                    <tr class="border-t border-gray-200 panel-row">
+                                        <td class="p-2 text-center text-gray-500 font-bold">{{ $index + 1 }}</td>
+                                        <td class="p-2">
+                                            <input type="text" name="panel_serial_details[{{ $index }}][serial_number]" value="{{ $row['serial_number'] ?? '' }}"
+                                                placeholder="e.g. SN123456789" required
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                                        </td>
+                                        <td class="p-2">
+                                            <input type="text" name="panel_serial_details[{{ $index }}][module_make]" value="{{ $row['module_make'] ?? '' }}"
+                                                placeholder="e.g. Tata Solar"
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                                        </td>
+                                        <td class="p-2">
+                                            <input type="number" name="panel_serial_details[{{ $index }}][wattage]" value="{{ $row['wattage'] ?? '' }}"
+                                                placeholder="e.g. 550"
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                                        </td>
+                                        <td class="p-2">
+                                            <input type="text" name="panel_serial_details[{{ $index }}][string_number]" value="{{ $row['string_number'] ?? '' }}"
+                                                placeholder="e.g. String 1"
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                                        </td>
+                                        <td class="p-2 text-center">
+                                            <button type="button" onclick="removePanelRow(this)" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-3 flex items-center gap-2">
+                            <i class="fas fa-info-circle text-blue-500"></i>
+                            <span>Click "Add Panel Row" to add more panels. Total panels: <strong id="panelCount">{{ count($panelRows) }}</strong></span>
+                        </p>
+                    </div>
+
+                    {{-- Inverter Serial Numbers Section --}}
+                    <div class="border-t border-gray-100 pt-5 mt-5">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-gray-700 text-sm flex items-center gap-2">
+                                    <i class="fas fa-microchip text-indigo-500"></i> Inverter Serial Details
+                                </h4>
+                                <p class="text-xs text-gray-500 mt-1">Add serial number for each inverter installed</p>
+                            </div>
+                            <button type="button" onclick="addInverterRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-2">
+                                <i class="fas fa-plus-circle"></i> Add Inverter Row
+                            </button>
+                        </div>
+
+                        @php
+                            $inverterRows = old('inverter_serial_details', $installation->inverter_serial_details ?: []);
+                            if (empty($inverterRows)) {
+                                $inverterRows = [['serial_number' => '', 'make' => '', 'capacity' => '', 'phase' => '']];
+                            }
+                        @endphp
+
+                        <div class="overflow-x-auto bg-gray-50 rounded-xl p-4">
+                            <table class="w-full text-sm" id="inverterTable">
+                                <thead class="text-xs uppercase tracking-wider text-gray-500 bg-gray-100">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left w-8">#</th>
+                                        <th class="px-3 py-2 text-left">Inverter Serial No. <span class="text-red-500">*</span></th>
+                                        <th class="px-3 py-2 text-left">Make / Brand</th>
+                                        <th class="px-3 py-2 text-left">Capacity (kW)</th>
+                                        <th class="px-3 py-2 text-left">Phase</th>
+                                        <th class="px-3 py-2 text-center w-16">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inverterTableBody">
+                                    @foreach($inverterRows as $index => $row)
+                                    <tr class="border-t border-gray-200 inverter-row">
+                                        <td class="p-2 text-center text-gray-500 font-bold">{{ $index + 1 }}</td>
+                                        <td class="p-2">
+                                            <input type="text" name="inverter_serial_details[{{ $index }}][serial_number]" value="{{ $row['serial_number'] ?? '' }}"
+                                                placeholder="e.g. INV789" required
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                                        </td>
+                                        <td class="p-2">
+                                            <input type="text" name="inverter_serial_details[{{ $index }}][make]" value="{{ $row['make'] ?? '' }}"
+                                                placeholder="e.g. Growatt"
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                                        </td>
+                                        <td class="p-2">
+                                            <input type="text" name="inverter_serial_details[{{ $index }}][capacity]" value="{{ $row['capacity'] ?? '' }}"
+                                                placeholder="e.g. 5kW"
+                                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                                        </td>
+                                        <td class="p-2">
+                                            <select name="inverter_serial_details[{{ $index }}][phase]" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                                                <option value="Single Phase" {{ ($row['phase'] ?? '') == 'Single Phase' ? 'selected' : '' }}>Single Phase</option>
+                                                <option value="Three Phase" {{ ($row['phase'] ?? '') == 'Three Phase' ? 'selected' : '' }}>Three Phase</option>
+                                            </select>
+                                        </td>
+                                        <td class="p-2 text-center">
+                                            <button type="button" onclick="removeInverterRow(this)" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
+
+                <script>
+                let panelIndex = {{ count($panelRows) }};
+                let inverterIndex = {{ count($inverterRows) }};
+
+                function addInverterRow() {
+                    const tbody = document.getElementById('inverterTableBody');
+                    const rowNumber = tbody.querySelectorAll('.inverter-row').length + 1;
+                    const newRow = `
+                        <tr class="border-t border-gray-200 inverter-row">
+                            <td class="p-2 text-center text-gray-500 font-bold">${rowNumber}</td>
+                            <td class="p-2">
+                                <input type="text" name="inverter_serial_details[${inverterIndex}][serial_number]"
+                                    placeholder="e.g. INV789" required
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                            </td>
+                            <td class="p-2">
+                                <input type="text" name="inverter_serial_details[${inverterIndex}][make]"
+                                    placeholder="e.g. Growatt"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                            </td>
+                            <td class="p-2">
+                                <input type="text" name="inverter_serial_details[${inverterIndex}][capacity]"
+                                    placeholder="e.g. 5kW"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                            </td>
+                            <td class="p-2">
+                                <select name="inverter_serial_details[${inverterIndex}][phase]" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                                    <option value="Single Phase">Single Phase</option>
+                                    <option value="Three Phase">Three Phase</option>
+                                </select>
+                            </td>
+                            <td class="p-2 text-center">
+                                <button type="button" onclick="removeInverterRow(this)" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', newRow);
+                    inverterIndex++;
+                    updateInverterRowNumbers();
+                }
+
+                function removeInverterRow(button) {
+                    const row = button.closest('.inverter-row');
+                    if (document.querySelectorAll('.inverter-row').length > 1) {
+                        row.remove();
+                        updateInverterRowNumbers();
+                    } else {
+                        alert('At least one inverter row is required!');
+                    }
+                }
+
+                function updateInverterRowNumbers() {
+                    const rows = document.querySelectorAll('.inverter-row');
+                    rows.forEach((row, index) => {
+                        row.querySelector('td:first-child').textContent = index + 1;
+                    });
+                }
+
+                function addPanelRow() {
+                    const tbody = document.getElementById('panelTableBody');
+                    const rowNumber = tbody.querySelectorAll('.panel-row').length + 1;
+                    
+                    const newRow = `
+                        <tr class="border-t border-gray-200 panel-row">
+                            <td class="p-2 text-center text-gray-500 font-bold">${rowNumber}</td>
+                            <td class="p-2">
+                                <input type="text" name="panel_serial_details[${panelIndex}][serial_number]"
+                                    placeholder="e.g. SN123456789" required
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                            </td>
+                            <td class="p-2">
+                                <input type="text" name="panel_serial_details[${panelIndex}][module_make]"
+                                    placeholder="e.g. Tata Solar"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                            </td>
+                            <td class="p-2">
+                                <input type="number" name="panel_serial_details[${panelIndex}][wattage]"
+                                    placeholder="e.g. 550"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                            </td>
+                            <td class="p-2">
+                                <input type="text" name="panel_serial_details[${panelIndex}][string_number]"
+                                    placeholder="e.g. String 1"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-300 focus:border-orange-300">
+                            </td>
+                            <td class="p-2 text-center">
+                                <button type="button" onclick="removePanelRow(this)" class="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    
+                    tbody.insertAdjacentHTML('beforeend', newRow);
+                    panelIndex++;
+                    updatePanelCount();
+                    updateRowNumbers();
+                }
+
+                function removePanelRow(button) {
+                    const row = button.closest('.panel-row');
+                    if (document.querySelectorAll('.panel-row').length > 1) {
+                        row.remove();
+                        updatePanelCount();
+                        updateRowNumbers();
+                    } else {
+                        alert('At least one panel row is required!');
+                    }
+                }
+
+                function updateRowNumbers() {
+                    const rows = document.querySelectorAll('.panel-row');
+                    rows.forEach((row, index) => {
+                        row.querySelector('td:first-child').textContent = index + 1;
+                    });
+                }
+
+                function updatePanelCount() {
+                    const count = document.querySelectorAll('.panel-row').length;
+                    document.getElementById('panelCount').textContent = count;
+                }
+                </script>
             </div>
             
             {{-- Proof Uploads & Technician Inputs --}}

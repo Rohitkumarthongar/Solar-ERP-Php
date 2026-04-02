@@ -17,6 +17,16 @@
                 <p class="text-sm text-gray-400 mt-0.5">Analysing costs from {{ \Carbon\Carbon::parse($from)->format('d M') }} to {{ \Carbon\Carbon::parse($to)->format('d M, Y') }}</p>
             </div>
         </div>
+        <div class="flex gap-3">
+            <a href="{{ route('admin.reports.expenses.export', ['from' => $from, 'to' => $to]) }}"
+                class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </a>
+            <a href="{{ route('admin.reports.expenses.pdf', ['from' => $from, 'to' => $to]) }}" target="_blank"
+                class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </a>
+        </div>
     </div>
 
     {{-- Filter Bar --}}
@@ -76,9 +86,16 @@
                     <div class="flex items-center justify-between text-sm py-2 px-4 rounded-xl bg-purple-50 border border-purple-100">
                          <div class="flex items-center gap-2">
                              <div class="w-2.5 h-2.5 bg-purple-400 rounded-full"></div>
-                             <span class="text-gray-600 font-medium">Direct Expenses</span>
+                             <span class="text-gray-600 font-medium">Other Direct Expenses</span>
                          </div>
                          <span class="font-black text-gray-800 tracking-tighter">₹{{ number_format($directExpenses, 2) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm py-2 px-4 rounded-xl bg-orange-100 border border-orange-200">
+                         <div class="flex items-center gap-2">
+                             <div class="w-2.5 h-2.5 bg-orange-600 rounded-full"></div>
+                             <span class="text-gray-600 font-black uppercase text-[10px] tracking-widest">Team Installation Payments</span>
+                         </div>
+                         <span class="font-black text-orange-900 tracking-tighter">₹{{ number_format($teamPayments, 2) }}</span>
                     </div>
                 </div>
             </div>
@@ -112,6 +129,16 @@
 
                     <div>
                         <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-gray-600 uppercase">Team Payments</span>
+                            <span class="text-xs font-black text-orange-700">{{ number_format(($teamPayments/$max)*100, 1) }}%</span>
+                        </div>
+                        <div class="w-full bg-white h-2.5 rounded-full overflow-hidden border border-gray-100">
+                            <div class="bg-orange-600 h-full" style="width: {{ ($teamPayments/$max)*100 }}%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
                             <span class="text-xs font-bold text-gray-600 uppercase">Maintenance & Service</span>
                             <span class="text-xs font-black text-blue-600">{{ number_format(($serviceExpenses/$max)*100, 1) }}%</span>
                         </div>
@@ -122,7 +149,7 @@
 
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-gray-600 uppercase">Direct Expenses</span>
+                            <span class="text-xs font-bold text-gray-600 uppercase">Other Direct Expenses</span>
                             <span class="text-xs font-black text-purple-600">{{ number_format(($directExpenses/$max)*100, 1) }}%</span>
                         </div>
                         <div class="w-full bg-white h-2.5 rounded-full overflow-hidden border border-gray-100">
@@ -142,5 +169,32 @@
         </div>
     </div>
 
+    {{-- Report Summary Section --}}
+    <div class="bg-gray-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+        <h3 class="text-xs font-black uppercase tracking-[0.25em] mb-6 opacity-60">Expense Portfolio Summary</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Inventory Intensity</p>
+                <p class="text-2xl font-black text-orange-400">₹{{ number_format($purchases, 2) }}</p>
+                <p class="text-[10px] text-gray-500">{{ number_format(($purchases/$max)*100, 1) }}% of total burn</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Human Capital Cost</p>
+                <p class="text-2xl font-black text-green-400">₹{{ number_format($salaries, 2) }}</p>
+                <p class="text-[10px] text-gray-500">{{ number_format(($salaries/$max)*100, 1) }}% of total burn</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Operations & Support</p>
+                <p class="text-2xl font-black text-blue-400">₹{{ number_format($serviceExpenses, 2) }}</p>
+                <p class="text-[10px] text-gray-500">{{ number_format(($serviceExpenses/$max)*100, 1) }}% of total burn</p>
+            </div>
+            <div class="space-y-1">
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Team Wage Liability</p>
+                <p class="text-2xl font-black text-purple-400">₹{{ number_format($teamPayments, 2) }}</p>
+                <p class="text-[10px] text-gray-500">Contracted installation costs</p>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

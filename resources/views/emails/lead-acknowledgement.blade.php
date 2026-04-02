@@ -59,7 +59,7 @@
   </div>
   <div class="footer">
     <p>© {{ date('Y') }} SolarTech Solutions | 123 Solar Park, Gujarat - 380001</p>
-    <p>Made with ❤️ by <a href="https://laracopilot.com/" style="color:#ea580c">LaraCopilot</a></p>
+    <p>Made with ❤️ by <a href="https://kodaic.cloud/" style="color:#ea580c">Kodaic</a></p>
   </div>
 </div>
 </body>
