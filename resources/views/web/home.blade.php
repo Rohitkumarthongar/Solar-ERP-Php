@@ -1,5 +1,5 @@
 @extends('layouts.web')
-@section('title', $settings['company_name'] ?? 'SolarVolt Solutions')
+@section('title', $settings['company_name'] ?? 'Palawat Solar')
 @section('content')
 <!-- Hero -->
 <section class="hero-bg min-h-screen flex items-center relative overflow-hidden">
@@ -54,7 +54,7 @@
     <div class="max-w-7xl mx-auto px-4 relative z-10">
         <div class="text-center mb-20 fade-up">
             <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">Why Choose Us</span>
-            <h2 class="text-4xl md:text-5xl font-bold site-text-strong tracking-tight">The {{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[0] }} Advantage</h2>
+            <h2 class="text-4xl md:text-5xl font-bold site-text-strong tracking-tight">The {{ explode(' ', $settings['company_name'] ?? 'Palawat Solar')[0] }} Advantage</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">

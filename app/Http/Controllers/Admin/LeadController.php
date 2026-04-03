@@ -83,7 +83,7 @@ class LeadController extends Controller
         $this->sms->sendFromTemplate('lead_received', $lead->phone, $lead->name, [
             'name'        => $lead->name,
             'lead_number' => $lead->lead_number,
-            'company'     => 'SolarTech Solutions',
+            'company'     => 'Palawat Solar',
         ], 'Lead', $lead->id);
 
         Notification::create([
@@ -194,7 +194,7 @@ class LeadController extends Controller
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $lead    = Lead::findOrFail($id);
-        $message = $request->input('message', 'Hello ' . $lead->name . ', thank you for your solar enquiry. Our team will contact you shortly. - SolarTech Solutions');
+        $message = $request->input('message', 'Hello ' . $lead->name . ', thank you for your solar enquiry. Our team will contact you shortly. - Palawat Solar');
         $sent    = $this->sms->send($lead->phone, $message, 'manual', 'Lead', $lead->id);
         if ($sent) {
             $lead->update(['sms_sent' => true, 'last_contacted_at' => now()]);
@@ -294,7 +294,7 @@ class LeadController extends Controller
             'quotation_number' => $quotationNumber,
             'amount'           => '₹' . number_format((float)$quotation->final_amount),
             'valid_until'      => now()->addDays(30)->format('d M Y'),
-            'company'          => 'SolarTech Solutions',
+            'company'          => 'Palawat Solar',
         ], 'Quotation', $quotation->id);
 
         Notification::create([

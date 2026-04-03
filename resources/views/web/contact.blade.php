@@ -59,7 +59,7 @@
                     @foreach([
                         ['icon' => 'fas fa-map-marker-alt', 'title' => 'Our HQ', 'value' => $settings['company_address'] ?? '123 Solar Park, Ahmedabad'],
                         ['icon' => 'fas fa-phone', 'title' => 'Phone', 'value' => $settings['company_phone'] ?? '+91 98765 43210'],
-                        ['icon' => 'fas fa-envelope', 'title' => 'Email', 'value' => $settings['company_email'] ?? 'info@solarvolt.com'],
+                        ['icon' => 'fas fa-envelope', 'title' => 'Email', 'value' => $settings['company_email'] ?? 'info@palawatsolar.com'],
                         ['icon' => 'fas fa-clock', 'title' => 'Hours', 'value' => 'Mon–Sat: 9:00 AM – 6:00 PM']
                     ] as $info)
                     <div class="glass p-8 rounded-3xl flex items-center gap-6 group transition-all">

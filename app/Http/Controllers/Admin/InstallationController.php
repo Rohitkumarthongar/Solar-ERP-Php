@@ -155,7 +155,7 @@ class InstallationController extends Controller
                 'name'                => $customer->name,
                 'installation_number' => $installation->installation_number,
                 'scheduled_date'      => \Carbon\Carbon::parse($installation->scheduled_date)->format('d M Y'),
-                'company'             => 'SolarTech Solutions',
+                'company'             => 'Palawat Solar',
             ], 'Installation', $installation->id);
         }
 
@@ -294,7 +294,7 @@ class InstallationController extends Controller
             if ($customer) {
                 $this->sms->sendFromTemplate('installation_completed', $customer->phone, $customer->name, [
                     'name'    => $customer->name,
-                    'company' => 'SolarTech Solutions',
+                    'company' => 'Palawat Solar',
                 ], 'Installation', $installation->id);
             }
 

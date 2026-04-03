@@ -42,8 +42,8 @@ class DashboardController extends Controller
         $recentOrders = SalesOrder::with('customer')->orderBy('created_at', 'desc')->take(5)->get();
         $notifications = Notification::where('is_read', false)->orderBy('created_at', 'desc')->take(5)->get();
 
-        $monthlySales = SalesOrder::selectRaw('strftime("%m", created_at) as month, SUM(total_amount) as total')
-            ->whereRaw('strftime("%Y", created_at) = ?', [date('Y')])
+        $monthlySales = SalesOrder::selectRaw('DATE_FORMAT(created_at, "%m") as month, SUM(total_amount) as total')
+            ->whereRaw('DATE_FORMAT(created_at, "%Y") = ?', [date('Y')])
             ->groupBy('month')
             ->orderBy('month')
             ->get();

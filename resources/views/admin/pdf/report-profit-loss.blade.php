@@ -32,7 +32,7 @@
 </head>
 <body>
     <div class="header">
-        <h1 class="company-name">{{ $settings['company_name'] ?? 'SolarTech Solutions' }}</h1>
+        <h1 class="company-name">{{ $settings['company_name'] ?? 'Palawat Solar' }}</h1>
         <h2 class="report-title">Profit & Loss Statement</h2>
         <p class="report-date">Target Period: {{ \Carbon\Carbon::parse($from)->format('d M, Y') }} - {{ \Carbon\Carbon::parse($to)->format('d M, Y') }}</p>
     </div>

@@ -5,7 +5,7 @@
 <section class="py-24 site-bg border-b site-border relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 relative z-10 text-center fade-up">
         <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">Our Story</span>
-        <h1 class="text-4xl md:text-6xl font-bold site-text-strong tracking-tight mb-6">About {{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[0] }}</h1>
+        <h1 class="text-4xl md:text-6xl font-bold site-text-strong tracking-tight mb-6">About {{ explode(' ', $settings['company_name'] ?? 'Palawat Solar')[0] }}</h1>
         <p class="site-muted text-lg max-w-2xl mx-auto font-inter">Committed to bringing clean, affordable solar energy to every home and business since 2015.</p>
     </div>
     <div class="absolute inset-0 opacity-5 pointer-events-none">
@@ -20,7 +20,7 @@
             <div class="fade-up">
                 <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">The Mission</span>
                 <h2 class="text-3xl md:text-4xl font-bold site-text-strong mt-2 mb-8 tracking-tight leading-snug">Powering India with Clean Energy Solutions</h2>
-                <p class="site-muted leading-relaxed mb-6 font-inter text-lg">SolarVolt was founded with a simple objective: make solar energy accessible to every Indian household and business. Starting from our roots in Gujarat, we have grown to serve customers across the country.</p>
+                <p class="site-muted leading-relaxed mb-6 font-inter text-lg">Palawat was founded with a simple objective: make solar energy accessible to every Indian household and business. Starting from our roots in Gujarat, we have grown to serve customers across the country.</p>
                 <p class="site-muted leading-relaxed mb-8 font-inter">We source only the highest quality solar products from globally certified manufacturers and back them with industry-leading warranties and 24/7 customer support. With 5,000+ successful installations, we are proud to be one of the most trusted names in the solar industry.</p>
                 
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-12 glass p-8 rounded-3xl">

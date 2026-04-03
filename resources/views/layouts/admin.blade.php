@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Solar ERP') - {{ \App\Models\Setting::where('key','company_name')->value('value') ?? 'SolarTech Solutions' }}</title>
+    <title>@yield('title', 'Solar ERP') - {{ \App\Models\Setting::where('key','company_name')->value('value') ?? 'Palawat Solar' }}</title>
     @php $settings = \App\Models\Setting::pluck('value', 'key')->toArray(); @endphp
     @php $adminTheme = $settings['admin_theme'] ?? 'dark'; @endphp
     @if(!empty($settings['company_favicon']))

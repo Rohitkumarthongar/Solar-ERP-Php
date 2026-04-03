@@ -74,13 +74,14 @@
 
             <h2 class="text-2xl font-bold text-white mb-8 tracking-tight">Identity Verification</h2>
 
-            @if($errors->any())
+            @if($errors->any() || session('error'))
                 <div
                     class="bg-red-500/10 border border-red-500/20 text-red-400 px-5 py-3 rounded-2xl mb-8 text-sm flex items-center gap-3">
                     <i class="fas fa-shield-alt opacity-50"></i>
-                    <p>{{ $errors->first() }}</p>
+                    <p>{{ $errors->first() ?: session('error') }}</p>
                 </div>
             @endif
+
 
             <form action="{{ route('admin.login.post') }}" method="POST" class="space-y-8">
                 @csrf
@@ -108,7 +109,7 @@
                             class="absolute inset-y-0 left-0 pl-6 flex items-center text-gray-600 transition-colors group-focus-within:text-amber-500">
                             <i class="fas fa-key"></i>
                         </span>
-                        <input type="password" id="password" name="password" value="admin123"
+                        <input type="password" id="password" name="password"
                             class="w-full bg-white/5 border border-white/5 rounded-2xl pl-16 pr-14 py-4 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:bg-white/10 transition-all font-inter"
                             required placeholder="••••••••">
                         <button type="button" onclick="togglePasswordVisibility()"

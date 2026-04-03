@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'SolarTech Solutions') - {{ $settings['company_name'] ?? 'SolarTech Solutions' }}</title>
+    <title>@yield('title', 'Palawat Solar') - {{ $settings['company_name'] ?? 'Palawat Solar' }}</title>
+
     <meta name="description" content="@yield('meta_description', 'Premium solar solutions for homes and businesses. Quality panels, inverters, batteries and complete installation services.')">    
     @if(!empty($settings['company_favicon']))
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $settings['company_favicon']) }}">
@@ -177,7 +178,7 @@
                 @endif
                 <div>
                     @php 
-                        $parts = explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions');
+                        $parts = explode(' ', $settings['company_name'] ?? 'Palawat Solar');
                         $first = $parts[0] ?? 'Solar';
                         $rest = implode(' ', array_slice($parts, 1));
                     @endphp
@@ -243,8 +244,8 @@
                     <i class="fas fa-sun text-white font-black"></i>
                 </div>
                 <div>
-                    <span class="font-bold text-xl site-text-strong tracking-tight">{{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[0] }}</span>
-                    <span class="text-amber-500 font-bold text-xl tracking-tight">{{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[1] ?? '' }}</span>
+                    <span class="font-bold text-xl site-text-strong tracking-tight">{{ explode(' ', $settings['company_name'] ?? 'Palawat Solar')[0] }}</span>
+                    <span class="text-amber-500 font-bold text-xl tracking-tight">{{ explode(' ', $settings['company_name'] ?? 'Palawat Solar')[1] ?? '' }}</span>
                 </div>
             </a>
             <p class="site-muted font-inter leading-relaxed text-sm">
@@ -305,7 +306,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <i class="fas fa-envelope text-amber-500"></i>
-                    <p class="site-muted text-sm font-bold font-inter">{{ $settings['company_email'] ?? 'info@solarvolt.com' }}</p>
+                    <p class="site-muted text-sm font-bold font-inter">{{ $settings['company_email'] ?? 'info@palawatsolar.com' }}</p>
                 </div>
             </div>
         </div>
@@ -313,7 +314,7 @@
     
     <div class="max-w-7xl mx-auto px-4 mt-24 pt-12 border-t site-border flex flex-col md:flex-row justify-between items-center gap-6">
         <p class="site-subtle text-[10px] uppercase font-black tracking-widest leading-loose text-center md:text-left">
-            © {{ date('Y') }} {{ $settings['company_name'] ?? 'SolarVolt Solutions' }}. Built with ❤️ by <a href="https://kodaic.cloud/" target="_blank" class="text-amber-500 hover:underline">Kodaic</a>.
+            © {{ date('Y') }} {{ $settings['company_name'] ?? 'Palawat Solar' }}. Built with ❤️ by <a href="https://kodaic.cloud/" target="_blank" class="text-amber-500 hover:underline">Kodaic</a>.
         </p>
         <div class="flex gap-8 text-[10px] uppercase font-black tracking-widest site-subtle">
             <a href="#" class="hover:text-amber-500 transition-colors">Privacy Policy</a>

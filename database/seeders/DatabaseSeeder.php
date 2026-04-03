@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
 
         // Settings
         $settingsData = [
-            ['key' => 'company_name', 'value' => 'SolarTech Solutions', 'group' => 'general'],
+            ['key' => 'company_name', 'value' => 'Palawat Solar', 'group' => 'general'],
             ['key' => 'company_tagline', 'value' => 'Powering a Greener Tomorrow', 'group' => 'general'],
             ['key' => 'company_email', 'value' => 'info@solartech.com', 'group' => 'general'],
             ['key' => 'company_phone', 'value' => '+91 98765 43210', 'group' => 'general'],
@@ -55,14 +55,14 @@ class DatabaseSeeder extends Seeder
             ['key' => 'mail_host', 'value' => 'smtp.gmail.com', 'group' => 'email'],
             ['key' => 'mail_port', 'value' => '587', 'group' => 'email'],
             ['key' => 'mail_from_address', 'value' => 'info@solartech.com', 'group' => 'email'],
-            ['key' => 'mail_from_name', 'value' => 'SolarTech Solutions', 'group' => 'email'],
+            ['key' => 'mail_from_name', 'value' => 'Palawat Solar', 'group' => 'email'],
         ];
         foreach ($settingsData as $s) { Setting::create($s); }
 
         // Email Templates
-        EmailTemplate::create(['name' => 'Quotation Email', 'type' => 'quotation', 'subject' => 'Your Solar System Quotation - {quotation_number}', 'body' => '<p>Dear {customer_name},</p><p>Please find attached your quotation <strong>{quotation_number}</strong> for a solar system installation.</p><p><strong>Total Amount: ₹{total_amount}</strong></p><p>This quotation is valid until {valid_until}.</p><p>Please feel free to contact us for any queries.</p><p>Best regards,<br>SolarTech Solutions Team</p>', 'is_active' => true]);
-        EmailTemplate::create(['name' => 'Follow Up Email', 'type' => 'follow_up', 'subject' => 'Following up on your Solar Inquiry', 'body' => '<p>Dear {customer_name},</p><p>We wanted to follow up on your recent inquiry about solar panel installation.</p><p>Our team is ready to provide you with a customized solution.</p><p>Best regards,<br>SolarTech Solutions</p>', 'is_active' => true]);
-        EmailTemplate::create(['name' => 'Welcome Email', 'type' => 'welcome', 'subject' => 'Welcome to SolarTech Family!', 'body' => '<p>Dear {customer_name},</p><p>Welcome to SolarTech Solutions! We are thrilled to have you as our customer.</p><p>Your order <strong>{order_number}</strong> has been confirmed.</p><p>Best regards,<br>SolarTech Solutions Team</p>', 'is_active' => true]);
+        EmailTemplate::create(['name' => 'Quotation Email', 'type' => 'quotation', 'subject' => 'Your Solar System Quotation - {quotation_number}', 'body' => '<p>Dear {customer_name},</p><p>Please find attached your quotation <strong>{quotation_number}</strong> for a solar system installation.</p><p><strong>Total Amount: ₹{total_amount}</strong></p><p>This quotation is valid until {valid_until}.</p><p>Please feel free to contact us for any queries.</p><p>Best regards,<br>Palawat Solar Team</p>', 'is_active' => true]);
+        EmailTemplate::create(['name' => 'Follow Up Email', 'type' => 'follow_up', 'subject' => 'Following up on your Solar Inquiry', 'body' => '<p>Dear {customer_name},</p><p>We wanted to follow up on your recent inquiry about solar panel installation.</p><p>Our team is ready to provide you with a customized solution.</p><p>Best regards,<br>Palawat Solar</p>', 'is_active' => true]);
+        EmailTemplate::create(['name' => 'Welcome Email', 'type' => 'welcome', 'subject' => 'Welcome to SolarTech Family!', 'body' => '<p>Dear {customer_name},</p><p>Welcome to Palawat Solar! We are thrilled to have you as our customer.</p><p>Your order <strong>{order_number}</strong> has been confirmed.</p><p>Best regards,<br>Palawat Solar Team</p>', 'is_active' => true]);
 
         // Packages
         $pkg1 = Package::create(['name' => '3kW Home Starter Pack', 'description' => 'Perfect for small homes with basic appliances', 'system_size_kw' => 3, 'price' => 185000, 'suitable_for' => 'residential', 'includes' => '6x 500W Solar Panels, 3kW Inverter, Mounting Structure, MC4 Connectors, 25 Year Panel Warranty, 5 Year Installation Warranty', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => true]);

@@ -171,7 +171,7 @@ class WebController extends Controller
         $this->sms->sendFromTemplate('thank_you', $lead->phone, $lead->name, [
             'name'        => $lead->name,
             'lead_number' => $lead->lead_number,
-            'company'     => 'SolarTech Solutions',
+            'company'     => 'Palawat Solar',
         ], 'Lead', $lead->id);
 
         // Email

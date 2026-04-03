@@ -53,15 +53,8 @@ class SettingsController extends Controller
             'customer_discoms',
         ];
 
-        // Get database driver
-        $driver = DB::getDriverName();
-
-        // Disable foreign key checks based on database driver
-        if ($driver === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = OFF;');
-        } else {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        }
+        // Disable foreign key checks for MySQL
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         // Truncate tables (skip if table doesn't exist)
         foreach ($models as $table) {
@@ -73,12 +66,8 @@ class SettingsController extends Controller
             }
         }
 
-        // Re-enable foreign key checks based on database driver
-        if ($driver === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = ON;');
-        } else {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        }
+        // Re-enable foreign key checks for MySQL
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         return redirect()->back()->with('success', 'System data has been successfully reset. Settings preserved.');
     }
