@@ -40,12 +40,15 @@ class EmployeeController extends Controller
             'installation_rate' => 'nullable|numeric|min:0',
             'site_visit_rate' => 'nullable|numeric|min:0',
             'service_rate' => 'nullable|numeric|min:0',
+            'rate_per_watt' => 'nullable|numeric|min:0',
+            'use_watt_based_pay' => 'boolean',
             'joining_date' => 'required|date',
             'address' => 'nullable|string',
             'is_active' => 'boolean'
         ]);
         $validated['employee_code'] = 'EMP-' . strtoupper(substr($validated['department'], 0, 3)) . '-' . rand(100, 999);
         $validated['is_active'] = $request->has('is_active');
+        $validated['use_watt_based_pay'] = $request->has('use_watt_based_pay');
         Employee::create($validated);
         return redirect()->route('admin.employees.index')->with('success', 'Employee added!');
     }
@@ -53,7 +56,7 @@ class EmployeeController extends Controller
     public function show($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $employee = Employee::with(['salaryRecords', 'taskPayments.taskable'])->findOrFail($id);
+        $employee = Employee::with(['salaryRecords', 'taskPayments.taskable', 'dailyWageRecords'])->findOrFail($id);
         return view('admin.employees.show', compact('employee'));
     }
 
@@ -83,10 +86,13 @@ class EmployeeController extends Controller
             'installation_rate' => 'nullable|numeric|min:0',
             'site_visit_rate' => 'nullable|numeric|min:0',
             'service_rate' => 'nullable|numeric|min:0',
+            'rate_per_watt' => 'nullable|numeric|min:0',
+            'use_watt_based_pay' => 'boolean',
             'joining_date' => 'required|date',
             'address' => 'nullable|string'
         ]);
         $validated['is_active'] = $request->has('is_active');
+        $validated['use_watt_based_pay'] = $request->has('use_watt_based_pay');
         $employee->update($validated);
         return redirect()->route('admin.employees.index')->with('success', 'Employee updated!');
     }
@@ -103,7 +109,11 @@ class EmployeeController extends Controller
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $employee = Employee::findOrFail($id);
         $salaryRecords = SalaryRecord::where('employee_id', $id)->orderBy('year', 'desc')->orderBy('month', 'desc')->get();
-        return view('admin.employees.salary', compact('employee', 'salaryRecords'));
+        $dailyWageRecords = \App\Models\DailyWageRecord::where('employee_id', $id)
+            ->with(['installation', 'siteVisit'])
+            ->orderBy('work_date', 'desc')
+            ->get();
+        return view('admin.employees.salary', compact('employee', 'salaryRecords', 'dailyWageRecords'));
     }
 
     public function salaryStore(Request $request, $id)
@@ -125,5 +135,39 @@ class EmployeeController extends Controller
         $validated['status'] = 'paid';
         SalaryRecord::create($validated);
         return redirect()->route('admin.employees.salary', $id)->with('success', 'Salary record added!');
+    }
+
+    public function printSalarySlip($employeeId, $recordId)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        
+        $employee = Employee::findOrFail($employeeId);
+        $record = SalaryRecord::where('id', $recordId)
+            ->where('employee_id', $employeeId)
+            ->with('employee')
+            ->firstOrFail();
+        
+        // Get the salary slip print format
+        $printFormat = \App\Models\PrintFormat::where('document_type', 'salary_slip')
+            ->where('is_active', true)
+            ->orderBy('is_default', 'desc')
+            ->first();
+        
+        if (!$printFormat) {
+            return back()->with('error', 'No salary slip print format configured. Please set one up in Settings > Print Formats.');
+        }
+        
+        // Get settings for company info
+        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        
+        // Render the print format
+        $renderer = new \App\Services\PrintFormatRenderer();
+        $html = $renderer->render($printFormat, [
+            'record' => $record,
+            'employee' => $employee,
+            'settings' => $settings
+        ]);
+        
+        return response($html)->header('Content-Type', 'text/html');
     }
 }

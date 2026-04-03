@@ -8,6 +8,7 @@ class PrintFormatPresets
     {
         return [
             'quotation_pdf_replica' => self::quotationPdfReplica(),
+            'salary_slip_standard' => self::salarySlipStandard(),
         ];
     }
 
@@ -585,6 +586,266 @@ class PrintFormatPresets
     </section>
 </div>
 BLADE,
+        ];
+    }
+
+    public static function salarySlipStandard(): array
+    {
+        return [
+            'label' => 'Standard Salary Slip',
+            'name' => 'Standard Salary Slip',
+            'document_type' => 'salary_slip',
+            'paper_size' => 'A4',
+            'orientation' => 'portrait',
+            'header_html' => '',
+            'footer_html' => '<div style="text-align: center; font-size: 10px; color: #666; margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd;">
+                <p>This is a computer-generated salary slip and does not require a signature.</p>
+                <p>For any queries, please contact HR Department</p>
+            </div>',
+            'body_template' => <<<'BLADE'
+<style>
+    .salary-slip {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        color: #333;
+    }
+    
+    .salary-slip .header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 3px solid #4F46E5;
+        padding-bottom: 20px;
+    }
+    
+    .salary-slip .company-name {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4F46E5;
+        margin-bottom: 5px;
+    }
+    
+    .salary-slip .document-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #666;
+        margin-top: 10px;
+    }
+    
+    .salary-slip .info-section {
+        display: table;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .salary-slip .info-row {
+        display: table-row;
+    }
+    
+    .salary-slip .info-label {
+        display: table-cell;
+        padding: 8px;
+        font-weight: bold;
+        width: 40%;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+    
+    .salary-slip .info-value {
+        display: table-cell;
+        padding: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .salary-slip .earnings-deductions {
+        display: flex;
+        gap: 20px;
+        margin: 30px 0;
+    }
+    
+    .salary-slip .earnings, .salary-slip .deductions {
+        flex: 1;
+    }
+    
+    .salary-slip .section-title {
+        background: #4F46E5;
+        color: white;
+        padding: 10px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    .salary-slip .deductions .section-title {
+        background: #DC2626;
+    }
+    
+    .salary-slip .line-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .salary-slip .line-item:hover {
+        background: #f9fafb;
+    }
+    
+    .salary-slip .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        background: #f3f4f6;
+        font-weight: bold;
+        font-size: 16px;
+        margin-top: 10px;
+        border: 2px solid #4F46E5;
+    }
+    
+    .salary-slip .net-salary {
+        text-align: center;
+        margin-top: 30px;
+        padding: 20px;
+        background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+        color: white;
+        border-radius: 10px;
+    }
+    
+    .salary-slip .net-salary-label {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .salary-slip .net-salary-amount {
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .salary-slip .net-salary-words {
+        font-size: 12px;
+        margin-top: 10px;
+        font-style: italic;
+    }
+    
+    .salary-slip .signature-section {
+        margin-top: 50px;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .salary-slip .signature-box {
+        text-align: center;
+        padding-top: 40px;
+        border-top: 1px solid #333;
+        width: 200px;
+    }
+    
+    .salary-slip .notes {
+        margin-top: 30px;
+        padding: 15px;
+        background: #FEF3C7;
+        border-left: 4px solid #F59E0B;
+        font-size: 12px;
+    }
+</style>
+
+<div class="salary-slip">
+    <div class="header">
+        <div class="company-name">{{ $settings['company_name'] ?? 'Company Name' }}</div>
+        <div>{{ $settings['company_address'] ?? 'Company Address' }}</div>
+        <div>{{ $settings['company_phone'] ?? 'Phone' }} | {{ $settings['company_email'] ?? 'Email' }}</div>
+        <div class="document-title">SALARY SLIP</div>
+    </div>
+    
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Employee Name:</div>
+            <div class="info-value">{{ $record->employee->name }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Employee Code:</div>
+            <div class="info-value">{{ $record->employee->employee_code }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Department:</div>
+            <div class="info-value">{{ ucfirst($record->employee->department) }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Designation:</div>
+            <div class="info-value">{{ $record->employee->designation }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Pay Period:</div>
+            <div class="info-value">{{ date('F Y', mktime(0, 0, 0, $record->month, 1, $record->year)) }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Payment Date:</div>
+            <div class="info-value">{{ \Carbon\Carbon::parse($record->payment_date)->format('d M, Y') }}</div>
+        </div>
+    </div>
+    
+    <div class="earnings-deductions">
+        <div class="earnings">
+            <div class="section-title">EARNINGS</div>
+            <div class="line-item">
+                <span>Basic Salary</span>
+                <span>₹{{ number_format($record->basic_salary, 2) }}</span>
+            </div>
+            @if($record->allowances > 0)
+            <div class="line-item">
+                <span>Allowances</span>
+                <span>₹{{ number_format($record->allowances, 2) }}</span>
+            </div>
+            @endif
+            <div class="total-row">
+                <span>Total Earnings</span>
+                <span>₹{{ number_format($record->basic_salary + $record->allowances, 2) }}</span>
+            </div>
+        </div>
+        
+        <div class="deductions">
+            <div class="section-title">DEDUCTIONS</div>
+            @if($record->deductions > 0)
+            <div class="line-item">
+                <span>Deductions</span>
+                <span>₹{{ number_format($record->deductions, 2) }}</span>
+            </div>
+            @else
+            <div class="line-item">
+                <span>No Deductions</span>
+                <span>₹0.00</span>
+            </div>
+            @endif
+            <div class="total-row">
+                <span>Total Deductions</span>
+                <span>₹{{ number_format($record->deductions, 2) }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="net-salary">
+        <div class="net-salary-label">NET SALARY</div>
+        <div class="net-salary-amount">₹{{ number_format($record->net_salary, 2) }}</div>
+        <div class="net-salary-words">{{ ucwords(\App\Support\NumberToWords::convert($record->net_salary)) }} Only</div>
+    </div>
+    
+    @if($record->notes)
+    <div class="notes">
+        <strong>Notes:</strong> {{ $record->notes }}
+    </div>
+    @endif
+    
+    <div class="signature-section">
+        <div class="signature-box">
+            <div>Employee Signature</div>
+        </div>
+        <div class="signature-box">
+            <div>Authorized Signatory</div>
+        </div>
+    </div>
+</div>
+BLADE
         ];
     }
 }

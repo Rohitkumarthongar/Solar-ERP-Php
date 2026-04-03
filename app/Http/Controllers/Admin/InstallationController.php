@@ -252,28 +252,80 @@ class InstallationController extends Controller
             // Record Team Wage Expense / Task Payment if a team is assigned
             if ($installation->assigned_team_id) {
                 $team = $installation->team;
-                if ($team && $team->installation_rate > 0 && $team->leader_id) {
-                    \App\Models\TaskPayment::updateOrCreate(
-                        [
+                if ($team && $team->leader_id) {
+                    $leader = \App\Models\Employee::find($team->leader_id);
+                    
+                    // Calculate wage based on employee's payment preference
+                    $wageAmount = 0;
+                    $calculationType = 'fixed';
+                    $wattage = null;
+                    $ratePerWattUsed = null;
+                    
+                    if ($leader && $leader->use_watt_based_pay && $leader->rate_per_watt > 0 && $installation->system_size_kw > 0) {
+                        // Watt-based calculation
+                        $wattage = $installation->system_size_kw * 1000; // Convert KW to watts
+                        $ratePerWattUsed = $leader->rate_per_watt;
+                        $wageAmount = $wattage * $ratePerWattUsed;
+                        $calculationType = 'watt_based';
+                    } elseif ($team->installation_rate > 0) {
+                        // Fixed team rate
+                        $wageAmount = $team->installation_rate;
+                        $calculationType = 'fixed';
+                    } elseif ($leader && $leader->installation_rate > 0) {
+                        // Fixed employee rate
+                        $wageAmount = $leader->installation_rate;
+                        $calculationType = 'fixed';
+                    }
+                    
+                    if ($wageAmount > 0) {
+                        // Create Task Payment record
+                        \App\Models\TaskPayment::updateOrCreate(
+                            [
+                                'employee_id' => $team->leader_id,
+                                'taskable_type' => get_class($installation),
+                                'taskable_id' => $installation->id,
+                            ],
+                            [
+                                'amount' => $wageAmount,
+                                'status' => 'pending',
+                                'notes' => $calculationType === 'watt_based'
+                                    ? "Auto-generated watt-based payment: {$wattage}W × ₹{$ratePerWattUsed}/watt = ₹{$wageAmount}"
+                                    : 'Auto-generated payment for installation completion.'
+                            ]
+                        );
+                        
+                        // Create Daily Wage Record for tracking
+                        \App\Models\DailyWageRecord::create([
                             'employee_id' => $team->leader_id,
-                            'taskable_type' => get_class($installation),
-                            'taskable_id' => $installation->id,
-                        ],
-                        [
-                            'amount' => $team->installation_rate,
-                            'status' => 'pending',
-                            'notes' => 'Auto-generated payment for installation completion.'
-                        ]
-                    );
+                            'work_date' => $validated['completion_date'] ?? date('Y-m-d'),
+                            'hours_worked' => null,
+                            'wattage' => $wattage,
+                            'calculation_type' => $calculationType,
+                            'wage_rate' => null,
+                            'rate_per_watt_used' => $ratePerWattUsed,
+                            'total_amount' => $wageAmount,
+                            'work_description' => "Installation completed: {$installation->installation_number}",
+                            'installation_id' => $installation->id,
+                            'site_visit_id' => null,
+                            'payment_status' => 'pending',
+                            'payment_date' => null,
+                            'payment_mode' => null,
+                            'notes' => $calculationType === 'watt_based'
+                                ? "System size: {$installation->system_size_kw}KW ({$wattage}W) × ₹{$ratePerWattUsed}/watt"
+                                : 'Fixed rate payment'
+                        ]);
 
-                    Expense::create([
-                        'title'        => 'Installation Wage: ' . $installation->installation_number,
-                        'category'     => 'Team Payment',
-                        'amount'       => $team->installation_rate,
-                        'expense_date' => date('Y-m-d'),
-                        'description'  => 'Installation wage for ' . $team->name . ' on ' . $installation->installation_number . 
-                                         ' (Lead: ' . ($team->leader->name ?? 'N/A') . ')',
-                    ]);
+                        // Create Expense record
+                        Expense::create([
+                            'title'        => 'Installation Wage: ' . $installation->installation_number,
+                            'category'     => 'Team Payment',
+                            'amount'       => $wageAmount,
+                            'expense_date' => date('Y-m-d'),
+                            'description'  => $calculationType === 'watt_based'
+                                ? "Watt-based wage for {$team->name} on {$installation->installation_number} ({$installation->system_size_kw}KW = {$wattage}W × ₹{$ratePerWattUsed}/watt) - Lead: " . ($leader->name ?? 'N/A')
+                                : "Installation wage for {$team->name} on {$installation->installation_number} (Lead: " . ($leader->name ?? 'N/A') . ')',
+                        ]);
+                    }
                 }
             }elseif ($installation->assigned_team) { // Fallback for legacy
                 $team = Team::where('name', $installation->assigned_team)->first();

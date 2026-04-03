@@ -133,6 +133,111 @@
                     </table>
                 </div>
             </div>
+
+            {{-- Daily Wage Records Section --}}
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="p-6 border-b border-gray-50 flex items-center justify-between bg-green-50/30">
+                    <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+                        <i class="fas fa-calendar-check text-green-500"></i> Daily Wage Records
+                    </h3>
+                    <span class="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-bold uppercase">{{ count($dailyWageRecords) }} Records</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-400 font-medium uppercase text-[10px] tracking-wider border-b border-gray-50">
+                            <tr>
+                                <th class="px-6 py-4">Date</th>
+                                <th class="px-6 py-4">Type</th>
+                                <th class="px-6 py-4">Details</th>
+                                <th class="px-6 py-4">Task</th>
+                                <th class="px-6 py-4">Amount</th>
+                                <th class="px-6 py-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @forelse($dailyWageRecords as $wage)
+                            <tr class="hover:bg-gray-50/50">
+                                <td class="px-6 py-4 font-bold text-gray-800">
+                                    {{ \Carbon\Carbon::parse($wage->work_date)->format('d M, Y') }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($wage->calculation_type == 'watt_based')
+                                        <span class="bg-green-100 text-green-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+                                            <i class="fas fa-bolt"></i> Watt-Based
+                                        </span>
+                                    @elseif($wage->calculation_type == 'hourly')
+                                        <span class="bg-blue-100 text-blue-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+                                            <i class="fas fa-clock"></i> Hourly
+                                        </span>
+                                    @else
+                                        <span class="bg-gray-100 text-gray-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">
+                                            <i class="fas fa-money-bill"></i> Fixed
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 text-xs">
+                                    @if($wage->calculation_type == 'watt_based')
+                                        <div class="font-medium">
+                                            {{ number_format($wage->wattage, 0) }}W × ₹{{ number_format($wage->rate_per_watt_used, 4) }}/watt
+                                        </div>
+                                        <div class="text-[10px] text-gray-400">
+                                            ({{ number_format($wage->wattage / 1000, 2) }}KW system)
+                                        </div>
+                                    @elseif($wage->calculation_type == 'hourly')
+                                        {{ $wage->hours_worked }}hrs × ₹{{ number_format($wage->wage_rate, 2) }}/hr
+                                    @else
+                                        Fixed payment
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-gray-600 text-xs">
+                                    @if($wage->installation_id)
+                                        <div class="font-medium text-indigo-600">
+                                            <i class="fas fa-solar-panel"></i> {{ $wage->installation->installation_number ?? 'N/A' }}
+                                        </div>
+                                    @elseif($wage->site_visit_id)
+                                        <div class="font-medium text-blue-600">
+                                            <i class="fas fa-map-marker-alt"></i> {{ $wage->siteVisit->visit_number ?? 'N/A' }}
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 font-black text-green-600">₹{{ number_format($wage->total_amount, 2) }}</td>
+                                <td class="px-6 py-4">
+                                    @if($wage->payment_status == 'paid')
+                                        <span class="bg-green-100 text-green-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">Paid</span>
+                                    @else
+                                        <span class="bg-orange-100 text-orange-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase">Pending</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-300 italic">
+                                    No daily wage records found. Records will appear here when tasks are completed.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                        <tfoot class="bg-gray-50 border-t-2 border-gray-200">
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-right font-bold text-gray-700">Total Pending Wages:</td>
+                                <td class="px-6 py-4 font-black text-orange-600">
+                                    ₹{{ number_format($dailyWageRecords->where('payment_status', 'pending')->sum('total_amount'), 2) }}
+                                </td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-right font-bold text-gray-700">Total Paid Wages:</td>
+                                <td class="px-6 py-4 font-black text-green-600">
+                                    ₹{{ number_format($dailyWageRecords->where('payment_status', 'paid')->sum('total_amount'), 2) }}
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>

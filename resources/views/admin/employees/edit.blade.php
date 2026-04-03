@@ -137,11 +137,57 @@
                             </div>
                         </div>
 
+                        <div class="pt-4 border-t border-gray-100 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-400">Watt-Based Salary Calculation</h4>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" name="use_watt_based_pay" id="use_watt_based_pay" value="1" {{ old('use_watt_based_pay', $employee->use_watt_based_pay) ? 'checked' : '' }}
+                                        class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    <label for="use_watt_based_pay" class="text-xs font-semibold text-gray-700">Enable</label>
+                                </div>
+                            </div>
+                            
+                            <div id="watt_based_fields" style="display: {{ old('use_watt_based_pay', $employee->use_watt_based_pay) ? 'block' : 'none' }};">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                                        Rate Per Watt
+                                        <span class="text-gray-400 font-normal">(1KW = 1000 watts)</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₹</span>
+                                        <input type="number" name="rate_per_watt" id="rate_per_watt" value="{{ old('rate_per_watt', $employee->rate_per_watt) }}" min="0" step="0.0001"
+                                            class="w-full pl-8 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-bold text-green-600">
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1.5">
+                                        <i class="fas fa-info-circle text-indigo-400"></i>
+                                        Example: ₹0.50/watt × 5000W (5KW) = ₹2,500
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex items-center gap-3 pt-4 border-t border-gray-50">
                             <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $employee->is_active) ? 'checked' : '' }}
                                 class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
                             <label for="is_active" class="text-xs font-bold text-gray-700">Employment Active</label>
                         </div>
+
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const wattBasedCheckbox = document.getElementById('use_watt_based_pay');
+                            const wattBasedFields = document.getElementById('watt_based_fields');
+                            
+                            function toggleWattBasedFields() {
+                                if (wattBasedCheckbox.checked) {
+                                    wattBasedFields.style.display = 'block';
+                                } else {
+                                    wattBasedFields.style.display = 'none';
+                                }
+                            }
+                            
+                            wattBasedCheckbox.addEventListener('change', toggleWattBasedFields);
+                        });
+                        </script>
                     </div>
                 </div>
 
