@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\Admin\PrintFormatController;
 use App\Http\Controllers\Admin\TeamController;
+use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\WebController;
 
 // ── Public Website ────────────────────────────────────────────────────────────
@@ -69,6 +70,8 @@ Route::middleware('check_permission:customers')->group(function() {
     Route::put('/admin/customers/discom/{id}', [\App\Http\Controllers\Admin\CustomerDiscomController::class, 'update'])->name('admin.customers.discom.update');
     Route::post('/admin/customers/discom/{id}/application', [\App\Http\Controllers\Admin\CustomerDiscomController::class, 'makeApplication'])->name('admin.customers.discom.application');
     Route::post('/admin/customers/discom/{id}/workflow', [\App\Http\Controllers\Admin\CustomerDiscomController::class, 'updateWorkflow'])->name('admin.customers.discom.workflow');
+    Route::post('/admin/customers/discom/{id}/approval', [\App\Http\Controllers\Admin\CustomerDiscomController::class, 'approval'])->name('admin.customers.discom.approval');
+    Route::post('/admin/customers/discom/{id}/approval/reset', [\App\Http\Controllers\Admin\CustomerDiscomController::class, 'resetApproval'])->name('admin.customers.discom.approval.reset');
     Route::get('/admin/customers/discom/{id}/print', [\App\Http\Controllers\Admin\CustomerDiscomController::class, 'print'])->name('admin.customers.discom.print');
     Route::post('/admin/customers/{id}/loan', [CustomerController::class, 'updateLoan'])->name('admin.customers.loan');
     Route::post('/admin/customers/{id}/subsidy', [CustomerController::class, 'updateSubsidy'])->name('admin.customers.subsidy');
@@ -193,6 +196,8 @@ Route::middleware('check_permission:installations')->group(function() {
     Route::get('/admin/installations/{id}/dcr', [InstallationController::class, 'dcr'])->name('admin.installations.dcr');
     Route::get('/admin/installations/{id}/work-application', [InstallationController::class, 'workApplication'])->name('admin.installations.work-application');
     Route::put('/admin/installations/{id}', [InstallationController::class, 'update'])->name('admin.installations.update');
+    Route::post('/admin/installations/{id}/approval', [InstallationController::class, 'approval'])->name('admin.installations.approval');
+    Route::post('/admin/installations/{id}/approval/reset', [InstallationController::class, 'resetApproval'])->name('admin.installations.approval.reset');
     Route::delete('/admin/installations/{id}', [InstallationController::class, 'destroy'])->name('admin.installations.destroy');
 });
 
@@ -216,6 +221,10 @@ Route::middleware('check_permission:employees')->group(function() {
     Route::delete('/admin/employees/{id}', [EmployeeController::class, 'destroy'])->name('admin.employees.destroy');
     Route::get('/admin/employees/{id}/salary', [EmployeeController::class, 'salary'])->name('admin.employees.salary');
     Route::post('/admin/employees/{id}/salary', [EmployeeController::class, 'salaryStore'])->name('admin.employees.salary.store');
+    Route::get('/admin/employees/{id}/payments', [EmployeeController::class, 'payments'])->name('admin.employees.payments');
+    Route::post('/admin/employees/{employeeId}/payments/{paymentId}/approval', [EmployeeController::class, 'approvePayment'])->name('admin.employees.payments.approval');
+    Route::post('/admin/employees/{employeeId}/payments/{paymentId}/approval/reset', [EmployeeController::class, 'resetPaymentApproval'])->name('admin.employees.payments.approval.reset');
+    Route::get('/admin/employees/{employeeId}/salary/{recordId}/print', [EmployeeController::class, 'printSalarySlip'])->name('admin.employees.salary.print');
 });
 
 Route::middleware('check_permission:notifications')->group(function() {
@@ -238,6 +247,24 @@ Route::middleware('check_permission:roles')->group(function() {
     Route::get('/admin/users/{id}/edit', [RoleController::class, 'editUser'])->name('admin.users.edit');
     Route::put('/admin/users/{id}', [RoleController::class, 'updateUser'])->name('admin.users.update');
     Route::delete('/admin/users/{id}', [RoleController::class, 'destroyUser'])->name('admin.users.destroy');
+});
+
+// ── Mobile Technician Flow ────────────────────────────────────────────────────
+Route::middleware('auth:admin')->group(function() {
+    Route::get('/admin/mobile/dashboard', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'dashboard'])->name('admin.mobile.dashboard');
+    Route::get('/admin/mobile/task/{type}/{id}', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'showTask'])->name('admin.mobile.task');
+    Route::post('/admin/mobile/task/{type}/{id}/start', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'startTask'])->name('admin.mobile.task.start');
+    Route::post('/admin/mobile/task/{type}/{id}/photo', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'uploadPhoto'])->name('admin.mobile.task.photo');
+    Route::post('/admin/mobile/task/{type}/{id}/checklist', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'updateChecklist'])->name('admin.mobile.task.checklist');
+    Route::post('/admin/mobile/task/{type}/{id}/remarks', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'submitRemarks'])->name('admin.mobile.task.remarks');
+    Route::post('/admin/mobile/task/{type}/{id}/complete', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'completeTask'])->name('admin.mobile.task.complete');
+});
+
+// ── Data Health Checks ────────────────────────────────────────────────────────
+Route::middleware('check_permission:settings')->group(function() {
+    Route::get('/admin/data-health', [\App\Http\Controllers\Admin\DataHealthController::class, 'index'])->name('admin.data-health.index');
+    Route::get('/admin/data-health/check', [\App\Http\Controllers\Admin\DataHealthController::class, 'check'])->name('admin.data-health.check');
+    Route::get('/admin/data-health/export', [\App\Http\Controllers\Admin\DataHealthController::class, 'export'])->name('admin.data-health.export');
 });
 
 Route::middleware('check_permission:settings')->group(function() {
@@ -283,6 +310,17 @@ Route::middleware('check_permission:reports')->group(function() {
     Route::get('/admin/reports/expenses/export', [ReportController::class, 'expensesExport'])->name('admin.reports.expenses.export');
     Route::get('/admin/reports/inventory/export', [ReportController::class, 'inventoryExport'])->name('admin.reports.inventory.export');
     Route::get('/admin/reports/profit-loss/export', [ReportController::class, 'profitLossExport'])->name('admin.reports.profit-loss.export');
+
+// ── Documents ─────────────────────────────────────────────────────────────────
+Route::post('/admin/documents/upload', [DocumentController::class, 'upload'])->name('admin.documents.upload');
+Route::get('/admin/documents/{id}/download', [DocumentController::class, 'download'])->name('admin.documents.download');
+Route::get('/admin/documents/{id}/preview', [DocumentController::class, 'preview'])->name('admin.documents.preview');
+Route::get('/admin/documents/{id}/versions', [DocumentController::class, 'versions'])->name('admin.documents.versions');
+Route::post('/admin/documents/{id}/replace', [DocumentController::class, 'replace'])->name('admin.documents.replace');
+Route::delete('/admin/documents/{id}', [DocumentController::class, 'destroy'])->name('admin.documents.destroy');
+Route::post('/admin/documents/{id}/archive', [DocumentController::class, 'archive'])->name('admin.documents.archive');
+Route::post('/admin/documents/{id}/restore', [DocumentController::class, 'restore'])->name('admin.documents.restore');
+Route::delete('/admin/documents/{id}/permanent', [DocumentController::class, 'permanentDelete'])->name('admin.documents.permanent-delete');
 });
 
 Route::middleware('check_permission:teams')->group(function() {

@@ -10,6 +10,7 @@ use App\Models\SmsTemplate;
 use App\Models\PrintFormat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Support\PrintFormatPresets;
 
 class SettingsController extends Controller
 {
@@ -75,6 +76,7 @@ class SettingsController extends Controller
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $this->ensureDefaultPrintFormats();
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('admin.settings.index', compact('settings'));
     }
@@ -225,6 +227,53 @@ class SettingsController extends Controller
         $sms  = app(\App\Services\SmsService::class);
         $sent = $sms->send($request->test_number, $request->test_message, 'test');
         return redirect()->back()->with($sent ? 'success' : 'error', $sent ? 'Test SMS sent!' : 'Test SMS failed. Check configuration.');
+    }
+
+    private function ensureDefaultPrintFormats(): void
+    {
+        $requiredPresets = [
+            'quotation_standard',
+            'sales_order_standard',
+            'sales_invoice_standard',
+            'purchase_order_standard',
+            'salary_slip_standard',
+            'work_application_standard',
+            'dcr_form_standard',
+        ];
+
+        $presets = PrintFormatPresets::all();
+
+        foreach ($requiredPresets as $presetKey) {
+            if (!isset($presets[$presetKey])) {
+                continue;
+            }
+
+            $preset = $presets[$presetKey];
+
+            $exists = PrintFormat::where('document_type', $preset['document_type'])
+                ->where('name', $preset['name'])
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            $hasDefault = PrintFormat::where('document_type', $preset['document_type'])
+                ->where('is_default', true)
+                ->exists();
+
+            PrintFormat::create([
+                'name' => $preset['name'],
+                'document_type' => $preset['document_type'],
+                'header_html' => $preset['header_html'] ?? '',
+                'footer_html' => $preset['footer_html'] ?? '',
+                'body_template' => $preset['body_template'],
+                'is_default' => !$hasDefault,
+                'is_active' => true,
+                'paper_size' => $preset['paper_size'] ?? 'A4',
+                'orientation' => $preset['orientation'] ?? 'portrait',
+            ]);
+        }
     }
 
     // ── Print Formats (delegated to PrintFormatController) handled via routes

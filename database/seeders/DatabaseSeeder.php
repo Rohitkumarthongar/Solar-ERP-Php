@@ -30,14 +30,44 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Roles
-        $adminRole = Role::create(['name' => 'admin', 'description' => 'Full access', 'permissions' => json_encode(['dashboard','customers','leads','quotations','sales_orders','purchase_orders','products','packages','inventory','installations','services','employees','reports','settings','notifications','roles'])]);
-        $salesRole = Role::create(['name' => 'sales', 'description' => 'Sales access', 'permissions' => json_encode(['dashboard','customers','leads','quotations','sales_orders'])]);
-        $techRole = Role::create(['name' => 'technician', 'description' => 'Field tech access', 'permissions' => json_encode(['dashboard','installations','services'])]);
+        $adminRole = Role::firstOrCreate(
+            ['name' => 'admin'],
+            ['description' => 'Full access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders','purchase_orders','products','packages','inventory','installations','services','employees','reports','settings','notifications','roles']]
+        );
+        $salesRole = Role::firstOrCreate(
+            ['name' => 'sales'],
+            ['description' => 'Sales access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders']]
+        );
+        $techRole = Role::firstOrCreate(
+            ['name' => 'technician'],
+            ['description' => 'Field technician access', 'permissions' => ['dashboard','site_visits','installations','services']]
+        );
+        $installerRole = Role::firstOrCreate(
+            ['name' => 'installer'],
+            ['description' => 'Installer access', 'permissions' => ['dashboard','installations','services']]
+        );
+        $customerRepresentativeRole = Role::firstOrCreate(
+            ['name' => 'customer representative'],
+            ['description' => 'Customer relationship access', 'permissions' => ['dashboard','customers','leads','quotations','site_visits']]
+        );
+        $managerRole = Role::firstOrCreate(
+            ['name' => 'manager'],
+            ['description' => 'Manager access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders','site_visits','installations','services','employees','reports']]
+        );
 
         // Admin Users
-        AdminUser::create(['name' => 'Super Admin', 'email' => 'admin@solarerp.com', 'password' => Hash::make('admin123'), 'role' => 'admin', 'role_id' => $adminRole->id, 'is_active' => true]);
-        AdminUser::create(['name' => 'Sales Manager', 'email' => 'sales@solarerp.com', 'password' => Hash::make('sales123'), 'role' => 'sales', 'role_id' => $salesRole->id, 'is_active' => true]);
-        AdminUser::create(['name' => 'Tech Lead', 'email' => 'tech@solarerp.com', 'password' => Hash::make('tech123'), 'role' => 'technician', 'role_id' => $techRole->id, 'is_active' => true]);
+        AdminUser::firstOrCreate(
+            ['email' => 'admin@solarerp.com'],
+            ['name' => 'Super Admin', 'password' => Hash::make('admin123'), 'role' => 'admin', 'role_id' => $adminRole->id, 'is_active' => true]
+        );
+        AdminUser::firstOrCreate(
+            ['email' => 'sales@solarerp.com'],
+            ['name' => 'Sales Manager', 'password' => Hash::make('sales123'), 'role' => 'sales', 'role_id' => $salesRole->id, 'is_active' => true]
+        );
+        AdminUser::firstOrCreate(
+            ['email' => 'tech@solarerp.com'],
+            ['name' => 'Tech Lead', 'password' => Hash::make('tech123'), 'role' => 'technician', 'role_id' => $techRole->id, 'is_active' => true]
+        );
 
         // Settings
         $settingsData = [
@@ -57,18 +87,32 @@ class DatabaseSeeder extends Seeder
             ['key' => 'mail_from_address', 'value' => 'info@solartech.com', 'group' => 'email'],
             ['key' => 'mail_from_name', 'value' => 'Palawat Solar', 'group' => 'email'],
         ];
-        foreach ($settingsData as $s) { Setting::create($s); }
+        foreach ($settingsData as $s) {
+            Setting::updateOrCreate(
+                ['key' => $s['key']],
+                ['value' => $s['value'], 'group' => $s['group']]
+            );
+        }
 
         // Email Templates
-        EmailTemplate::create(['name' => 'Quotation Email', 'type' => 'quotation', 'subject' => 'Your Solar System Quotation - {quotation_number}', 'body' => '<p>Dear {customer_name},</p><p>Please find attached your quotation <strong>{quotation_number}</strong> for a solar system installation.</p><p><strong>Total Amount: ₹{total_amount}</strong></p><p>This quotation is valid until {valid_until}.</p><p>Please feel free to contact us for any queries.</p><p>Best regards,<br>Palawat Solar Team</p>', 'is_active' => true]);
-        EmailTemplate::create(['name' => 'Follow Up Email', 'type' => 'follow_up', 'subject' => 'Following up on your Solar Inquiry', 'body' => '<p>Dear {customer_name},</p><p>We wanted to follow up on your recent inquiry about solar panel installation.</p><p>Our team is ready to provide you with a customized solution.</p><p>Best regards,<br>Palawat Solar</p>', 'is_active' => true]);
-        EmailTemplate::create(['name' => 'Welcome Email', 'type' => 'welcome', 'subject' => 'Welcome to SolarTech Family!', 'body' => '<p>Dear {customer_name},</p><p>Welcome to Palawat Solar! We are thrilled to have you as our customer.</p><p>Your order <strong>{order_number}</strong> has been confirmed.</p><p>Best regards,<br>Palawat Solar Team</p>', 'is_active' => true]);
+        EmailTemplate::updateOrCreate(
+            ['name' => 'Quotation Email', 'type' => 'quotation'],
+            ['subject' => 'Your Solar System Quotation - {quotation_number}', 'body' => '<p>Dear {customer_name},</p><p>Please find attached your quotation <strong>{quotation_number}</strong> for a solar system installation.</p><p><strong>Total Amount: ₹{total_amount}</strong></p><p>This quotation is valid until {valid_until}.</p><p>Please feel free to contact us for any queries.</p><p>Best regards,<br>Palawat Solar Team</p>', 'is_active' => true]
+        );
+        EmailTemplate::updateOrCreate(
+            ['name' => 'Follow Up Email', 'type' => 'follow_up'],
+            ['subject' => 'Following up on your Solar Inquiry', 'body' => '<p>Dear {customer_name},</p><p>We wanted to follow up on your recent inquiry about solar panel installation.</p><p>Our team is ready to provide you with a customized solution.</p><p>Best regards,<br>Palawat Solar</p>', 'is_active' => true]
+        );
+        EmailTemplate::updateOrCreate(
+            ['name' => 'Welcome Email', 'type' => 'welcome'],
+            ['subject' => 'Welcome to SolarTech Family!', 'body' => '<p>Dear {customer_name},</p><p>Welcome to Palawat Solar! We are thrilled to have you as our customer.</p><p>Your order <strong>{order_number}</strong> has been confirmed.</p><p>Best regards,<br>Palawat Solar Team</p>', 'is_active' => true]
+        );
 
         // Packages
-        $pkg1 = Package::create(['name' => '3kW Home Starter Pack', 'description' => 'Perfect for small homes with basic appliances', 'system_size_kw' => 3, 'price' => 185000, 'suitable_for' => 'residential', 'includes' => '6x 500W Solar Panels, 3kW Inverter, Mounting Structure, MC4 Connectors, 25 Year Panel Warranty, 5 Year Installation Warranty', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => true]);
-        $pkg2 = Package::create(['name' => '5kW Premium Home Pack', 'description' => 'Ideal for medium homes, covers all appliances', 'system_size_kw' => 5, 'price' => 290000, 'suitable_for' => 'residential', 'includes' => '10x 500W Solar Panels, 5kW Hybrid Inverter, Battery Backup, Mounting Structure, Smart Monitoring, 25 Year Panel Warranty', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => true]);
-        $pkg3 = Package::create(['name' => '10kW Business Pack', 'description' => 'For small businesses and commercial establishments', 'system_size_kw' => 10, 'price' => 550000, 'suitable_for' => 'commercial', 'includes' => '20x 500W Solar Panels, 10kW Commercial Inverter, Mounting Structure, Net Metering, AMC for 5 Years', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => true]);
-        $pkg4 = Package::create(['name' => '25kW Industrial Pack', 'description' => 'Large scale industrial solar solution', 'system_size_kw' => 25, 'price' => 1250000, 'suitable_for' => 'industrial', 'includes' => '50x 500W Solar Panels, 25kW Industrial Inverter, Heavy Duty Mounting, SCADA Monitoring, 10 Year AMC', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => false]);
+        $pkg1 = Package::updateOrCreate(['name' => '3kW Home Starter Pack'], ['description' => 'Perfect for small homes with basic appliances', 'system_size_kw' => 3, 'price' => 185000, 'suitable_for' => 'residential', 'includes' => '6x 500W Solar Panels, 3kW Inverter, Mounting Structure, MC4 Connectors, 25 Year Panel Warranty, 5 Year Installation Warranty', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => true]);
+        $pkg2 = Package::updateOrCreate(['name' => '5kW Premium Home Pack'], ['description' => 'Ideal for medium homes, covers all appliances', 'system_size_kw' => 5, 'price' => 290000, 'suitable_for' => 'residential', 'includes' => '10x 500W Solar Panels, 5kW Hybrid Inverter, Battery Backup, Mounting Structure, Smart Monitoring, 25 Year Panel Warranty', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => true]);
+        $pkg3 = Package::updateOrCreate(['name' => '10kW Business Pack'], ['description' => 'For small businesses and commercial establishments', 'system_size_kw' => 10, 'price' => 550000, 'suitable_for' => 'commercial', 'includes' => '20x 500W Solar Panels, 10kW Commercial Inverter, Mounting Structure, Net Metering, AMC for 5 Years', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => true]);
+        $pkg4 = Package::updateOrCreate(['name' => '25kW Industrial Pack'], ['description' => 'Large scale industrial solar solution', 'system_size_kw' => 25, 'price' => 1250000, 'suitable_for' => 'industrial', 'includes' => '50x 500W Solar Panels, 25kW Industrial Inverter, Heavy Duty Mounting, SCADA Monitoring, 10 Year AMC', 'warranty_years' => 25, 'is_active' => true, 'is_featured' => false]);
 
         // Products
         $products = [
@@ -83,8 +127,11 @@ class DatabaseSeeder extends Seeder
         ];
         $productIds = [];
         foreach ($products as $p) {
-            $prod = Product::create(array_merge($p, ['is_active' => true]));
-            Inventory::create(['product_id' => $prod->id, 'quantity' => rand(10, 50), 'min_quantity' => 5]);
+            $prod = Product::updateOrCreate(['sku' => $p['sku']], array_merge($p, ['is_active' => true]));
+            Inventory::updateOrCreate(
+                ['product_id' => $prod->id],
+                ['quantity' => rand(10, 50), 'min_quantity' => 5]
+            );
             $productIds[] = $prod->id;
         }
 
@@ -98,7 +145,7 @@ class DatabaseSeeder extends Seeder
         ];
         $custIds = [];
         foreach ($customers as $c) {
-            $cust = Customer::create($c);
+            $cust = Customer::updateOrCreate(['customer_code' => $c['customer_code']], $c);
             $custIds[] = $cust->id;
         }
 
@@ -113,7 +160,11 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Kavita Desai', 'email' => 'kavita.desai@gmail.com', 'phone' => '9555555555', 'address' => 'Katargam, Surat', 'lead_source' => 'social_media', 'status' => 'new', 'estimated_value' => 290000, 'package_id' => $pkg2->id],
         ];
         foreach ($leadData as $l) {
-            Lead::create(array_merge($l, ['lead_number' => 'LEAD-' . date('Ymd') . '-' . rand(100, 999)]));
+            $leadNumber = 'LEAD-' . date('Ymd') . '-' . substr(md5($l['email']), 0, 3);
+            Lead::updateOrCreate(
+                ['lead_number' => strtoupper($leadNumber)],
+                array_merge($l, ['lead_number' => strtoupper($leadNumber)])
+            );
         }
 
         // Employees
@@ -126,33 +177,36 @@ class DatabaseSeeder extends Seeder
         ];
         $empIds = [];
         foreach ($employees as $e) {
-            $emp = Employee::create(array_merge($e, ['is_active' => true]));
+            $emp = Employee::updateOrCreate(['employee_code' => $e['employee_code']], array_merge($e, ['is_active' => true]));
             $empIds[] = $emp->id;
-            SalaryRecord::create(['employee_id' => $emp->id, 'month' => date('m'), 'year' => date('Y'), 'basic_salary' => $emp->basic_salary, 'allowances' => 5000, 'deductions' => 1500, 'net_salary' => $emp->basic_salary + 5000 - 1500, 'payment_date' => date('Y-m-d'), 'payment_mode' => 'bank_transfer', 'status' => 'paid']);
+            SalaryRecord::updateOrCreate(
+                ['employee_id' => $emp->id, 'month' => date('m'), 'year' => date('Y')],
+                ['basic_salary' => $emp->basic_salary, 'allowances' => 5000, 'deductions' => 1500, 'net_salary' => $emp->basic_salary + 5000 - 1500, 'payment_date' => date('Y-m-d'), 'payment_mode' => 'bank_transfer', 'status' => 'paid']
+            );
         }
 
         // Sales Orders
-        $so1 = SalesOrder::create(['order_number' => 'SO-20240101-001', 'customer_id' => $custIds[0], 'customer_name' => 'Rajesh Kumar', 'customer_email' => 'rajesh@gmail.com', 'customer_phone' => '9876543201', 'customer_address' => '12 Sunder Nagar, Ahmedabad', 'total_amount' => 185000, 'tax_amount' => 9250, 'discount_amount' => 5000, 'final_amount' => 189250, 'status' => 'completed', 'payment_status' => 'paid']);
-        SalesOrderItem::create(['sales_order_id' => $so1->id, 'product_id' => $productIds[0], 'description' => '6x Luminous 500W Mono PERC Panel', 'quantity' => 6, 'unit_price' => 15000, 'total_price' => 90000]);
-        SalesOrderItem::create(['sales_order_id' => $so1->id, 'product_id' => $productIds[2], 'description' => 'Growatt 3kW Hybrid Inverter', 'quantity' => 1, 'unit_price' => 35000, 'total_price' => 35000]);
-        SalesOrderItem::create(['sales_order_id' => $so1->id, 'product_id' => $productIds[5], 'description' => 'GI Mounting Structure', 'quantity' => 1, 'unit_price' => 11000, 'total_price' => 11000]);
+        $so1 = SalesOrder::updateOrCreate(['order_number' => 'SO-20240101-001'], ['customer_id' => $custIds[0], 'customer_name' => 'Rajesh Kumar', 'customer_email' => 'rajesh@gmail.com', 'customer_phone' => '9876543201', 'customer_address' => '12 Sunder Nagar, Ahmedabad', 'total_amount' => 185000, 'tax_amount' => 9250, 'discount_amount' => 5000, 'final_amount' => 189250, 'status' => 'completed', 'payment_status' => 'paid']);
+        SalesOrderItem::updateOrCreate(['sales_order_id' => $so1->id, 'description' => '6x Luminous 500W Mono PERC Panel'], ['product_id' => $productIds[0], 'quantity' => 6, 'unit_price' => 15000, 'total_price' => 90000]);
+        SalesOrderItem::updateOrCreate(['sales_order_id' => $so1->id, 'description' => 'Growatt 3kW Hybrid Inverter'], ['product_id' => $productIds[2], 'quantity' => 1, 'unit_price' => 35000, 'total_price' => 35000]);
+        SalesOrderItem::updateOrCreate(['sales_order_id' => $so1->id, 'description' => 'GI Mounting Structure'], ['product_id' => $productIds[5], 'quantity' => 1, 'unit_price' => 11000, 'total_price' => 11000]);
 
-        $so2 = SalesOrder::create(['order_number' => 'SO-20240201-002', 'customer_id' => $custIds[2], 'customer_name' => 'Mehta Industries', 'customer_email' => 'accounts@mehtaind.com', 'customer_phone' => '9876543203', 'customer_address' => 'Plot 7, GIDC, Anand', 'total_amount' => 550000, 'tax_amount' => 27500, 'discount_amount' => 15000, 'final_amount' => 562500, 'status' => 'processing', 'payment_status' => 'partial']);
+        $so2 = SalesOrder::updateOrCreate(['order_number' => 'SO-20240201-002'], ['customer_id' => $custIds[2], 'customer_name' => 'Mehta Industries', 'customer_email' => 'accounts@mehtaind.com', 'customer_phone' => '9876543203', 'customer_address' => 'Plot 7, GIDC, Anand', 'total_amount' => 550000, 'tax_amount' => 27500, 'discount_amount' => 15000, 'final_amount' => 562500, 'status' => 'processing', 'payment_status' => 'partial']);
 
         // Purchase Orders
-        $po1 = PurchaseOrder::create(['po_number' => 'PO-20240101-001', 'supplier_name' => 'Waaree Energies Ltd', 'supplier_email' => 'supply@waaree.com', 'supplier_phone' => '9800000001', 'total_amount' => 140000, 'tax_amount' => 7000, 'final_amount' => 147000, 'status' => 'received', 'expected_delivery' => '2024-01-15', 'received_date' => '2024-01-14']);
-        PurchaseOrderItem::create(['purchase_order_id' => $po1->id, 'product_id' => $productIds[1], 'description' => 'Waaree 550W Bi-Facial Panels x10', 'quantity' => 10, 'unit_price' => 14000, 'total_price' => 140000]);
+        $po1 = PurchaseOrder::updateOrCreate(['po_number' => 'PO-20240101-001'], ['supplier_name' => 'Waaree Energies Ltd', 'supplier_email' => 'supply@waaree.com', 'supplier_phone' => '9800000001', 'total_amount' => 140000, 'tax_amount' => 7000, 'final_amount' => 147000, 'status' => 'received', 'expected_delivery' => '2024-01-15', 'received_date' => '2024-01-14']);
+        PurchaseOrderItem::updateOrCreate(['purchase_order_id' => $po1->id, 'description' => 'Waaree 550W Bi-Facial Panels x10'], ['product_id' => $productIds[1], 'quantity' => 10, 'unit_price' => 14000, 'total_price' => 140000]);
 
         // Installations
-        $inst1 = Installation::create(['installation_number' => 'INST-20240101-001', 'customer_id' => $custIds[0], 'sales_order_id' => $so1->id, 'scheduled_date' => '2024-01-20', 'completion_date' => '2024-01-22', 'system_size_kw' => 3, 'installation_address' => '12 Sunder Nagar, Ahmedabad', 'roof_type' => 'RCC Flat Roof', 'assigned_team' => 'Team Alpha', 'status' => 'completed']);
+        $inst1 = Installation::updateOrCreate(['installation_number' => 'INST-20240101-001'], ['customer_id' => $custIds[0], 'sales_order_id' => $so1->id, 'scheduled_date' => '2024-01-20', 'completion_date' => '2024-01-22', 'system_size_kw' => 3, 'installation_address' => '12 Sunder Nagar, Ahmedabad', 'roof_type' => 'RCC Flat Roof', 'assigned_team' => 'Team Alpha', 'status' => 'completed']);
 
         // Service Requests
-        ServiceRequest::create(['ticket_number' => 'SRV-20240301-001', 'customer_id' => $custIds[0], 'installation_id' => $inst1->id, 'service_type' => 'maintenance', 'priority' => 'medium', 'status' => 'open', 'description' => 'Annual maintenance check required. Customer reporting slight dip in generation.', 'scheduled_date' => date('Y-m-d', strtotime('+7 days'))]);
-        ServiceRequest::create(['ticket_number' => 'SRV-20240302-002', 'customer_id' => $custIds[1], 'service_type' => 'inspection', 'priority' => 'high', 'status' => 'in_progress', 'description' => 'Inverter showing error code. Needs immediate inspection.', 'scheduled_date' => date('Y-m-d', strtotime('+2 days'))]);
+        ServiceRequest::updateOrCreate(['ticket_number' => 'SRV-20240301-001'], ['customer_id' => $custIds[0], 'installation_id' => $inst1->id, 'service_type' => 'maintenance', 'priority' => 'medium', 'status' => 'open', 'description' => 'Annual maintenance check required. Customer reporting slight dip in generation.', 'scheduled_date' => date('Y-m-d', strtotime('+7 days'))]);
+        ServiceRequest::updateOrCreate(['ticket_number' => 'SRV-20240302-002'], ['customer_id' => $custIds[1], 'service_type' => 'inspection', 'priority' => 'high', 'status' => 'in_progress', 'description' => 'Inverter showing error code. Needs immediate inspection.', 'scheduled_date' => date('Y-m-d', strtotime('+2 days'))]);
 
         // Notifications
-        Notification::create(['title' => 'Welcome to Solar ERP', 'message' => 'System initialized successfully. Admin panel is ready.', 'type' => 'general']);
-        Notification::create(['title' => 'Low Stock Alert', 'message' => 'MC4 Solar Cable stock is below minimum level.', 'type' => 'inventory']);
-        Notification::create(['title' => 'New Lead Received', 'message' => 'New inquiry from website - Kavita Desai wants 5kW system quote.', 'type' => 'lead']);
+        Notification::firstOrCreate(['title' => 'Welcome to Solar ERP', 'type' => 'general'], ['message' => 'System initialized successfully. Admin panel is ready.']);
+        Notification::firstOrCreate(['title' => 'Low Stock Alert', 'type' => 'inventory'], ['message' => 'MC4 Solar Cable stock is below minimum level.']);
+        Notification::firstOrCreate(['title' => 'New Lead Received', 'type' => 'lead'], ['message' => 'New inquiry from website - Kavita Desai wants 5kW system quote.']);
     }
 }

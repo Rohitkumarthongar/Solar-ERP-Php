@@ -71,7 +71,7 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1.5">Document Type <span class="text-red-500">*</span></label>
                     <select name="document_type"
                         class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
-                        @foreach(['quotation'=>'Quotation','sales_order'=>'Sales Order','purchase_order'=>'Purchase Order','invoice'=>'Invoice','salary_slip'=>'Salary Slip','discom_application'=>'DISCOM Application'] as $val => $label)
+                        @foreach(['quotation'=>'Quotation','sales_order'=>'Sales Order','purchase_order'=>'Purchase Order','invoice'=>'Invoice','salary_slip'=>'Salary Slip','discom_application'=>'DISCOM Application','work_application'=>'Work Application','dcr_form'=>'DCR Form'] as $val => $label)
                         <option value="{{ $val }}" {{ old('document_type') === $val ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
@@ -117,6 +117,7 @@
                         `sales_order` / `purchase_order`: use <code>$order</code> and <code>$settings</code><br>
                         `invoice`: use <code>$invoice</code> and <code>$settings</code><br>
                         `discom_application`: use <code>$discom</code>, <code>$customer</code> and <code>$settings</code><br>
+                        `work_application` / `dcr_form`: use <code>$installation</code> and <code>$settings</code><br>
                         `salary_slip`: use <code>$records</code>, <code>$totalPaid</code>, <code>$month</code>, <code>$year</code>, and <code>$settings</code>
                     </p>
                     <p class="mt-2 text-xs text-orange-700">Header and footer now render together with the body in the final print output.</p>

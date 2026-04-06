@@ -211,6 +211,54 @@
                     </div>
                 </div>
 
+                {{-- Default Print Formats --}}
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
+                        <i class="fas fa-print text-orange-500"></i> Default Print Formats
+                    </h3>
+                    <p class="text-sm text-gray-500 mb-4">Select default print format for each document type. These will be used when printing documents.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        @php
+                            $activePrintFormats = \App\Models\PrintFormat::where('is_active', true)->get();
+                            $printFormats = $activePrintFormats->groupBy('document_type');
+                            $printFormats['sales_invoice'] = $activePrintFormats->where('document_type', 'invoice')->values();
+                            $documentTypes = [
+                                'quotation' => 'Quotation',
+                                'sales_order' => 'Sales Order',
+                                'sales_invoice' => 'Sales Invoice',
+                                'purchase_order' => 'Purchase Order',
+                                'salary_slip' => 'Salary Slip',
+                                'discom_application' => 'DISCOM Application',
+                                'work_application' => 'Work Application',
+                                'dcr_form' => 'DCR Form',
+                            ];
+                        @endphp
+                        @foreach($documentTypes as $type => $label)
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">{{ $label }}</label>
+                            <select name="default_print_format_{{ $type }}"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                                <option value="">System Default</option>
+                                @if(isset($printFormats[$type]))
+                                    @foreach($printFormats[$type] as $format)
+                                    <option value="{{ $format->id }}"
+                                        {{ ($settings['default_print_format_' . $type] ?? '') == $format->id ? 'selected' : '' }}>
+                                        {{ $format->name }}
+                                    </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                        <p class="text-xs text-blue-700 flex items-start gap-2">
+                            <i class="fas fa-info-circle mt-0.5"></i>
+                            <span>You can create and manage print formats from the <a href="{{ route('admin.settings.print-formats') }}" class="underline font-semibold">Print Formats</a> section. If no default is selected, the system will use the first active format for that document type.</span>
+                        </p>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm p-6">
                     <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
                         <i class="fas fa-palette text-orange-500"></i> Admin Appearance

@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <form action="{{ route('admin.site-visits.update', $siteVisit->id) }}" method="POST" class="space-y-8 animate-slide">
+    <form action="{{ route('admin.site-visits.update', $siteVisit->id) }}" method="POST" enctype="multipart/form-data" class="space-y-8 animate-slide">
         @csrf
         @method('PUT')
         <div class="bg-white rounded-[30px] shadow-sm border border-gray-100 overflow-hidden">
@@ -116,6 +116,20 @@
                     <div class="md:col-span-2">
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Final Completion Notes</label>
                         <textarea name="completion_notes" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300 text-green-700">{{ $siteVisit->completion_notes }}</textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Site Photos</label>
+                        <input type="file" name="site_photos[]" multiple accept="image/*" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
+                        @if(!empty($siteVisit->site_photos))
+                        <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                            @foreach($siteVisit->site_photos as $photo)
+                            <a href="{{ Storage::url($photo) }}" target="_blank" class="block aspect-square rounded-2xl overflow-hidden border border-gray-200 bg-gray-50">
+                                <img src="{{ Storage::url($photo) }}" alt="Site Photo" class="w-full h-full object-cover">
+                            </a>
+                            @endforeach
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

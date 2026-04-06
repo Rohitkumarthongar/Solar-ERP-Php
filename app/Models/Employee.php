@@ -13,6 +13,7 @@ class Employee extends Model
         'phone',
         'department',
         'designation',
+        'role',
         'employment_type',
         'basic_salary',
         'contract_start_date',
@@ -26,7 +27,9 @@ class Employee extends Model
         'use_watt_based_pay',
         'joining_date',
         'address',
-        'is_active'
+        'status',
+        'is_active',
+        'team_id'
     ];
 
     protected $casts = [
@@ -52,6 +55,16 @@ class Employee extends Model
     public function dailyWageRecords()
     {
         return $this->hasMany(DailyWageRecord::class);
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    public function user()
+    {
+        return $this->hasOne(AdminUser::class);
     }
 
     public function taskPayments()

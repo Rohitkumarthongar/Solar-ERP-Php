@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\PostTooLargeException;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,10 +13,27 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Add no-cache middleware to web group
+        $middleware->web(append: [
+            \App\Http\Middleware\NoCacheMiddleware::class,
+        ]);
+        
         $middleware->alias([
             'check_permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (PostTooLargeException $e, Request $request) {
+            $message = 'The uploaded files are larger than the current server limit (' . ini_get('post_max_size') . '). Please compress the photos or upload fewer files at one time.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                ], 413);
+            }
+
+            return redirect()->back()->withErrors([
+                'upload_size' => $message,
+            ])->withInput();
+        });
     })->create();

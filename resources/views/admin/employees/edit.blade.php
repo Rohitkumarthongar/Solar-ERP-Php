@@ -89,6 +89,49 @@
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
                         </div>
 
+                        <div class="pt-4 border-t border-gray-100 space-y-4">
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-400">Login Account</h4>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">System Role <span class="text-red-500">*</span></label>
+                                <select name="role_id" required
+                                    class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-gray-50">
+                                    <option value="">Select role</option>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->id }}" {{ old('role_id', optional($employee->adminUser)->role_id) == $role->id ? 'selected' : '' }}>{{ ucfirst($role->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                                    {{ $employee->adminUser ? 'New Login Password' : 'Login Password' }}
+                                    @if(!$employee->adminUser)<span class="text-red-500">*</span>@endif
+                                </label>
+                                <input type="password" name="password"
+                                    class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    {{ $employee->adminUser ? 'Leave blank to keep the current password.' : 'Set a password to create the linked login account.' }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Confirm Password</label>
+                                <input type="password" name="password_confirmation"
+                                    class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Employment Type <span class="text-red-500">*</span></label>
+                            <select name="employment_type" id="employment_type" required
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-gray-50">
+                                <option value="permanent" {{ old('employment_type', $employee->employment_type) == 'permanent' ? 'selected' : '' }}>Permanent Employee</option>
+                                <option value="contract" {{ old('employment_type', $employee->employment_type) == 'contract' ? 'selected' : '' }}>Contract Based</option>
+                                <option value="daily_wage" {{ old('employment_type', $employee->employment_type) == 'daily_wage' ? 'selected' : '' }}>Daily Wage Worker</option>
+                            </select>
+                        </div>
+
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5 font-bold">Base Salary (INR)</label>
                             <div class="relative">

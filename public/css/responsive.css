@@ -1,0 +1,516 @@
+/* ============================================
+   RESPONSIVE UTILITIES FOR SOLAR ERP
+   Mobile-First Responsive Design System
+   ============================================ */
+
+/* Base Reset for Mobile */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE TABLES
+   ============================================ */
+@media (max-width: 768px) {
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 0.5rem;
+    }
+
+    .table-responsive table {
+        min-width: 600px;
+        font-size: 0.875rem;
+    }
+
+    .table-responsive th,
+    .table-responsive td {
+        padding: 0.5rem !important;
+        white-space: nowrap;
+    }
+
+    /* Card-style table for very small screens */
+    .table-card-mobile {
+        display: block;
+    }
+
+    .table-card-mobile thead {
+        display: none;
+    }
+
+    .table-card-mobile tbody {
+        display: block;
+    }
+
+    .table-card-mobile tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--admin-border, #e5e7eb);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background: var(--admin-surface, #fff);
+    }
+
+    .table-card-mobile td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0 !important;
+        border: none !important;
+    }
+
+    .table-card-mobile td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        margin-right: 1rem;
+        color: var(--admin-muted, #6b7280);
+    }
+}
+
+/* ============================================
+   MOBILE FORMS
+   ============================================ */
+@media (max-width: 640px) {
+    /* Prevent zoom on input focus (iOS) */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="password"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* Stack form grids */
+    .grid,
+    .grid-cols-2,
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Full width buttons on mobile */
+    .btn-mobile-full {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Larger touch targets */
+    button,
+    a.btn,
+    input[type="submit"],
+    input[type="button"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* ============================================
+   MOBILE NAVIGATION
+   ============================================ */
+@media (max-width: 1024px) {
+    .mobile-nav-hidden {
+        display: none;
+    }
+
+    .mobile-nav-visible {
+        display: block;
+    }
+
+    /* Hamburger menu spacing */
+    .mobile-menu-item {
+        padding: 1rem;
+        border-bottom: 1px solid var(--admin-border, #e5e7eb);
+    }
+
+    .mobile-menu-item:last-child {
+        border-bottom: none;
+    }
+}
+
+/* ============================================
+   RESPONSIVE SPACING
+   ============================================ */
+@media (max-width: 768px) {
+    .container,
+    .max-w-7xl {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .section-padding {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
+    /* Reduce large spacing on mobile */
+    .space-y-8 > * + * {
+        margin-top: 1.5rem !important;
+    }
+
+    .space-y-6 > * + * {
+        margin-top: 1rem !important;
+    }
+
+    .gap-8 {
+        gap: 1.5rem !important;
+    }
+
+    .gap-6 {
+        gap: 1rem !important;
+    }
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY
+   ============================================ */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.875rem !important;
+        line-height: 2.25rem !important;
+    }
+
+    h2 {
+        font-size: 1.5rem !important;
+        line-height: 2rem !important;
+    }
+
+    h3 {
+        font-size: 1.25rem !important;
+        line-height: 1.75rem !important;
+    }
+
+    h4 {
+        font-size: 1.125rem !important;
+        line-height: 1.5rem !important;
+    }
+
+    .text-5xl {
+        font-size: 2.25rem !important;
+    }
+
+    .text-4xl {
+        font-size: 1.875rem !important;
+    }
+
+    .text-3xl {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* ============================================
+   MOBILE CARDS & PANELS
+   ============================================ */
+@media (max-width: 640px) {
+    .card,
+    .panel,
+    .glass {
+        border-radius: 1rem !important;
+        padding: 1rem !important;
+    }
+
+    .card-header {
+        padding: 1rem !important;
+    }
+
+    .card-body {
+        padding: 1rem !important;
+    }
+}
+
+/* ============================================
+   RESPONSIVE MODALS
+   ============================================ */
+@media (max-width: 640px) {
+    .modal-content {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        margin: 1rem !important;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem !important;
+    }
+}
+
+/* ============================================
+   MOBILE SIDEBAR
+   ============================================ */
+@media (max-width: 1024px) {
+    .sidebar-mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar-mobile-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+/* ============================================
+   RESPONSIVE IMAGES
+   ============================================ */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 768px) {
+    .hero-image,
+    .banner-image {
+        min-height: 300px;
+        object-fit: cover;
+    }
+}
+
+/* ============================================
+   MOBILE UTILITIES
+   ============================================ */
+@media (max-width: 640px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+
+    .mobile-visible {
+        display: block !important;
+    }
+
+    .mobile-flex {
+        display: flex !important;
+    }
+
+    .mobile-text-center {
+        text-align: center !important;
+    }
+
+    .mobile-full-width {
+        width: 100% !important;
+    }
+}
+
+/* ============================================
+   TABLET UTILITIES
+   ============================================ */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .tablet-hidden {
+        display: none !important;
+    }
+
+    .tablet-visible {
+        display: block !important;
+    }
+}
+
+/* ============================================
+   DESKTOP UTILITIES
+   ============================================ */
+@media (min-width: 1025px) {
+    .desktop-hidden {
+        display: none !important;
+    }
+
+    .desktop-visible {
+        display: block !important;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+        color: black !important;
+    }
+
+    .sidebar,
+    nav,
+    footer,
+    .pwa-banner {
+        display: none !important;
+    }
+
+    table {
+        page-break-inside: avoid;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+}
+
+/* ============================================
+   LANDSCAPE MOBILE OPTIMIZATIONS
+   ============================================ */
+@media (max-height: 500px) and (orientation: landscape) {
+    .sidebar {
+        overflow-y: auto;
+        max-height: 100vh;
+    }
+
+    .hero-section {
+        min-height: 100vh;
+    }
+}
+
+/* ============================================
+   SAFE AREA INSETS (iPhone X+)
+   ============================================ */
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+
+    .pwa-banner {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* Made with Bob */
+
+/* ============================================
+   ADDITIONAL MOBILE NAVIGATION FIXES
+   ============================================ */
+
+/* Improved mobile navigation */
+@media (max-width: 1024px) {
+    /* Ensure mobile menu is properly sized */
+    #mobileMenu {
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Better spacing for mobile nav items */
+    #mobileMenu a {
+        font-size: 0.95rem;
+        padding: 0.875rem 0.75rem;
+    }
+    
+    /* Improve mobile menu button */
+    nav button {
+        padding: 0.5rem;
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* Extra mobile improvements */
+@media (max-width: 640px) {
+    /* Compact header on small screens */
+    nav .h-20 {
+        height: 4rem !important;
+    }
+    
+    nav .h-16 {
+        height: 3.5rem !important;
+    }
+    
+    /* Better button sizing */
+    nav a[class*="bg-amber"] {
+        padding: 0.5rem 1rem !important;
+        font-size: 0.75rem !important;
+        white-space: nowrap;
+    }
+    
+    /* Improve logo sizing */
+    nav img,
+    nav .w-12,
+    nav .w-10 {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+    }
+    
+    /* Better mobile menu spacing */
+    #mobileMenu {
+        padding: 0.75rem !important;
+    }
+    
+    #mobileMenu a {
+        padding: 0.75rem !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 375px) {
+    /* Ultra compact navigation */
+    nav .space-x-2 {
+        gap: 0.25rem !important;
+    }
+    
+    nav .px-4 {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    
+    /* Smaller buttons */
+    nav a[class*="bg-amber"] {
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 896px) and (orientation: landscape) {
+    nav {
+        position: sticky;
+        top: 0;
+    }
+    
+    #mobileMenu {
+        max-height: calc(100vh - 3rem);
+    }
+}

@@ -2,16 +2,104 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Palawat Solar') - {{ $settings['company_name'] ?? 'Palawat Solar' }}</title>
-
-    <meta name="description" content="@yield('meta_description', 'Premium solar solutions for homes and businesses. Quality panels, inverters, batteries and complete installation services.')">    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f59e0b">
+    
+    <!-- Primary Meta Tags -->
+    <title>@yield('title', 'Palawat Solar - Premium Solar Panel & Inverter Solutions') - {{ $settings['company_name'] ?? 'Palawat Solar' }}</title>
+    <meta name="title" content="@yield('meta_title', 'Palawat Solar - Best Solar Panel, Inverter & Battery Solutions in India')">
+    <meta name="description" content="@yield('meta_description', 'Palawat Solar - Leading solar energy company offering premium solar panels, inverters, batteries, and complete installation services. Save up to 70% on electricity bills with our residential & commercial solar solutions.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'solar panels, solar inverter, solar battery, solar installation, solar energy, solar power, rooftop solar, solar panel price, solar system, solar company, solar EPC, solar trading, Palawat Solar, Palawat trading company, solar panel installation, residential solar, commercial solar, industrial solar, solar subsidy, solar financing, solar maintenance, solar products, photovoltaic panels, mono PERC solar panels, polycrystalline solar panels, bifacial solar panels, solar charge controller, MPPT inverter, hybrid inverter, on-grid inverter, off-grid inverter, solar water heater, solar street light, solar pump, net metering, solar rooftop subsidy, PM Kusum Yojana, solar energy solutions, renewable energy, green energy, sustainable energy, solar power plant, solar farm, solar array, solar module, solar cell, solar technology, solar equipment, solar accessories, solar cables, solar connectors, solar mounting structure, solar racking system, solar optimizer, solar monitoring system, best solar company India, top solar panel brands, solar panel dealers, solar panel distributors, solar panel manufacturers, solar inverter brands, Luminous solar, Microtek solar, UTL solar, Havells solar, Polycab solar, Waaree solar, Adani solar, Tata solar, Vikram solar, Premier solar, RenewSys solar, Goldi solar')">
+    <meta name="author" content="{{ $settings['company_name'] ?? 'Palawat Solar' }}">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('og_title', 'Palawat Solar - Premium Solar Energy Solutions')">
+    <meta property="og:description" content="@yield('og_description', 'Leading solar company offering high-quality solar panels, inverters, batteries & complete installation services. Save money, power better.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/hero-solar.jpg'))">
+    <meta property="og:site_name" content="{{ $settings['company_name'] ?? 'Palawat Solar' }}">
+    <meta property="og:locale" content="en_IN">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ url()->current() }}">
+    <meta property="twitter:title" content="@yield('twitter_title', 'Palawat Solar - Premium Solar Solutions')">
+    <meta property="twitter:description" content="@yield('twitter_description', 'Premium solar panels, inverters & batteries. Expert installation. Save up to 70% on electricity bills.')">
+    <meta property="twitter:image" content="@yield('twitter_image', asset('images/hero-solar.jpg'))">
+    
+    <!-- Geo Tags -->
+    <meta name="geo.region" content="IN">
+    <meta name="geo.placename" content="India">
+    <meta name="geo.position" content="@yield('geo_position', '23.0225;72.5714')">
+    <meta name="ICBM" content="@yield('icbm', '23.0225, 72.5714')">
+    
+    <!-- Business Schema -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "LocalBusiness",
+      "name": "{{ $settings['company_name'] ?? 'Palawat Solar' }}",
+      "image": "{{ asset('storage/' . ($settings['company_logo'] ?? 'logo.png')) }}",
+      "description": "Premium solar energy solutions provider offering solar panels, inverters, batteries, and complete installation services for residential, commercial, and industrial applications.",
+      "address": {
+        "@@type": "PostalAddress",
+        "streetAddress": "{{ $settings['company_address'] ?? '123 Solar Park' }}",
+        "addressCountry": "IN"
+      },
+      "telephone": "{{ $settings['company_phone'] ?? '+91 98765 43210' }}",
+      "email": "{{ $settings['company_email'] ?? 'info@palawatsolar.com' }}",
+      "url": "{{ url('/') }}",
+      "priceRange": "₹₹₹",
+      "openingHours": "Mo-Sa 09:00-18:00",
+      "sameAs": [
+        "{{ $settings['social_facebook'] ?? '' }}",
+        "{{ $settings['social_twitter'] ?? '' }}",
+        "{{ $settings['social_instagram'] ?? '' }}",
+        "{{ $settings['social_linkedin'] ?? '' }}"
+      ]
+    }
+    </script>
+    
+    <!-- Product Schema -->
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@@type": "Product",
+      "name": "Solar Panel Installation Services",
+      "description": "Complete solar energy solutions including panels, inverters, batteries, and professional installation",
+      "brand": {
+        "@@type": "Brand",
+        "name": "{{ $settings['company_name'] ?? 'Palawat Solar' }}"
+      },
+      "offers": {
+        "@@type": "AggregateOffer",
+        "priceCurrency": "INR",
+        "lowPrice": "50000",
+        "highPrice": "5000000",
+        "offerCount": "100+"
+      },
+      "aggregateRating": {
+        "@@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "500"
+      }
+    }
+    </script>
+    
     @if(!empty($settings['company_favicon']))
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $settings['company_favicon']) }}">
     @endif
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
     @php
         $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
         $websiteTheme = $settings['website_theme'] ?? 'dark';
@@ -79,7 +167,7 @@
         }
 
         .hero-bg {
-            background: linear-gradient(var(--site-hero-overlay-start), var(--site-hero-overlay-end)), url('{{ asset("storage/hero-solar.jpg") }}');
+            background: linear-gradient(var(--site-hero-overlay-start), var(--site-hero-overlay-end)), url('{{ asset("images/hero-solar.jpg") }}');
             background-size: cover;
             background-position: center;
         }
@@ -159,71 +247,110 @@
         ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
 
         ::selection { background: #f59e0b; color: #fff; }
+
+        /* Mobile Responsive Enhancements */
+        @media (max-width: 768px) {
+            .hero-bg { min-height: 60vh; }
+            h1 { font-size: 2rem !important; }
+            h2 { font-size: 1.5rem !important; }
+            .grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (max-width: 640px) {
+            input, select, textarea { font-size: 16px !important; }
+            .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .pwa-banner { animation: slideUp 0.5s ease-out; }
+
+        /* Improved touch targets for mobile */
+        @media (max-width: 768px) {
+            button, a { min-height: 44px; min-width: 44px; }
+        }
     </style>
 </head>
 <body class="website-theme-{{ $websiteTheme }}">
 <!-- Navbar -->
 <nav class="glass sticky top-0 z-50 border-b site-border">
-    <div class="max-w-7xl mx-auto px-4">
-        <div class="flex items-center justify-between h-20">
-            <a href="{{ route('home') }}" class="flex items-center space-x-3">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4">
+        <div class="flex items-center justify-between h-16 sm:h-20">
+            <a href="{{ route('home') }}" class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
                 @if(!empty($settings['company_logo']))
-                    <div class="w-12 h-12 bg-white rounded-xl p-1.5 flex items-center justify-center shadow-lg shadow-white/5 border border-white/5">
-                        <img src="{{ asset('storage/' . $settings['company_logo']) }}" class="max-h-full max-w-full">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg sm:rounded-xl p-1.5 flex items-center justify-center shadow-lg shadow-white/5 border border-white/5">
+                        <img src="{{ asset('storage/' . $settings['company_logo']) }}" class="max-h-full max-w-full" alt="{{ $settings['company_name'] ?? 'Palawat Solar' }}">
                     </div>
                 @else
-                    <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
-                        <i class="fas fa-sun text-white text-lg"></i>
+                    <div class="w-10 h-10 bg-amber-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                        <i class="fas fa-sun text-white text-base sm:text-lg"></i>
                     </div>
                 @endif
-                <div>
-                    @php 
+                <div class="hidden xs:block">
+                    @php
                         $parts = explode(' ', $settings['company_name'] ?? 'Palawat Solar');
                         $first = $parts[0] ?? 'Solar';
                         $rest = implode(' ', array_slice($parts, 1));
                     @endphp
-                    <span class="font-bold text-xl site-text-strong tracking-tight">{{ $first }}</span>
-                    <span class="text-amber-500 font-bold text-xl tracking-tight">{{ $rest }}</span>
+                    <span class="font-bold text-base sm:text-xl site-text-strong tracking-tight">{{ $first }}</span>
+                    <span class="text-amber-500 font-bold text-base sm:text-xl tracking-tight">{{ $rest }}</span>
                 </div>
             </a>
+            
             <!-- Desktop Nav -->
-            <div class="hidden md:flex items-center space-x-10">
-                    <a href="{{ route('home') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-sm uppercase tracking-widest {{ request()->routeIs('home') ? 'active site-text-strong' : '' }}">Home</a>
-                    <a href="{{ route('about') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-sm uppercase tracking-widest {{ request()->routeIs('about') ? 'active site-text-strong' : '' }}">Why Us</a>
-                    <a href="{{ route('products') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-sm uppercase tracking-widest {{ request()->routeIs('products*') ? 'active site-text-strong' : '' }}">Products</a>
-                    <a href="{{ route('packages') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-sm uppercase tracking-widest {{ request()->routeIs('packages') ? 'active site-text-strong' : '' }}">Packages</a>
-                    <a href="{{ route('blogs.index') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-sm uppercase tracking-widest {{ request()->routeIs('blogs.*') ? 'active site-text-strong' : '' }}">Resources</a>
-                    <a href="{{ route('contact') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-sm uppercase tracking-widest {{ request()->routeIs('contact') ? 'active site-text-strong' : '' }}">Contact</a>
-                </div>
-                
-                <div class="h-6 w-px site-border border-l"></div>
-
-                <div class="flex items-center gap-5">
-                    <a href="{{ route('admin.login') }}" class="group flex items-center gap-3 site-muted hover:text-amber-500 transition-all">
-                        <span class="text-[10px] font-black uppercase tracking-widest hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity">Portal</span>
-                        <div class="w-10 h-10 glass rounded-xl flex items-center justify-center border site-border group-hover:border-amber-500/50 group-hover:bg-amber-500/10 transition-all">
-                            <i class="fas fa-shield-halved text-xs"></i>
-                        </div>
-                    </a>
-                    <a href="{{ route('get.quote') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-tighter transition-all shadow-xl shadow-amber-500/20 active:scale-95">Get a Quote</a>
-                </div>
+            <div class="hidden lg:flex items-center space-x-6 xl:space-x-10">
+                <a href="{{ route('home') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-xs xl:text-sm uppercase tracking-wider {{ request()->routeIs('home') ? 'active site-text-strong' : '' }}">Home</a>
+                <a href="{{ route('about') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-xs xl:text-sm uppercase tracking-wider {{ request()->routeIs('about') ? 'active site-text-strong' : '' }}">Why Us</a>
+                <a href="{{ route('products') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-xs xl:text-sm uppercase tracking-wider {{ request()->routeIs('products*') ? 'active site-text-strong' : '' }}">Products</a>
+                <a href="{{ route('packages') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-xs xl:text-sm uppercase tracking-wider {{ request()->routeIs('packages') ? 'active site-text-strong' : '' }}">Packages</a>
+                <a href="{{ route('blogs.index') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-xs xl:text-sm uppercase tracking-wider {{ request()->routeIs('blogs.*') ? 'active site-text-strong' : '' }}">Resources</a>
+                <a href="{{ route('contact') }}" class="nav-link site-muted hover:text-amber-500 font-bold text-xs xl:text-sm uppercase tracking-wider {{ request()->routeIs('contact') ? 'active site-text-strong' : '' }}">Contact</a>
             </div>
-            <!-- Mobile toggle -->
-            <button class="md:hidden site-text-strong" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
-                <i class="fas fa-bars text-xl"></i>
-            </button>
+            
+            <!-- Desktop Actions -->
+            <div class="hidden lg:flex items-center gap-3 xl:gap-5">
+                <div class="h-6 w-px site-border border-l hidden xl:block"></div>
+                <a href="{{ route('admin.login') }}" class="group flex items-center gap-2 site-muted hover:text-amber-500 transition-all">
+                    <span class="text-[10px] font-black uppercase tracking-widest hidden xl:block opacity-0 group-hover:opacity-100 transition-opacity">Portal</span>
+                    <div class="w-9 h-9 xl:w-10 xl:h-10 glass rounded-lg xl:rounded-xl flex items-center justify-center border site-border group-hover:border-amber-500/50 group-hover:bg-amber-500/10 transition-all">
+                        <i class="fas fa-shield-halved text-xs"></i>
+                    </div>
+                </a>
+                <a href="{{ route('get.quote') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-5 xl:px-8 py-2.5 xl:py-3 rounded-xl xl:rounded-2xl font-black text-xs xl:text-sm uppercase tracking-tight transition-all shadow-xl shadow-amber-500/20 active:scale-95 whitespace-nowrap">Get Quote</a>
+            </div>
+
+            <!-- Mobile Actions -->
+            <div class="flex lg:hidden items-center gap-2">
+                <a href="{{ route('get.quote') }}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-tight transition-all shadow-lg shadow-amber-500/20 active:scale-95">Quote</a>
+                <button class="site-text-strong w-10 h-10 flex items-center justify-center" onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+            </div>
         </div>
+        
         <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden md:hidden border-t site-border py-4 space-y-3">
-            <a href="{{ route('home') }}" class="block site-muted hover:text-amber-500 font-medium py-2">Home</a>
-            <a href="{{ route('about') }}" class="block site-muted hover:text-amber-500 font-medium py-2">Why Us</a>
-            <a href="{{ route('products') }}" class="block site-muted hover:text-amber-500 font-medium py-2">Products</a>
-            <a href="{{ route('packages') }}" class="block site-muted hover:text-amber-500 font-medium py-2">Packages</a>
-            <a href="{{ route('blogs.index') }}" class="block site-muted hover:text-amber-500 font-medium py-2">Resources</a>
-            <a href="{{ route('contact') }}" class="block site-muted hover:text-amber-500 font-medium py-2">Contact</a>
-            <div class="flex flex-col gap-3 pt-2">
-                <a href="{{ route('get.quote') }}" class="block bg-amber-500 text-white text-center px-5 py-3 rounded-lg font-bold">Get a Quote</a>
-                <a href="{{ route('admin.login') }}" class="block border site-border site-text-strong text-center px-5 py-3 rounded-lg font-bold">Admin Login</a>
+        <div id="mobileMenu" class="hidden lg:hidden border-t site-border py-3 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <a href="{{ route('home') }}" class="block site-muted hover:text-amber-500 hover:bg-amber-500/5 font-semibold py-3 px-3 rounded-lg transition-all {{ request()->routeIs('home') ? 'text-amber-500 bg-amber-500/10' : '' }}">
+                <i class="fas fa-home w-5 text-center mr-2"></i>Home
+            </a>
+            <a href="{{ route('about') }}" class="block site-muted hover:text-amber-500 hover:bg-amber-500/5 font-semibold py-3 px-3 rounded-lg transition-all {{ request()->routeIs('about') ? 'text-amber-500 bg-amber-500/10' : '' }}">
+                <i class="fas fa-info-circle w-5 text-center mr-2"></i>Why Us
+            </a>
+            <a href="{{ route('products') }}" class="block site-muted hover:text-amber-500 hover:bg-amber-500/5 font-semibold py-3 px-3 rounded-lg transition-all {{ request()->routeIs('products*') ? 'text-amber-500 bg-amber-500/10' : '' }}">
+                <i class="fas fa-solar-panel w-5 text-center mr-2"></i>Products
+            </a>
+            <a href="{{ route('packages') }}" class="block site-muted hover:text-amber-500 hover:bg-amber-500/5 font-semibold py-3 px-3 rounded-lg transition-all {{ request()->routeIs('packages') ? 'text-amber-500 bg-amber-500/10' : '' }}">
+                <i class="fas fa-box w-5 text-center mr-2"></i>Packages
+            </a>
+            <a href="{{ route('blogs.index') }}" class="block site-muted hover:text-amber-500 hover:bg-amber-500/5 font-semibold py-3 px-3 rounded-lg transition-all {{ request()->routeIs('blogs.*') ? 'text-amber-500 bg-amber-500/10' : '' }}">
+                <i class="fas fa-book w-5 text-center mr-2"></i>Resources
+            </a>
+            <a href="{{ route('contact') }}" class="block site-muted hover:text-amber-500 hover:bg-amber-500/5 font-semibold py-3 px-3 rounded-lg transition-all {{ request()->routeIs('contact') ? 'text-amber-500 bg-amber-500/10' : '' }}">
+                <i class="fas fa-envelope w-5 text-center mr-2"></i>Contact
+            </a>
+            <div class="pt-3 mt-3 border-t site-border">
+                <a href="{{ route('admin.login') }}" class="block border-2 site-border site-text-strong text-center px-4 py-3 rounded-lg font-bold hover:border-amber-500 hover:text-amber-500 transition-all">
+                    <i class="fas fa-shield-halved mr-2"></i>Admin Portal
+                </a>
             </div>
         </div>
     </div>
@@ -351,6 +478,113 @@
     </a>
     @endif
 </div>
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" class="fixed bottom-0 left-0 right-0 z-[100] hidden pwa-banner" style="background: linear-gradient(135deg, var(--site-surface), var(--site-surface-alt)); border-top: 1px solid var(--site-border); box-shadow: 0 -10px 40px rgba(0,0,0,0.2);">
+    <div class="max-w-4xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                    <i class="fas fa-mobile-alt text-white text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-sm site-text-strong">Install Solar App</h3>
+                    <p class="text-xs site-muted">Quick access to solar solutions on your device</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                <button onclick="installPWA()" class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+                    Install Now
+                </button>
+                <button onclick="dismissPWABanner()" class="site-muted hover:text-amber-500 px-3 py-2.5 rounded-xl transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // PWA Installation
+    let deferredPrompt;
+    const pwaInstallBanner = document.getElementById('pwaInstallBanner');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Check if user has dismissed the banner before
+        if (!localStorage.getItem('pwa-dismissed')) {
+            setTimeout(() => {
+                pwaInstallBanner.classList.remove('hidden');
+            }, 5000); // Show after 5 seconds
+        }
+    });
+
+    async function installPWA() {
+        if (!deferredPrompt) {
+            alert('Installation is not available on this device/browser');
+            return;
+        }
+        
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+            console.log('PWA installed successfully');
+        }
+        
+        deferredPrompt = null;
+        pwaInstallBanner.classList.add('hidden');
+    }
+
+    function dismissPWABanner() {
+        pwaInstallBanner.classList.add('hidden');
+        localStorage.setItem('pwa-dismissed', 'true');
+        
+        // Clear dismissal after 7 days
+        setTimeout(() => {
+            localStorage.removeItem('pwa-dismissed');
+        }, 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // Remove any previously installed service workers and cached offline data.
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(registrations.map((registration) => registration.unregister()));
+
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+                }
+            } catch (error) {
+                console.log('Service worker cleanup failed:', error);
+            }
+        });
+    }
+
+    // Mobile menu auto-close on navigation
+    document.querySelectorAll('#mobileMenu a').forEach(link => {
+        link.addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.add('hidden');
+        });
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href !== '#' && document.querySelector(href)) {
+                e.preventDefault();
+                document.querySelector(href).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

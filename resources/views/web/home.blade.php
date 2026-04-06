@@ -106,7 +106,7 @@
             @foreach($solutions as $sol)
             <div class="group relative h-[550px] rounded-[60px] overflow-hidden border border-white/5 card-hover shadow-2xl">
                 <!-- Image with Zoom on Hover -->
-                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" style="background-image: url('{{ asset('storage/'.$sol['img']) }}')"></div>
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" style="background-image: url('{{ asset('images/'.$sol['img']) }}')"></div>
                 
                 <!-- Dark Overlay Gradient -->
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/60 to-transparent"></div>

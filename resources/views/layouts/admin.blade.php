@@ -2,16 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f59e0b">
+    
+    <!-- Prevent Browser Caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <title>@yield('title', 'Solar ERP') - {{ \App\Models\Setting::where('key','company_name')->value('value') ?? 'Palawat Solar' }}</title>
     @php $settings = \App\Models\Setting::pluck('value', 'key')->toArray(); @endphp
     @php $adminTheme = $settings['admin_theme'] ?? 'dark'; @endphp
+    
     @if(!empty($settings['company_favicon']))
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $settings['company_favicon']) }}">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/icon-192x192.png') }}">
     @endif
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
     <style>
         :root {
             --admin-bg: #0f172a;
@@ -65,6 +81,22 @@
 
         @keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .animate-slide { animation: slideIn 0.3s ease; }
+
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .pwa-banner { animation: slideUp 0.5s ease-out; }
+
+        /* Mobile Responsive Tables */
+        @media (max-width: 768px) {
+            table { font-size: 0.875rem; }
+            table th, table td { padding: 0.5rem !important; }
+            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+
+        /* Mobile Form Improvements */
+        @media (max-width: 640px) {
+            input, select, textarea { font-size: 16px !important; } /* Prevents zoom on iOS */
+            .grid { grid-template-columns: 1fr !important; }
+        }
 
         body {
             background: radial-gradient(circle at top, color-mix(in srgb, var(--admin-accent) 12%, transparent), transparent 32%), var(--admin-bg);
@@ -459,7 +491,17 @@
                 </a>
                 <a href="{{ route('admin.notifications.index') }}" class="relative text-gray-500 hover:text-orange-600">
                     <i class="fas fa-bell text-xl"></i>
-                    @php $unreadNotifCount = \App\Models\Notification::where('is_read',false)->count(); @endphp
+                    @php
+                        $unreadNotifCount = \App\Models\Notification::where('is_read', false)
+                            ->where(function ($query) {
+                                $query->whereNull('recipient_user_id');
+
+                                if (session('admin_user_id')) {
+                                    $query->orWhere('recipient_user_id', session('admin_user_id'));
+                                }
+                            })
+                            ->count();
+                    @endphp
                     @if($unreadNotifCount > 0)<span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ $unreadNotifCount }}</span>@endif
                 </a>
                 <div class="flex items-center space-x-2">
@@ -478,10 +520,47 @@
         </main>
     </div>
 </div>
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" class="fixed bottom-0 left-0 right-0 z-[100] hidden pwa-banner" style="background: linear-gradient(135deg, var(--admin-surface), var(--admin-surface-2)); border-top: 1px solid var(--admin-border); box-shadow: 0 -10px 40px rgba(0,0,0,0.3);">
+    <div class="max-w-4xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4 flex-1">
+                <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                    <i class="fas fa-mobile-alt text-white text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-sm" style="color: var(--admin-text);">Install Solar ERP App</h3>
+                    <p class="text-xs" style="color: var(--admin-muted);">Get quick access with our mobile app experience</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button onclick="installPWA()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+                    Install
+                </button>
+                <button onclick="dismissPWABanner()" class="text-gray-400 hover:text-white px-3 py-2.5 rounded-xl transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('active');
     }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = e.target.closest('button[onclick="toggleSidebar()"]');
+        
+        if (window.innerWidth <= 1024 && sidebar.classList.contains('active') &&
+            !sidebar.contains(e.target) && !toggleBtn) {
+            sidebar.classList.remove('active');
+        }
+    });
 
     // Gesture / Swipe Operations
     let touchstartX = 0;
@@ -507,6 +586,90 @@
             sidebar.classList.remove('active');
         }
     }
+
+    // PWA Installation
+    let deferredPrompt;
+    const pwaInstallBanner = document.getElementById('pwaInstallBanner');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Check if user has dismissed the banner before
+        if (!localStorage.getItem('pwa-dismissed')) {
+            setTimeout(() => {
+                pwaInstallBanner.classList.remove('hidden');
+            }, 3000); // Show after 3 seconds
+        }
+    });
+
+    async function installPWA() {
+        if (!deferredPrompt) {
+            return;
+        }
+        
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+            console.log('PWA installed');
+        }
+        
+        deferredPrompt = null;
+        pwaInstallBanner.classList.add('hidden');
+    }
+
+    function dismissPWABanner() {
+        pwaInstallBanner.classList.add('hidden');
+        localStorage.setItem('pwa-dismissed', 'true');
+        
+        // Clear dismissal after 7 days
+        setTimeout(() => {
+            localStorage.removeItem('pwa-dismissed');
+        }, 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // Remove any previously installed service workers and cached offline data.
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(registrations.map((registration) => registration.unregister()));
+
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+                }
+            } catch (error) {
+                console.log('Service worker cleanup failed:', error);
+            }
+        });
+    }
+
+    // Handle online/offline status
+    window.addEventListener('online', () => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Back Online',
+            text: 'Your connection has been restored',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
+
+    window.addEventListener('offline', () => {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Connection',
+            text: 'You are currently offline. Some features may be limited.',
+            timer: 3000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
 
     // SweetAlert handling for flash messages
     @if(session('success'))
@@ -593,6 +756,7 @@
 
 
 </script>
+@stack('scripts')
 </body>
 </html>
 <!-- Extra script for UI fixes -->

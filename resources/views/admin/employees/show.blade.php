@@ -24,6 +24,10 @@
         </div>
         
         <div class="flex gap-2">
+            <a href="{{ route('admin.employees.payments', $employee->id) }}"
+                class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
+                <i class="fas fa-wallet"></i> Payment Ledger
+            </a>
             <a href="{{ route('admin.employees.salary', $employee->id) }}"
                 class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
                 <i class="fas fa-money-bill-wave"></i> Payroll Center

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminUser;
 use App\Models\Installation;
 use App\Models\Customer;
 use App\Models\SalesOrder;
@@ -11,7 +12,9 @@ use App\Models\ServiceRequest;
 use App\Models\Notification;
 use App\Models\Team;
 use App\Models\Expense;
+use App\Support\WorkNotification;
 use App\Services\SmsService;
+use App\Services\PrintFormatRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -27,7 +30,10 @@ class InstallationController extends Controller
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $installations = Installation::with(['customer', 'salesOrder'])->orderBy('scheduled_date', 'desc')->paginate(15);
+        $installations = $this->installationQuery()
+            ->with(['customer', 'salesOrder'])
+            ->orderBy('scheduled_date', 'desc')
+            ->paginate(15);
         return view('admin.installations.index', compact('installations'));
     }
 
@@ -148,6 +154,8 @@ class InstallationController extends Controller
         $validated = $this->prepareInstallationPayload($request, $validated);
         $installation = Installation::create($validated);
 
+        $this->notifyInstallationAssignment($installation, 'assigned');
+
         // SMS to customer
         $customer = Customer::find($validated['customer_id']);
         if ($customer) {
@@ -159,28 +167,24 @@ class InstallationController extends Controller
             ], 'Installation', $installation->id);
         }
 
-        Notification::create([
-            'title'        => 'Installation Scheduled',
-            'message'      => 'Installation ' . $installation->installation_number . ' scheduled for ' . \Carbon\Carbon::parse($installation->scheduled_date)->format('d M Y'),
-            'type'         => 'installation',
-            'related_id'   => $installation->id,
-            'related_type' => 'Installation',
-        ]);
-
         return redirect()->route('admin.installations.show', $installation->id)->with('success', 'Installation scheduled!');
     }
 
     public function show($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $installation = Installation::with(['customer', 'salesOrder', 'salesInvoice', 'serviceRequests'])->findOrFail($id);
-        return view('admin.installations.show', compact('installation'));
+        $installation = $this->installationQuery()
+            ->with(['customer', 'salesOrder', 'salesInvoice', 'serviceRequests'])
+            ->findOrFail($id);
+        $completionReady = $this->isInstallationReadyForCompletion([], $installation);
+
+        return view('admin.installations.show', compact('installation', 'completionReady'));
     }
 
     public function edit($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $installation = Installation::with('salesInvoice')->findOrFail($id);
+        $installation = $this->installationQuery()->with('salesInvoice')->findOrFail($id);
         $customers    = Customer::orderBy('name')->get();
         $salesOrders  = SalesOrder::all();
         $teams        = Team::where('status', 'active')->get();
@@ -190,7 +194,7 @@ class InstallationController extends Controller
     public function update(Request $request, $id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $installation = Installation::findOrFail($id);
+        $installation = $this->installationQuery()->findOrFail($id);
         $oldStatus    = $installation->status;
 
         $validated = $request->validate([
@@ -240,106 +244,30 @@ class InstallationController extends Controller
             $validated['assigned_team'] = $team ? $team->name : null;
         }
 
+        $oldAssignedTeamId = $installation->assigned_team_id;
         $validated = $this->prepareInstallationPayload($request, $validated, $installation);
+
+        if (
+            ($validated['status'] ?? $installation->status) !== 'cancelled'
+            && $this->isInstallationReadyForCompletion($validated, $installation)
+        ) {
+            $validated['status'] = 'completed';
+            $validated['completion_date'] = $validated['completion_date'] ?? now()->toDateString();
+        }
 
         $installation->update($validated);
 
-        // Auto-create AMC service and record team wage expense when installation completes
-        if ($oldStatus !== 'completed' && $validated['status'] === 'completed' && !$installation->auto_service_created) {
-            $this->autoCreateMaintenanceService($installation);
-            $installation->update(['auto_service_created' => true]);
+        if ($oldAssignedTeamId != $installation->assigned_team_id && $installation->assigned_team_id) {
+            $this->notifyInstallationAssignment($installation, 'reassigned');
+        }
 
-            // Record Team Wage Expense / Task Payment if a team is assigned
-            if ($installation->assigned_team_id) {
-                $team = $installation->team;
-                if ($team && $team->leader_id) {
-                    $leader = \App\Models\Employee::find($team->leader_id);
-                    
-                    // Calculate wage based on employee's payment preference
-                    $wageAmount = 0;
-                    $calculationType = 'fixed';
-                    $wattage = null;
-                    $ratePerWattUsed = null;
-                    
-                    if ($leader && $leader->use_watt_based_pay && $leader->rate_per_watt > 0 && $installation->system_size_kw > 0) {
-                        // Watt-based calculation
-                        $wattage = $installation->system_size_kw * 1000; // Convert KW to watts
-                        $ratePerWattUsed = $leader->rate_per_watt;
-                        $wageAmount = $wattage * $ratePerWattUsed;
-                        $calculationType = 'watt_based';
-                    } elseif ($team->installation_rate > 0) {
-                        // Fixed team rate
-                        $wageAmount = $team->installation_rate;
-                        $calculationType = 'fixed';
-                    } elseif ($leader && $leader->installation_rate > 0) {
-                        // Fixed employee rate
-                        $wageAmount = $leader->installation_rate;
-                        $calculationType = 'fixed';
-                    }
-                    
-                    if ($wageAmount > 0) {
-                        // Create Task Payment record
-                        \App\Models\TaskPayment::updateOrCreate(
-                            [
-                                'employee_id' => $team->leader_id,
-                                'taskable_type' => get_class($installation),
-                                'taskable_id' => $installation->id,
-                            ],
-                            [
-                                'amount' => $wageAmount,
-                                'status' => 'pending',
-                                'notes' => $calculationType === 'watt_based'
-                                    ? "Auto-generated watt-based payment: {$wattage}W × ₹{$ratePerWattUsed}/watt = ₹{$wageAmount}"
-                                    : 'Auto-generated payment for installation completion.'
-                            ]
-                        );
-                        
-                        // Create Daily Wage Record for tracking
-                        \App\Models\DailyWageRecord::create([
-                            'employee_id' => $team->leader_id,
-                            'work_date' => $validated['completion_date'] ?? date('Y-m-d'),
-                            'hours_worked' => null,
-                            'wattage' => $wattage,
-                            'calculation_type' => $calculationType,
-                            'wage_rate' => null,
-                            'rate_per_watt_used' => $ratePerWattUsed,
-                            'total_amount' => $wageAmount,
-                            'work_description' => "Installation completed: {$installation->installation_number}",
-                            'installation_id' => $installation->id,
-                            'site_visit_id' => null,
-                            'payment_status' => 'pending',
-                            'payment_date' => null,
-                            'payment_mode' => null,
-                            'notes' => $calculationType === 'watt_based'
-                                ? "System size: {$installation->system_size_kw}KW ({$wattage}W) × ₹{$ratePerWattUsed}/watt"
-                                : 'Fixed rate payment'
-                        ]);
-
-                        // Create Expense record
-                        Expense::create([
-                            'title'        => 'Installation Wage: ' . $installation->installation_number,
-                            'category'     => 'Team Payment',
-                            'amount'       => $wageAmount,
-                            'expense_date' => date('Y-m-d'),
-                            'description'  => $calculationType === 'watt_based'
-                                ? "Watt-based wage for {$team->name} on {$installation->installation_number} ({$installation->system_size_kw}KW = {$wattage}W × ₹{$ratePerWattUsed}/watt) - Lead: " . ($leader->name ?? 'N/A')
-                                : "Installation wage for {$team->name} on {$installation->installation_number} (Lead: " . ($leader->name ?? 'N/A') . ')',
-                        ]);
-                    }
-                }
-            }elseif ($installation->assigned_team) { // Fallback for legacy
-                $team = Team::where('name', $installation->assigned_team)->first();
-                if ($team && $team->installation_rate > 0) {
-                    Expense::create([
-                        'title'        => 'Installation Wage: ' . $installation->installation_number,
-                        'category'     => 'Team Payment',
-                        'amount'       => $team->installation_rate,
-                        'expense_date' => date('Y-m-d'),
-                        'description'  => 'Installation wage for ' . $team->name . ' on ' . $installation->installation_number . 
-                                         ' (Customer: ' . ($installation->customer->name ?? 'N/A') . ')',
-                    ]);
-                }
+        if ($oldStatus !== 'completed' && $validated['status'] === 'completed') {
+            if (!$installation->auto_service_created) {
+                $this->autoCreateMaintenanceService($installation);
+                $installation->update(['auto_service_created' => true]);
             }
+
+            $this->syncCompletionPayment($installation, $validated['completion_date'] ?? null);
 
             // SMS customer
             $customer = $installation->customer;
@@ -350,44 +278,289 @@ class InstallationController extends Controller
                 ], 'Installation', $installation->id);
             }
 
-            Notification::create([
-                'title'        => 'Installation Completed + Auto AMC Scheduled',
-                'message'      => 'Installation ' . $installation->installation_number . ' completed. AMC service auto-created.',
-                'type'         => 'installation',
-                'related_id'   => $installation->id,
-                'related_type' => 'Installation',
-            ]);
+            $this->notifyInstallationCompletion($installation);
         }
 
         return redirect()->route('admin.installations.show', $id)->with('success', 'Installation updated!');
     }
 
-    public function dcr($id)
+    public function approval(Request $request, $id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $installation = Installation::with(['customer.discom'])->findOrFail($id);
-        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
-        return view('admin.pdf.dcr_certificate', compact('installation', 'settings'));
+        
+        $installation = $this->installationQuery()->findOrFail($id);
+        
+        $validated = $request->validate([
+            'action' => 'required|in:approve,reject',
+            'approval_remarks' => 'nullable|string|max:1000',
+        ]);
+        
+        if ($validated['action'] === 'reject' && empty($validated['approval_remarks'])) {
+            return back()->withErrors(['approval_remarks' => 'Remarks are required when rejecting.']);
+        }
+        
+        try {
+            if ($validated['action'] === 'approve') {
+                $installation->approve($validated['approval_remarks'] ?? null);
+                $message = 'Installation approved successfully!';
+                
+                // Notify team leader
+                if ($installation->assigned_team_id) {
+                    WorkNotification::notifyTeamLeaderAssignment(
+                        $installation->assigned_team_id,
+                        'Installation Approved',
+                        "Installation {$installation->installation_number} has been approved by management.",
+                        'installation',
+                        $installation->id,
+                        'Installation'
+                    );
+                }
+            } else {
+                $installation->reject($validated['approval_remarks']);
+                $message = 'Installation rejected.';
+                
+                // Notify team leader
+                if ($installation->assigned_team_id) {
+                    WorkNotification::notifyTeamLeaderAssignment(
+                        $installation->assigned_team_id,
+                        'Installation Rejected',
+                        "Installation {$installation->installation_number} has been rejected. Reason: {$validated['approval_remarks']}",
+                        'installation',
+                        $installation->id,
+                        'Installation'
+                    );
+                }
+            }
+            
+            return redirect()->route('admin.installations.show', $id)->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to process approval: ' . $e->getMessage()]);
+        }
+    }
+    
+    public function resetApproval($id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        
+        $installation = $this->installationQuery()->findOrFail($id);
+        
+        try {
+            $installation->resetApproval();
+            
+            // Notify team leader
+            if ($installation->assigned_team_id) {
+                WorkNotification::notifyTeamLeaderAssignment(
+                    $installation->assigned_team_id,
+                    'Installation Approval Reset',
+                    "Installation {$installation->installation_number} approval status has been reset to pending.",
+                    'installation',
+                    $installation->id,
+                    'Installation'
+                );
+            }
+            
+            return redirect()->route('admin.installations.show', $id)
+                ->with('success', 'Approval status reset to pending.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to reset approval: ' . $e->getMessage()]);
+        }
     }
 
-    public function workApplication($id)
+    public function dcr($id, PrintFormatRenderer $renderer)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $installation = Installation::with(['customer.discom'])->findOrFail($id);
         $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
-        return view('admin.pdf.work_application', compact('installation', 'settings'));
+        $format = \App\Models\PrintFormat::where('document_type', 'dcr_form')
+            ->where('is_active', true)
+            ->where('is_default', true)
+            ->first();
+
+        try {
+            $html = $renderer->render($format, [
+                'installation' => $installation,
+                'settings' => $settings,
+                'title' => 'DCR Certificate - ' . $installation->installation_number,
+            ]) ?? view('admin.pdf.dcr_certificate', compact('installation', 'settings'))->render();
+        } catch (\Throwable $e) {
+            $html = view('admin.pdf.dcr_certificate', compact('installation', 'settings'))->render();
+        }
+
+        return response($html)->header('Content-Type', 'text/html');
+    }
+
+    public function workApplication($id, PrintFormatRenderer $renderer)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $installation = Installation::with(['customer.discom'])->findOrFail($id);
+        $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+        $format = \App\Models\PrintFormat::where('document_type', 'work_application')
+            ->where('is_active', true)
+            ->where('is_default', true)
+            ->first();
+
+        try {
+            $html = $renderer->render($format, [
+                'installation' => $installation,
+                'settings' => $settings,
+                'title' => 'Work Application - ' . $installation->installation_number,
+            ]) ?? view('admin.pdf.work_application', compact('installation', 'settings'))->render();
+        } catch (\Throwable $e) {
+            $html = view('admin.pdf.work_application', compact('installation', 'settings'))->render();
+        }
+
+        $fileName = 'work-application-' . strtolower($installation->installation_number) . '.html';
+        $disposition = request()->boolean('download') ? 'attachment' : 'inline';
+
+        return response($html)
+            ->header('Content-Type', 'text/html; charset=UTF-8')
+            ->header('Content-Disposition', $disposition . '; filename="' . $fileName . '"');
+    }
+
+    private function syncCompletionPayment(Installation $installation, ?string $completionDate = null): void
+    {
+        $team = $installation->assigned_team_id
+            ? $installation->team
+            : ($installation->assigned_team ? Team::where('name', $installation->assigned_team)->first() : null);
+
+        if (!$team) {
+            return;
+        }
+
+        $leaderId = $team->leader_id;
+        if (!$leaderId) {
+            return;
+        }
+
+        $leader = \App\Models\Employee::find($leaderId);
+        $wageAmount = 0;
+        $calculationType = 'fixed';
+        $wattage = null;
+        $ratePerWattUsed = null;
+
+        if ($leader && $leader->use_watt_based_pay && $leader->rate_per_watt > 0 && $installation->system_size_kw > 0) {
+            $wattage = $installation->system_size_kw * 1000;
+            $ratePerWattUsed = $leader->rate_per_watt;
+            $wageAmount = $wattage * $ratePerWattUsed;
+            $calculationType = 'watt_based';
+        } elseif ($team->installation_rate > 0) {
+            $wageAmount = $team->installation_rate;
+        } elseif ($leader && $leader->installation_rate > 0) {
+            $wageAmount = $leader->installation_rate;
+        }
+
+        if ($wageAmount <= 0) {
+            return;
+        }
+
+        $taskNotes = $calculationType === 'watt_based'
+            ? "Auto-generated watt-based payment: {$wattage}W × ₹{$ratePerWattUsed}/watt = ₹{$wageAmount}"
+            : 'Auto-generated payment for installation completion.';
+
+        \App\Models\TaskPayment::updateOrCreate(
+            [
+                'employee_id' => $leaderId,
+                'taskable_type' => get_class($installation),
+                'taskable_id' => $installation->id,
+            ],
+            [
+                'amount' => $wageAmount,
+                'status' => 'pending',
+                'notes' => $taskNotes,
+            ]
+        );
+
+        \App\Models\DailyWageRecord::updateOrCreate(
+            [
+                'employee_id' => $leaderId,
+                'installation_id' => $installation->id,
+            ],
+            [
+                'work_date' => $completionDate ?: date('Y-m-d'),
+                'hours_worked' => null,
+                'wattage' => $wattage,
+                'calculation_type' => $calculationType,
+                'wage_rate' => null,
+                'rate_per_watt_used' => $ratePerWattUsed,
+                'total_amount' => $wageAmount,
+                'work_description' => "Installation completed: {$installation->installation_number}",
+                'site_visit_id' => null,
+                'payment_status' => 'pending',
+                'payment_date' => null,
+                'payment_mode' => null,
+                'notes' => $calculationType === 'watt_based'
+                    ? "System size: {$installation->system_size_kw}KW ({$wattage}W) × ₹{$ratePerWattUsed}/watt"
+                    : 'Fixed rate payment',
+            ]
+        );
+
+        $expenseTitle = 'Installation Wage: ' . $installation->installation_number;
+        $expenseExists = Expense::where('title', $expenseTitle)
+            ->whereDate('expense_date', date('Y-m-d'))
+            ->exists();
+
+        if (!$expenseExists) {
+            Expense::create([
+                'title'        => $expenseTitle,
+                'category'     => 'Team Payment',
+                'amount'       => $wageAmount,
+                'expense_date' => date('Y-m-d'),
+                'description'  => $calculationType === 'watt_based'
+                    ? "Watt-based wage for {$team->name} on {$installation->installation_number} ({$installation->system_size_kw}KW = {$wattage}W × ₹{$ratePerWattUsed}/watt) - Lead: " . ($leader->name ?? 'N/A')
+                    : "Installation wage for {$team->name} on {$installation->installation_number} (Lead: " . ($leader->name ?? 'N/A') . ')',
+            ]);
+        }
     }
 
     public function destroy($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        Installation::findOrFail($id)->delete();
+        $this->installationQuery()->findOrFail($id)->delete();
         return redirect()->route('admin.installations.index')->with('success', 'Installation deleted!');
+    }
+
+    private function installationQuery()
+    {
+        $query = Installation::query();
+
+        if ($this->canViewAllAssignedWork()) {
+            return $query;
+        }
+
+        $employeeId = $this->currentEmployeeId();
+
+        if (!$employeeId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas('team', function ($teamQuery) use ($employeeId) {
+            $teamQuery->where('leader_id', $employeeId);
+        });
+    }
+
+    private function currentEmployeeId(): ?int
+    {
+        $userId = session('admin_user_id');
+
+        if (!$userId) {
+            return null;
+        }
+
+        return AdminUser::find($userId)?->employee_id;
+    }
+
+    private function canViewAllAssignedWork(): bool
+    {
+        $role = strtolower((string) session('admin_role', ''));
+        $permissions = session('admin_permissions', []);
+
+        return in_array($role, ['admin', 'manager', 'superadmin'], true)
+            || in_array('all_forms', $permissions, true);
     }
 
     private function autoCreateMaintenanceService(Installation $installation): void
     {
-        ServiceRequest::create([
+        $payload = [
             'ticket_number'  => 'SRV-AMC-' . date('Ymd') . '-' . rand(100, 999),
             'customer_id'    => $installation->customer_id,
             'installation_id'=> $installation->id,
@@ -397,8 +570,116 @@ class InstallationController extends Controller
             'description'    => 'Auto-scheduled 3-month AMC check for installation ' . $installation->installation_number . '. System size: ' . $installation->system_size_kw . ' kW.',
             'scheduled_date' => now()->addMonths(3)->toDateString(),
             'assigned_to'    => $installation->assigned_team,
-            'assigned_team_id' => $installation->assigned_team_id,
-        ]);
+        ];
+
+        if (Schema::hasColumn('service_requests', 'assigned_team_id')) {
+            $payload['assigned_team_id'] = $installation->assigned_team_id;
+        }
+
+        $service = ServiceRequest::create($payload);
+
+        if ($installation->assigned_team_id && Schema::hasColumn('service_requests', 'assigned_team_id')) {
+            WorkNotification::notifyTeamLeaderAssignment(
+                $service->assigned_team_id,
+                'New AMC Service Assigned',
+                "AMC service {$service->ticket_number} has been assigned to your team for installation {$installation->installation_number}.",
+                'service',
+                $service->id,
+                'ServiceRequest'
+            );
+        }
+    }
+
+    private function notifyInstallationAssignment(Installation $installation, string $context = 'assigned'): void
+    {
+        if (!$installation->assigned_team_id) {
+            return;
+        }
+
+        $title = $context === 'reassigned' ? 'Installation Reassigned' : 'New Installation Assigned';
+        $customerName = $installation->customer->name ?? 'Customer';
+        $message = "Installation {$installation->installation_number} for {$customerName} has been {$context} to your team.";
+
+        WorkNotification::notifyTeamLeaderAssignment(
+            $installation->assigned_team_id,
+            $title,
+            $message,
+            'installation',
+            $installation->id,
+            'Installation'
+        );
+    }
+
+    private function notifyInstallationCompletion(Installation $installation): void
+    {
+        $assignee = $installation->team->name ?? $installation->assigned_team ?? 'Assigned team';
+        $customerName = $installation->customer->name ?? 'Customer';
+
+        WorkNotification::notifyManagers(
+            'Customer Installation Completed',
+            "Installation for customer {$customerName} has been completed by {$assignee}. Installation No: {$installation->installation_number}.",
+            'installation',
+            $installation->id,
+            'Installation'
+        );
+    }
+
+    private function isInstallationReadyForCompletion(array $payload = [], ?Installation $installation = null): bool
+    {
+        $proofFields = $this->requiredProofFields();
+        foreach ($proofFields as $field) {
+            $value = $payload[$field] ?? $installation?->{$field} ?? null;
+            if (empty($value)) {
+                return false;
+            }
+        }
+
+        $checklist = $payload['installation_checklist'] ?? $installation?->installation_checklist ?? [];
+
+        foreach ($this->requiredChecklistTasks() as $task) {
+            $taskData = $checklist[$task] ?? [];
+            if (empty($taskData['status']) || empty($taskData['photo'])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function requiredProofFields(): array
+    {
+        return [
+            'proof_before_photo',
+            'proof_during_photo',
+            'proof_after_photo',
+            'proof_meter_photo',
+            'proof_panel_photo',
+            'proof_inverter_photo',
+            'structure_panel_photo',
+            'ground_setup_photo',
+            'roof_setup_photo',
+            'panel_angle_photo',
+            'site_location_photo',
+            'wiring_photo',
+            'meter_setup_photo',
+            'el_test_report',
+            'commissioning_report',
+        ];
+    }
+
+    private function requiredChecklistTasks(): array
+    {
+        return [
+            'Structure Mounting',
+            'Panel Installation',
+            'Module Serial Mapping',
+            'Earthing/Grounding',
+            'DC/AC Cabling',
+            'Inverter Setup',
+            'Net Meter Setup',
+            'Insulation / EL Test',
+            'Generation Test',
+        ];
     }
 
     private function prepareInstallationPayload(Request $request, array $validated, ?Installation $installation = null): array
@@ -460,23 +741,7 @@ class InstallationController extends Controller
             unset($validated['latitude'], $validated['longitude']);
         }
 
-        $proofFields = [
-            'proof_before_photo',
-            'proof_during_photo',
-            'proof_after_photo',
-            'proof_meter_photo',
-            'proof_panel_photo',
-            'proof_inverter_photo',
-            'structure_panel_photo',
-            'ground_setup_photo',
-            'roof_setup_photo',
-            'panel_angle_photo',
-            'site_location_photo',
-            'wiring_photo',
-            'meter_setup_photo',
-            'el_test_report',
-            'commissioning_report',
-        ];
+        $proofFields = $this->requiredProofFields();
 
         foreach ($proofFields as $field) {
             if ($request->hasFile($field)) {

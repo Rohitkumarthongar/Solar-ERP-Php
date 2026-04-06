@@ -57,7 +57,24 @@
             {{-- Content --}}
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
-                    <p class="font-semibold text-gray-800 text-sm">{{ $notif->title }}</p>
+                    @if($notif->action_url)
+                        <a href="{{ $notif->action_url }}" class="font-semibold text-gray-800 hover:text-orange-600 text-sm transition">
+                            {{ $notif->title }}
+                        </a>
+                    @else
+                        <p class="font-semibold text-gray-800 text-sm">{{ $notif->title }}</p>
+                    @endif
+                    
+                    {{-- Priority Badge --}}
+                    @if($notif->priority && $notif->priority !== 'normal')
+                        <span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full
+                            {{ $notif->priority === 'urgent' ? 'bg-red-100 text-red-700' : '' }}
+                            {{ $notif->priority === 'high' ? 'bg-orange-100 text-orange-700' : '' }}
+                            {{ $notif->priority === 'low' ? 'bg-gray-100 text-gray-600' : '' }}">
+                            {{ $notif->getPriorityIcon() }} {{ ucfirst($notif->priority) }}
+                        </span>
+                    @endif
+                    
                     @if(!$notif->is_read)
                         <span class="inline-flex items-center bg-orange-100 text-orange-700 text-xs font-medium px-2 py-0.5 rounded-full">
                             New
@@ -70,12 +87,19 @@
                     @endif
                 </div>
                 <p class="text-sm text-gray-600 mt-0.5">{{ $notif->message }}</p>
-                <p class="text-xs text-gray-400 mt-1">
-                    <i class="fas fa-clock mr-1"></i>{{ $notif->created_at->diffForHumans() }}
-                    @if($notif->is_read && $notif->read_at)
-                        &bull; Read {{ $notif->read_at->diffForHumans() }}
+                <div class="flex items-center gap-3 mt-2">
+                    <p class="text-xs text-gray-400">
+                        <i class="fas fa-clock mr-1"></i>{{ $notif->created_at->diffForHumans() }}
+                        @if($notif->is_read && $notif->read_at)
+                            &bull; Read {{ $notif->read_at->diffForHumans() }}
+                        @endif
+                    </p>
+                    @if($notif->action_url)
+                        <a href="{{ $notif->action_url }}" class="text-xs text-orange-600 hover:text-orange-800 font-medium transition">
+                            <i class="fas fa-arrow-right mr-1"></i>View Details
+                        </a>
                     @endif
-                </p>
+                </div>
             </div>
 
             {{-- Action --}}

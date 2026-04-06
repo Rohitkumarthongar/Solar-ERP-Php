@@ -37,7 +37,12 @@
                         <select name="leader_id" required class="w-full border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-indigo-100 font-bold text-gray-800 transition appearance-none">
                             <option value="">Select Leader</option>
                             @foreach($employees as $employee)
-                                <option value="{{ $employee->id }}" {{ old('leader_id', $team->leader_id) == $employee->id ? 'selected' : '' }}>
+                                <option
+                                    value="{{ $employee->id }}"
+                                    data-use-watt-based-pay="{{ $employee->use_watt_based_pay ? '1' : '0' }}"
+                                    data-rate-per-watt="{{ $employee->rate_per_watt ?? 0 }}"
+                                    data-installation-rate="{{ $employee->installation_rate ?? 0 }}"
+                                    {{ old('leader_id', $team->leader_id) == $employee->id ? 'selected' : '' }}>
                                     {{ $employee->name }} ({{ $employee->employee_code }})
                                 </option>
                             @endforeach
@@ -68,13 +73,23 @@
                     </div>
 
                     <div class="pt-4 border-t border-white/10 mt-4 space-y-4">
+                        <div class="rounded-2xl bg-white/10 border border-white/10 p-4 space-y-2">
+                            <div class="text-[10px] font-black uppercase tracking-widest text-indigo-200">Installation Payment Rule</div>
+                            <div id="installationPaymentMode" class="text-sm font-bold text-white">Select a team leader to view how installation wages will be calculated.</div>
+                            <div id="installationPaymentHint" class="text-[11px] text-indigo-100 leading-relaxed">
+                                If the selected leader has watt-based pay enabled in Employee settings, installation payment will go to that employee using their watt rate.
+                            </div>
+                        </div>
                         <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-indigo-300">Installation Rate (Per Site)</label>
+                            <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-indigo-300">Installation Rate Fallback (Per Site)</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300 font-bold text-sm">₹</span>
-                                <input type="number" name="installation_rate" value="{{ old('installation_rate', $team->installation_rate) }}" step="0.01" required
+                                <input type="number" name="installation_rate" id="installation_rate" value="{{ old('installation_rate', $team->installation_rate) }}" step="0.01"
                                     class="w-full bg-indigo-600 text-white rounded-xl pl-10 pr-4 py-3 text-base font-black border-none focus:ring-2 focus:ring-white transition">
                             </div>
+                            <p class="text-[10px] text-indigo-200 mt-2">
+                                Used only when the selected leader does not have watt-based installation pay enabled.
+                            </p>
                         </div>
                         <div>
                             <label class="block text-[10px] font-black uppercase tracking-widest mb-2 text-indigo-300">Site Visit Rate (Per Visit)</label>
@@ -92,7 +107,7 @@
                                     class="w-full bg-indigo-600 text-white rounded-xl pl-10 pr-4 py-3 text-base font-black border-none focus:ring-2 focus:ring-white transition">
                             </div>
                         </div>
-                        <p class="text-[9px] text-indigo-200 mt-2 font-medium italic">Fixed payments recorded as expenses per completed task.</p>
+                        <p class="text-[9px] text-indigo-200 mt-2 font-medium italic">Installation payout follows the team leader employee settings first, then falls back to team fixed rate if needed.</p>
                     </div>
                  </div>
             </div>
@@ -110,3 +125,46 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const leaderSelect = document.querySelector('select[name="leader_id"]');
+    const installationRateInput = document.getElementById('installation_rate');
+    const paymentMode = document.getElementById('installationPaymentMode');
+    const paymentHint = document.getElementById('installationPaymentHint');
+
+    function updateInstallationPaymentPreview() {
+        const selected = leaderSelect.options[leaderSelect.selectedIndex];
+
+        if (!selected || !selected.value) {
+            paymentMode.textContent = 'Select a team leader to view how installation wages will be calculated.';
+            paymentHint.textContent = 'If the selected leader has watt-based pay enabled in Employee settings, installation payment will go to that employee using their watt rate.';
+            installationRateInput.readOnly = false;
+            return;
+        }
+
+        const useWattBasedPay = selected.dataset.useWattBasedPay === '1';
+        const ratePerWatt = Number(selected.dataset.ratePerWatt || 0);
+        const employeeInstallationRate = Number(selected.dataset.installationRate || 0);
+
+        if (useWattBasedPay && ratePerWatt > 0) {
+            paymentMode.textContent = 'Installation payment will use the team leader employee watt rate.';
+            paymentHint.textContent = `Leader rate: Rs ${ratePerWatt.toFixed(4)} per watt. Team installation fallback will only be used if watt-based pay is turned off later.`;
+            installationRateInput.readOnly = false;
+        } else if (employeeInstallationRate > 0) {
+            paymentMode.textContent = 'Installation payment will use the leader employee fixed installation rate if team fallback is zero.';
+            paymentHint.textContent = `Leader employee installation rate: Rs ${employeeInstallationRate.toFixed(2)} per site. Team fallback can still be kept as backup.`;
+            installationRateInput.readOnly = false;
+        } else {
+            paymentMode.textContent = 'No employee-based installation rate found on the selected leader.';
+            paymentHint.textContent = 'Enter a team installation fallback rate below so completed installation work still generates payment.';
+            installationRateInput.readOnly = false;
+        }
+    }
+
+    leaderSelect.addEventListener('change', updateInstallationPaymentPreview);
+    updateInstallationPaymentPreview();
+});
+</script>
+@endpush
