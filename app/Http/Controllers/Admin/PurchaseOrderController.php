@@ -8,6 +8,7 @@ use App\Models\PurchaseOrderItem;
 use App\Models\Product;
 use App\Models\Inventory;
 use App\Models\Notification;
+use App\Support\SupabaseStorage;
 use App\Models\Setting;
 use App\Services\PrintFormatRenderer;
 use Illuminate\Http\Request;
@@ -51,7 +52,7 @@ class PurchaseOrderController extends Controller
         $invoiceAttachments = [];
         if ($request->hasFile('invoice_attachments')) {
             foreach ($request->file('invoice_attachments') as $file) {
-                $invoiceAttachments[] = $file->store('purchase-invoices', 'public');
+                $invoiceAttachments[] = SupabaseStorage::store($file, 'purchase-invoices');
             }
         }
 

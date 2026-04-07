@@ -1,16 +1,22 @@
+const CACHE_NAME = 'solar-erp-v1';
+
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+    self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    const cacheNames = await caches.keys();
-    await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-    await self.clients.claim();
-    await self.registration.unregister();
-  })());
+    event.waitUntil(
+        caches.keys().then((keys) =>
+            Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+        ).then(() => self.clients.claim())
+    );
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(fetch(event.request));
+    // Only cache GET requests
+    if (event.request.method !== 'GET') return;
+
+    event.respondWith(
+        fetch(event.request).catch(() => caches.match(event.request))
+    );
 });

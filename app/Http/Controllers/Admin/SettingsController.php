@@ -8,6 +8,7 @@ use App\Models\EmailTemplate;
 use App\Models\SmsConfiguration;
 use App\Models\SmsTemplate;
 use App\Models\PrintFormat;
+use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Support\PrintFormatPresets;
@@ -87,7 +88,7 @@ class SettingsController extends Controller
         $data = $request->except(['_token', '_method']);
         foreach ($data as $key => $value) {
             if ($request->hasFile($key)) {
-                $value = $request->file($key)->store('settings', 'public');
+                $value = SupabaseStorage::store($request->file($key), 'settings');
             }
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }

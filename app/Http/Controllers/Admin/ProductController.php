@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Inventory;
+use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -39,7 +40,7 @@ class ProductController extends Controller
             'is_active' => 'boolean'
         ]);
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = SupabaseStorage::store($request->file('image'), 'products');
         }
         $validated['is_active'] = $request->has('is_active');
         $product = Product::create($validated);
@@ -78,7 +79,7 @@ class ProductController extends Controller
             'warranty_months' => 'nullable|integer'
         ]);
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = SupabaseStorage::store($request->file('image'), 'products');
         }
         $validated['is_active'] = $request->has('is_active');
         $product->update($validated);

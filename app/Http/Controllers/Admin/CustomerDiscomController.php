@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerDiscom;
+use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 
 class CustomerDiscomController extends Controller
@@ -39,7 +40,7 @@ class CustomerDiscomController extends Controller
         ]);
         
         if ($request->hasFile('dcr_report')) {
-            $validated['dcr_report_path'] = $request->file('dcr_report')->store('discom-reports', 'public');
+            $validated['dcr_report_path'] = SupabaseStorage::store($request->file('dcr_report'), 'discom-reports');
         }
         
         $discom->update($validated);

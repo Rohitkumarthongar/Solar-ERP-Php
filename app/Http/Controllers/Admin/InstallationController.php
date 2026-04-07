@@ -13,6 +13,7 @@ use App\Models\Notification;
 use App\Models\Team;
 use App\Models\Expense;
 use App\Support\WorkNotification;
+use App\Support\SupabaseStorage;
 use App\Services\SmsService;
 use App\Services\PrintFormatRenderer;
 use Illuminate\Http\Request;
@@ -692,7 +693,7 @@ class InstallationController extends Controller
                 $photoPath = $existingChecklist[$task]['photo'] ?? null;
 
                 if ($request->hasFile("installation_checklist.$task.photo")) {
-                    $photoPath = $request->file("installation_checklist.$task.photo")->store('installation-proofs', 'public');
+                    $photoPath = SupabaseStorage::store($request->file("installation_checklist.$task.photo"), 'installation-proofs');
                 }
 
                 $checklistData[$task] = [
@@ -745,14 +746,14 @@ class InstallationController extends Controller
 
         foreach ($proofFields as $field) {
             if ($request->hasFile($field)) {
-                $validated[$field] = $request->file($field)->store('installation-proofs', 'public');
+                $validated[$field] = SupabaseStorage::store($request->file($field), 'installation-proofs');
             }
         }
 
         $existingProofs = $installation?->proof_photos ?? [];
         if ($request->hasFile('proof_photos')) {
             foreach ($request->file('proof_photos') as $photo) {
-                $existingProofs[] = $photo->store('installation-proofs', 'public');
+                $existingProofs[] = SupabaseStorage::store($photo, 'installation-proofs');
             }
         }
         $validated['proof_photos'] = $existingProofs;

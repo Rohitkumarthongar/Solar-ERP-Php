@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
-
 use App\Models\Blog;
 use Illuminate\Support\Str;
 
@@ -38,7 +38,7 @@ class BlogController extends Controller
         $validated['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('blogs', 'public');
+            $validated['image'] = SupabaseStorage::store($request->file('image'), 'blogs');
         }
 
         Blog::create($validated);
@@ -67,7 +67,7 @@ class BlogController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('blogs', 'public');
+            $validated['image'] = SupabaseStorage::store($request->file('image'), 'blogs');
         }
 
         $blog->update($validated);

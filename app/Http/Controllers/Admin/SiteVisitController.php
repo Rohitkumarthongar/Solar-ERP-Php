@@ -10,6 +10,7 @@ use App\Models\AdminUser;
 use App\Models\Employee;
 use App\Models\DailyWageRecord;
 use App\Models\Notification;
+use App\Support\SupabaseStorage;
 use App\Models\TaskPayment;
 use App\Mail\SiteVisitAssigned;
 use Illuminate\Http\Request;
@@ -82,7 +83,7 @@ class SiteVisitController extends Controller
 
         if ($request->hasFile('site_photos')) {
             $validated['site_photos'] = collect($request->file('site_photos'))
-                ->map(fn ($photo) => $photo->store('site-visits', 'public'))
+                ->map(fn ($photo) => SupabaseStorage::store($photo, 'site-visits'))
                 ->values()
                 ->all();
         }
@@ -182,7 +183,7 @@ class SiteVisitController extends Controller
         $existingPhotos = $siteVisit->site_photos ?? [];
         if ($request->hasFile('site_photos')) {
             foreach ($request->file('site_photos') as $photo) {
-                $existingPhotos[] = $photo->store('site-visits', 'public');
+                $existingPhotos[] = SupabaseStorage::store($photo, 'site-visits');
             }
         }
         $validated['site_photos'] = $existingPhotos;

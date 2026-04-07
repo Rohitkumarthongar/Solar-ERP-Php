@@ -486,6 +486,9 @@
                 <a href="{{ route('home') }}" target="_blank" class="text-gray-500 hover:text-orange-600 text-sm flex items-center space-x-1">
                     <i class="fas fa-globe"></i><span class="hidden md:inline">View Website</span>
                 </a>
+                <button id="pwaInstallBtn" onclick="installPWA()" class="hidden items-center space-x-1 bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-download"></i><span class="hidden md:inline ml-1">Install App</span>
+                </button>
                 <a href="{{ route('admin.notifications.index') }}" class="relative text-gray-500 hover:text-orange-600">
                     <i class="fas fa-bell text-xl"></i>
                     @php
@@ -515,31 +518,6 @@
             <main class="flex-1 overflow-y-auto p-6">
             @yield('content')
         </main>
-    </div>
-</div>
-
-<!-- PWA Install Banner -->
-<div id="pwaInstallBanner" class="fixed bottom-0 left-0 right-0 z-[100] hidden pwa-banner" style="background: linear-gradient(135deg, var(--admin-surface), var(--admin-surface-2)); border-top: 1px solid var(--admin-border); box-shadow: 0 -10px 40px rgba(0,0,0,0.3);">
-    <div class="max-w-4xl mx-auto px-4 py-4">
-        <div class="flex items-center justify-between gap-4">
-            <div class="flex items-center gap-4 flex-1">
-                <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
-                    <i class="fas fa-mobile-alt text-white text-xl"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="font-bold text-sm" style="color: var(--admin-text);">Install Solar ERP App</h3>
-                    <p class="text-xs" style="color: var(--admin-muted);">Get quick access with our mobile app experience</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-                <button onclick="installPWA()" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-500/20 active:scale-95">
-                    Install
-                </button>
-                <button onclick="dismissPWABanner()" class="text-gray-400 hover:text-white px-3 py-2.5 rounded-xl transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -582,65 +560,6 @@
         if (touchstartX - touchendX > 70 && sidebar.classList.contains('active')) {
             sidebar.classList.remove('active');
         }
-    }
-
-    // PWA Installation
-    let deferredPrompt;
-    const pwaInstallBanner = document.getElementById('pwaInstallBanner');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // Check if user has dismissed the banner before
-        if (!localStorage.getItem('pwa-dismissed')) {
-            setTimeout(() => {
-                pwaInstallBanner.classList.remove('hidden');
-            }, 3000); // Show after 3 seconds
-        }
-    });
-
-    async function installPWA() {
-        if (!deferredPrompt) {
-            return;
-        }
-        
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        
-        if (outcome === 'accepted') {
-            console.log('PWA installed');
-        }
-        
-        deferredPrompt = null;
-        pwaInstallBanner.classList.add('hidden');
-    }
-
-    function dismissPWABanner() {
-        pwaInstallBanner.classList.add('hidden');
-        localStorage.setItem('pwa-dismissed', 'true');
-        
-        // Clear dismissal after 7 days
-        setTimeout(() => {
-            localStorage.removeItem('pwa-dismissed');
-        }, 7 * 24 * 60 * 60 * 1000);
-    }
-
-    // Remove any previously installed service workers and cached offline data.
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', async () => {
-            try {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                await Promise.all(registrations.map((registration) => registration.unregister()));
-
-                if ('caches' in window) {
-                    const cacheNames = await caches.keys();
-                    await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-                }
-            } catch (error) {
-                console.log('Service worker cleanup failed:', error);
-            }
-        });
     }
 
     // Handle online/offline status
@@ -804,18 +723,21 @@ if ('serviceWorker' in navigator) {
 // PWA Install Prompt
 let deferredPrompt;
 const installBanner = document.getElementById('pwaInstallBanner');
+const installBtn = document.getElementById('pwaInstallBtn');
 
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
-    // Stash the event so it can be triggered later
     deferredPrompt = e;
-    
-    // Check if user has dismissed the banner before
+
+    // Show header install button
+    if (installBtn) {
+        installBtn.classList.remove('hidden');
+        installBtn.classList.add('flex');
+    }
+
+    // Show bottom banner if not dismissed
     const dismissed = localStorage.getItem('pwa_banner_dismissed');
     const dismissedTime = localStorage.getItem('pwa_banner_dismissed_time');
-    
-    // Show banner if not dismissed or if 7 days have passed
     if (!dismissed || (dismissedTime && Date.now() - parseInt(dismissedTime) > 7 * 24 * 60 * 60 * 1000)) {
         installBanner.style.display = 'block';
     }
@@ -826,20 +748,14 @@ function installPWA() {
         alert('PWA installation is not available on this device/browser.');
         return;
     }
-    
-    // Hide the banner
+
     installBanner.style.display = 'none';
-    
-    // Show the install prompt
+    if (installBtn) { installBtn.classList.add('hidden'); installBtn.classList.remove('flex'); }
+
     deferredPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
     deferredPrompt.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === 'accepted') {
-            console.log('✅ User accepted the PWA install prompt');
             localStorage.setItem('pwa_installed', 'true');
-        } else {
-            console.log('❌ User dismissed the PWA install prompt');
         }
         deferredPrompt = null;
     });

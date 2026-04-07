@@ -8,6 +8,7 @@ use App\Models\SiteVisit;
 use App\Models\ServiceRequest;
 use App\Models\Employee;
 use App\Models\Document;
+use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -197,7 +198,7 @@ class MobileTechnicianController extends Controller
         $description = $request->input('description', '');
 
         // Store file
-        $path = $file->store("tasks/{$type}/{$id}/photos", 'public');
+        $path = SupabaseStorage::store($file, "tasks/{$type}/{$id}/photos");
 
         // Create document record
         $document = new Document([
