@@ -239,6 +239,10 @@ class SettingsController extends Controller
             'salary_slip_standard',
             'work_application_standard',
             'dcr_form_standard',
+            'installation_certificate_standard',
+            'service_report_standard',
+            'site_visit_report_standard',
+            'quotation_pdf_replica',
         ];
 
         $presets = PrintFormatPresets::all();
