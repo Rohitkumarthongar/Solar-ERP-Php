@@ -62,7 +62,7 @@ class Employee extends Model
         return $this->belongsTo(Team::class);
     }
 
-    public function user()
+    public function adminUser()
     {
         return $this->hasOne(AdminUser::class);
     }

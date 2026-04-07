@@ -40,4 +40,5 @@ class SalesOrder extends Model
     public function quotation() { return $this->belongsTo(Quotation::class); }
     public function installation() { return $this->hasOne(Installation::class); }
     public function siteVisit() { return $this->belongsTo(SiteVisit::class); }
+    public function salesInvoices() { return $this->hasMany(SalesInvoice::class); }
 }

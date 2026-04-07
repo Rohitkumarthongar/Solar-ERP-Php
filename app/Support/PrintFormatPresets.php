@@ -1236,9 +1236,6 @@ BLADE,
                 <div class="bank-detail">ACCOUNT NO : {{ $settings['bank_account_number'] ?? '4444414141414141' }}</div>
                 <div class="bank-detail">IFSC CODE : {{ strtoupper($settings['bank_ifsc'] ?? 'AUBL0002444') }}</div>
             </div>
-            <div class="bank-right">
-                <img src="{{ asset('images/print-format-presets/quotation-bank-qr.png') }}" alt="Bank QR" class="bank-qr">
-            </div>
         </div>
 
         <div class="contact-rule"></div>

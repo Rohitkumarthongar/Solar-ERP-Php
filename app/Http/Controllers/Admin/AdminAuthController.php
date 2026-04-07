@@ -12,9 +12,16 @@ class AdminAuthController extends Controller
 {
     public function showLogin()
     {
-        if (Auth::guard('admin')->check() || session('admin_logged_in')) {
+        // Only redirect if BOTH the guard and session agree the user is logged in
+        if (Auth::guard('admin')->check() && session('admin_logged_in')) {
             return redirect()->route('admin.dashboard');
         }
+
+        // Clear any stale guard session that lost its matching app session
+        if (Auth::guard('admin')->check() && !session('admin_logged_in')) {
+            Auth::guard('admin')->logout();
+        }
+
         return view('admin.login');
     }
 
@@ -30,7 +37,7 @@ class AdminAuthController extends Controller
         if ($user && Hash::check($request->password, $user->password)) {
             // Login using Laravel Auth
             Auth::guard('admin')->login($user);
-            
+
             // Get combined permissions (user-specific OR role-inherited)
             $permissions = $user->permissions ?? [];
             if (empty($permissions) && $user->role_id) {
@@ -47,7 +54,7 @@ class AdminAuthController extends Controller
                 'admin_role' => strtolower($user->role ?? ''),
                 'admin_permissions' => $permissions
             ]);
-            
+
             return redirect()->route('admin.dashboard');
         }
 

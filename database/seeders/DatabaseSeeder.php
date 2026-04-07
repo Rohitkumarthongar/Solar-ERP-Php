@@ -32,27 +32,27 @@ class DatabaseSeeder extends Seeder
         // Roles
         $adminRole = Role::firstOrCreate(
             ['name' => 'admin'],
-            ['description' => 'Full access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders','purchase_orders','products','packages','inventory','installations','services','employees','reports','settings','notifications','roles']]
+            ['description' => 'Full system administrator access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders','purchase_orders','products','packages','inventory','installations','services','employees','reports','settings','notifications','roles']]
+        );
+        $managerRole = Role::firstOrCreate(
+            ['name' => 'Manager'],
+            ['description' => 'Regional or office manager with operational management access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders','site_visits','installations','services','employees','reports']]
+        );
+        $technicianRole = Role::firstOrCreate(
+            ['name' => 'Technician'],
+            ['description' => 'Field survey and generic technician access', 'permissions' => ['dashboard','site_visits','installations','services']]
+        );
+        $installationTechnicianRole = Role::firstOrCreate(
+            ['name' => 'Installation Technician'],
+            ['description' => 'Specialized role for project installations and mounting', 'permissions' => ['dashboard','installations','services','site_visits']]
+        );
+        $customerRepresentativeRole = Role::firstOrCreate(
+            ['name' => 'Customer Representative'],
+            ['description' => 'Sales and customer interaction specialist', 'permissions' => ['dashboard','customers','leads','quotations','site_visits']]
         );
         $salesRole = Role::firstOrCreate(
             ['name' => 'sales'],
-            ['description' => 'Sales access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders']]
-        );
-        $techRole = Role::firstOrCreate(
-            ['name' => 'technician'],
-            ['description' => 'Field technician access', 'permissions' => ['dashboard','site_visits','installations','services']]
-        );
-        $installerRole = Role::firstOrCreate(
-            ['name' => 'installer'],
-            ['description' => 'Installer access', 'permissions' => ['dashboard','installations','services']]
-        );
-        $customerRepresentativeRole = Role::firstOrCreate(
-            ['name' => 'customer representative'],
-            ['description' => 'Customer relationship access', 'permissions' => ['dashboard','customers','leads','quotations','site_visits']]
-        );
-        $managerRole = Role::firstOrCreate(
-            ['name' => 'manager'],
-            ['description' => 'Manager access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders','site_visits','installations','services','employees','reports']]
+            ['description' => 'Standard sales floor access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders']]
         );
 
         // Admin Users
@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
         );
         AdminUser::firstOrCreate(
             ['email' => 'tech@solarerp.com'],
-            ['name' => 'Tech Lead', 'password' => Hash::make('tech123'), 'role' => 'technician', 'role_id' => $techRole->id, 'is_active' => true]
+            ['name' => 'Tech Lead', 'password' => Hash::make('tech123'), 'role' => 'Technician', 'role_id' => $technicianRole->id, 'is_active' => true]
         );
 
         // Settings

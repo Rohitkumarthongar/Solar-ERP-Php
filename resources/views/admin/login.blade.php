@@ -10,7 +10,7 @@
     <meta name="theme-color" content="#f59e0b">
     <title>{{ \App\Models\Setting::where('key', 'company_name')->first()->value ?? 'Palawat Solar' }} - Admin Gateway
     </title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
@@ -60,19 +60,20 @@
             .login-container {
                 padding: 1.5rem !important;
             }
-            
+
             h1 {
                 font-size: 2rem !important;
             }
-            
+
             h2 {
                 font-size: 1.25rem !important;
             }
-            
+
             input {
-                font-size: 16px !important; /* Prevents zoom on iOS */
+                font-size: 16px !important;
+                /* Prevents zoom on iOS */
             }
-            
+
             .glass {
                 padding: 2rem !important;
                 border-radius: 2rem !important;

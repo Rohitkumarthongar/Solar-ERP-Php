@@ -58,11 +58,17 @@
     @php
         $grouped = $formats->groupBy('document_type');
         $typeLabels = [
-            'quotation'      => ['label' => 'Quotation',       'icon' => 'file-invoice',   'color' => 'purple'],
-            'sales_order'    => ['label' => 'Sales Order',     'icon' => 'shopping-cart',  'color' => 'green'],
-            'purchase_order' => ['label' => 'Purchase Order',  'icon' => 'truck',          'color' => 'blue'],
-            'invoice'        => ['label' => 'Invoice',         'icon' => 'receipt',        'color' => 'orange'],
-            'salary_slip'    => ['label' => 'Salary Slip',     'icon' => 'money-check-alt','color' => 'pink'],
+            'quotation'                => ['label' => 'Quotation',                'icon' => 'file-invoice',    'color' => 'purple'],
+            'sales_order'              => ['label' => 'Sales Order',              'icon' => 'shopping-cart',   'color' => 'green'],
+            'purchase_order'           => ['label' => 'Purchase Order',           'icon' => 'truck',           'color' => 'blue'],
+            'invoice'                  => ['label' => 'Invoice',                  'icon' => 'receipt',         'color' => 'orange'],
+            'salary_slip'              => ['label' => 'Salary Slip',              'icon' => 'money-check-alt', 'color' => 'pink'],
+            'discom_application'       => ['label' => 'DISCOM Application',      'icon' => 'file-contract',   'color' => 'amber'],
+            'work_application'         => ['label' => 'Work Application',        'icon' => 'tools',           'color' => 'indigo'],
+            'dcr_form'                 => ['label' => 'DCR Form',                 'icon' => 'certificate',     'color' => 'emerald'],
+            'installation_certificate' => ['label' => 'Installation Certificate', 'icon' => 'award',           'color' => 'cyan'],
+            'service_report'           => ['label' => 'Service Report',           'icon' => 'user-gear',       'color' => 'violet'],
+            'site_visit_report'        => ['label' => 'Site Visit Report',        'icon' => 'map-location-dot','color' => 'teal'],
         ];
     @endphp
 
@@ -139,17 +145,18 @@
         @endforeach
 
         {{-- Any types not in our label map --}}
-        @if($grouped->keys()->diff(array_keys($typeLabels))->isNotEmpty())
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div class="px-6 py-3 bg-gray-50 border-b border-gray-100">
-                <h3 class="font-semibold text-gray-600 text-sm">Other</h3>
-            </div>
-            @foreach($grouped->only($grouped->keys()->diff(array_keys($typeLabels))->toArray()) as $type => $typeFormats)
+        @foreach($grouped as $type => $typeFormats)
+            @if(!isset($typeLabels[$type]))
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-4">
+                <div class="px-6 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+                    <i class="fas fa-file text-gray-400 text-sm"></i>
+                    <h3 class="font-semibold text-gray-600 text-sm">{{ ucwords(str_replace('_', ' ', $type)) }}</h3>
+                </div>
                 @foreach($typeFormats as $format)
-                <div class="px-6 py-4 border-b border-gray-50 last:border-0 flex items-center gap-4">
+                <div class="px-6 py-4 border-b border-gray-50 last:border-0 flex items-center gap-4 hover:bg-gray-50 transition">
                     <div class="flex-1">
                         <p class="font-semibold text-gray-800 text-sm">{{ $format->name }}</p>
-                        <p class="text-xs text-gray-400">{{ ucwords(str_replace('_', ' ', $type)) }} &bull; {{ strtoupper($format->paper_size) }}</p>
+                        <p class="text-xs text-gray-400">{{ strtoupper($format->paper_size) }} &bull; {{ ucfirst($format->orientation) }}</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('admin.settings.print-formats.edit', $format->id) }}"
@@ -166,9 +173,9 @@
                     </div>
                 </div>
                 @endforeach
-            @endforeach
-        </div>
-        @endif
+            </div>
+            @endif
+        @endforeach
     </div>
     @endif
 

@@ -468,12 +468,9 @@
             @endcan_access
         </nav>
         <div class="p-4 border-t" style="border-color: var(--admin-border);">
-            <form action="{{ route('admin.logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="w-full flex items-center space-x-2 text-orange-200 hover:text-white text-sm p-2 rounded">
-                    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-                </button>
-            </form>
+            <a href="{{ route('admin.logout.get') }}" class="w-full flex items-center space-x-2 text-orange-200 hover:text-white text-sm p-2 rounded">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </a>
         </div>
     </div>
     <!-- Main Content -->
@@ -504,12 +501,12 @@
                     @endphp
                     @if($unreadNotifCount > 0)<span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ $unreadNotifCount }}</span>@endif
                 </a>
-                <div class="flex items-center space-x-2">
+                <a href="{{ route('admin.profile') }}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                     <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                         {{ strtoupper(substr(session('admin_user', 'A'), 0, 1)) }}
                     </div>
                     <span class="text-gray-700 text-sm font-medium hidden md:block">{{ session('admin_user') }}</span>
-                </div>
+                </a>
             </div>
         </header>
         <div class="px-6 pt-4">
@@ -764,4 +761,149 @@
     /* Ensure no horizontal scroll */
     body { overflow-x: hidden; }
     main { overflow-x: hidden; }
+</style>
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 shadow-2xl z-50 pwa-banner" style="display: none;">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <div class="bg-white/20 p-3 rounded-lg">
+                <i class="fas fa-mobile-alt text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Install Solar ERP App</h3>
+                <p class="text-sm text-blue-100">Get quick access and work offline!</p>
+            </div>
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="installPWA()" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                <i class="fas fa-download mr-2"></i> Install
+            </button>
+            <button onclick="dismissPWABanner()" class="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- PWA Service Worker Registration -->
+<script>
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('✅ Service Worker registered successfully:', registration.scope);
+            })
+            .catch(error => {
+                console.log('❌ Service Worker registration failed:', error);
+            });
+    });
+}
+
+// PWA Install Prompt
+let deferredPrompt;
+const installBanner = document.getElementById('pwaInstallBanner');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    
+    // Check if user has dismissed the banner before
+    const dismissed = localStorage.getItem('pwa_banner_dismissed');
+    const dismissedTime = localStorage.getItem('pwa_banner_dismissed_time');
+    
+    // Show banner if not dismissed or if 7 days have passed
+    if (!dismissed || (dismissedTime && Date.now() - parseInt(dismissedTime) > 7 * 24 * 60 * 60 * 1000)) {
+        installBanner.style.display = 'block';
+    }
+});
+
+function installPWA() {
+    if (!deferredPrompt) {
+        alert('PWA installation is not available on this device/browser.');
+        return;
+    }
+    
+    // Hide the banner
+    installBanner.style.display = 'none';
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+            console.log('✅ User accepted the PWA install prompt');
+            localStorage.setItem('pwa_installed', 'true');
+        } else {
+            console.log('❌ User dismissed the PWA install prompt');
+        }
+        deferredPrompt = null;
+    });
+}
+
+function dismissPWABanner() {
+    installBanner.style.display = 'none';
+    localStorage.setItem('pwa_banner_dismissed', 'true');
+    localStorage.setItem('pwa_banner_dismissed_time', Date.now().toString());
+}
+
+// Detect if app is running in standalone mode (installed as PWA)
+window.addEventListener('DOMContentLoaded', () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        window.navigator.standalone || 
+                        document.referrer.includes('android-app://');
+    
+    if (isStandalone) {
+        console.log('✅ Running as installed PWA');
+        // Hide install banner if already installed
+        if (installBanner) {
+            installBanner.style.display = 'none';
+        }
+        // Add PWA class to body for styling
+        document.body.classList.add('pwa-mode');
+    }
+});
+
+// Handle app updates
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // Show update notification
+        if (confirm('A new version of Solar ERP is available! Reload to update?')) {
+            window.location.reload();
+        }
+    });
+}
+</script>
+
+<style>
+/* PWA Mode Styles */
+.pwa-mode {
+    /* Add extra padding for notch/safe areas on mobile */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Responsive PWA Banner */
+@media (max-width: 640px) {
+    #pwaInstallBanner {
+        padding: 1rem;
+    }
+    
+    #pwaInstallBanner .max-w-4xl {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #pwaInstallBanner .flex.space-x-2 {
+        width: 100%;
+    }
+    
+    #pwaInstallBanner button {
+        flex: 1;
+    }
+}
 </style>

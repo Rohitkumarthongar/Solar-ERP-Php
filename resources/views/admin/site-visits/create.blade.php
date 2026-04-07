@@ -105,10 +105,7 @@
                         <textarea name="technical_notes" rows="3" placeholder="Any specific instructions or things to check during the visit..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300"></textarea>
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Initial Site Photos (Optional)</label>
-                        <input type="file" name="site_photos[]" multiple accept="image/*" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
-                    </div>
+
 
                     @else
                     {{-- Full form when not from lead --}}

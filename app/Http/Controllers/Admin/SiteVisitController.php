@@ -19,7 +19,7 @@ use Illuminate\Validation\Rule;
 
 class SiteVisitController extends Controller
 {
-    protected array $assignableRoles = ['technician', 'manager'];
+    protected array $assignableRoles = ['Technician', 'Manager', 'Installation Technician', 'technician', 'manager'];
 
     public function index()
     {

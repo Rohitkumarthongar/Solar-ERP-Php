@@ -29,7 +29,7 @@ class PrintFormatController extends Controller
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         $validated = $request->validate([
             'name' => 'required|string',
-            'document_type' => 'required|in:quotation,sales_order,purchase_order,invoice,salary_slip,discom_application,work_application,dcr_form',
+            'document_type' => 'required|in:quotation,sales_order,purchase_order,invoice,salary_slip,discom_application,work_application,dcr_form,installation_certificate,service_report,site_visit_report',
             'header_html' => 'nullable|string',
             'footer_html' => 'nullable|string',
             'body_template' => 'required|string',
@@ -62,7 +62,7 @@ class PrintFormatController extends Controller
         $format = PrintFormat::findOrFail($id);
         $validated = $request->validate([
             'name' => 'required|string',
-            'document_type' => 'required|in:quotation,sales_order,purchase_order,invoice,salary_slip,discom_application,work_application,dcr_form',
+            'document_type' => 'required|in:quotation,sales_order,purchase_order,invoice,salary_slip,discom_application,work_application,dcr_form,installation_certificate,service_report,site_visit_report',
             'header_html' => 'nullable|string',
             'footer_html' => 'nullable|string',
             'body_template' => 'required|string',

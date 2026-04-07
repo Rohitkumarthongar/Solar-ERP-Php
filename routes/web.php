@@ -43,12 +43,13 @@ Route::get('/blogs/{slug}', [\App\Http\Controllers\BlogController::class, 'show'
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
 Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.post');
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout.get');
 
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard')->middleware('check_permission:dashboard');
 
 // ── Direct Expenses ───────────────────────────────────────────────────────────
-Route::middleware('check_permission:expenses')->group(function() {
+Route::middleware('check_permission:expenses')->group(function () {
     Route::get('/admin/direct-expenses', [ExpenseController::class, 'index'])->name('admin.expenses.index');
     Route::get('/admin/direct-expenses/create', [ExpenseController::class, 'create'])->name('admin.expenses.create');
     Route::post('/admin/direct-expenses', [ExpenseController::class, 'store'])->name('admin.expenses.store');
@@ -58,7 +59,7 @@ Route::middleware('check_permission:expenses')->group(function() {
 });
 
 // ── Customers ─────────────────────────────────────────────────────────────────
-Route::middleware('check_permission:customers')->group(function() {
+Route::middleware('check_permission:customers')->group(function () {
     Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customers.index');
     Route::get('/admin/customers/create', [CustomerController::class, 'create'])->name('admin.customers.create');
     Route::post('/admin/customers', [CustomerController::class, 'store'])->name('admin.customers.store');
@@ -78,7 +79,7 @@ Route::middleware('check_permission:customers')->group(function() {
 });
 
 // ── Leads ─────────────────────────────────────────────────────────────────────
-Route::middleware('check_permission:leads')->group(function() {
+Route::middleware('check_permission:leads')->group(function () {
     Route::get('/admin/leads', [LeadController::class, 'index'])->name('admin.leads.index');
     Route::get('/admin/leads/create', [LeadController::class, 'create'])->name('admin.leads.create');
     Route::post('/admin/leads', [LeadController::class, 'store'])->name('admin.leads.store');
@@ -91,7 +92,7 @@ Route::middleware('check_permission:leads')->group(function() {
     Route::post('/admin/leads/{id}/send-sms', [LeadController::class, 'sendSms'])->name('admin.leads.send-sms');
 });
 
-Route::middleware('check_permission:site_visits')->group(function() {
+Route::middleware('check_permission:site_visits')->group(function () {
     Route::get('/admin/site-visits', [\App\Http\Controllers\Admin\SiteVisitController::class, 'index'])->name('admin.site-visits.index');
     Route::get('/admin/site-visits/create', [\App\Http\Controllers\Admin\SiteVisitController::class, 'create'])->name('admin.site-visits.create');
     Route::post('/admin/site-visits', [\App\Http\Controllers\Admin\SiteVisitController::class, 'store'])->name('admin.site-visits.store');
@@ -102,7 +103,7 @@ Route::middleware('check_permission:site_visits')->group(function() {
     Route::delete('/admin/site-visits/{id}', [\App\Http\Controllers\Admin\SiteVisitController::class, 'destroy'])->name('admin.site-visits.destroy');
 });
 
-Route::middleware('check_permission:quotations')->group(function() {
+Route::middleware('check_permission:quotations')->group(function () {
     Route::get('/admin/quotations', [QuotationController::class, 'index'])->name('admin.quotations.index');
     Route::get('/admin/quotations/create', [QuotationController::class, 'create'])->name('admin.quotations.create');
     Route::post('/admin/quotations', [QuotationController::class, 'store'])->name('admin.quotations.store');
@@ -115,7 +116,7 @@ Route::middleware('check_permission:quotations')->group(function() {
     Route::post('/admin/quotations/{id}/convert-to-order', [QuotationController::class, 'convertToOrder'])->name('admin.quotations.convert-to-order');
 });
 
-Route::middleware('check_permission:sales_orders')->group(function() {
+Route::middleware('check_permission:sales_orders')->group(function () {
     Route::get('/admin/sales-orders', [SalesOrderController::class, 'index'])->name('admin.sales-orders.index');
     Route::get('/admin/sales-orders/create', [SalesOrderController::class, 'create'])->name('admin.sales-orders.create');
     Route::post('/admin/sales-orders', [SalesOrderController::class, 'store'])->name('admin.sales-orders.store');
@@ -126,7 +127,7 @@ Route::middleware('check_permission:sales_orders')->group(function() {
     Route::get('/admin/sales-orders/{id}/pdf', [SalesOrderController::class, 'downloadPdf'])->name('admin.sales-orders.pdf');
 });
 
-Route::middleware('check_permission:sales_invoices')->group(function() {
+Route::middleware('check_permission:sales_invoices')->group(function () {
     Route::get('/admin/sales-invoices', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'index'])->name('admin.sales-invoices.index');
     Route::get('/admin/sales-invoices/create', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'create'])->name('admin.sales-invoices.create');
     Route::post('/admin/sales-invoices', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'store'])->name('admin.sales-invoices.store');
@@ -136,7 +137,7 @@ Route::middleware('check_permission:sales_invoices')->group(function() {
     Route::post('/admin/sales-invoices/{id}/remind', [\App\Http\Controllers\Admin\SalesInvoiceController::class, 'sendReminder'])->name('admin.sales-invoices.remind');
 });
 
-Route::middleware('check_permission:purchase_orders')->group(function() {
+Route::middleware('check_permission:purchase_orders')->group(function () {
     Route::get('/admin/purchase-orders', [PurchaseOrderController::class, 'index'])->name('admin.purchase-orders.index');
     Route::get('/admin/purchase-orders/create', [PurchaseOrderController::class, 'create'])->name('admin.purchase-orders.create');
     Route::post('/admin/purchase-orders', [PurchaseOrderController::class, 'store'])->name('admin.purchase-orders.store');
@@ -147,7 +148,7 @@ Route::middleware('check_permission:purchase_orders')->group(function() {
     Route::get('/admin/purchase-orders/{id}/pdf', [PurchaseOrderController::class, 'downloadPdf'])->name('admin.purchase-orders.pdf');
 });
 
-Route::middleware('check_permission:product_categories')->group(function() {
+Route::middleware('check_permission:product_categories')->group(function () {
     Route::get('/admin/product-categories', [ProductCategoryController::class, 'index'])->name('admin.product-categories.index');
     Route::get('/admin/product-categories/create', [ProductCategoryController::class, 'create'])->name('admin.product-categories.create');
     Route::post('/admin/product-categories', [ProductCategoryController::class, 'store'])->name('admin.product-categories.store');
@@ -156,7 +157,7 @@ Route::middleware('check_permission:product_categories')->group(function() {
     Route::delete('/admin/product-categories/{id}', [ProductCategoryController::class, 'destroy'])->name('admin.product-categories.destroy');
 });
 
-Route::middleware('check_permission:products')->group(function() {
+Route::middleware('check_permission:products')->group(function () {
     Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products.index');
     Route::get('/admin/products/create', [ProductController::class, 'create'])->name('admin.products.create');
     Route::post('/admin/products', [ProductController::class, 'store'])->name('admin.products.store');
@@ -166,7 +167,7 @@ Route::middleware('check_permission:products')->group(function() {
     Route::delete('/admin/products/{id}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
 });
 
-Route::middleware('check_permission:packages')->group(function() {
+Route::middleware('check_permission:packages')->group(function () {
     Route::get('/admin/packages', [PackageController::class, 'index'])->name('admin.packages.index');
     Route::get('/admin/packages/create', [PackageController::class, 'create'])->name('admin.packages.create');
     Route::post('/admin/packages', [PackageController::class, 'store'])->name('admin.packages.store');
@@ -176,7 +177,7 @@ Route::middleware('check_permission:packages')->group(function() {
     Route::delete('/admin/packages/{id}', [PackageController::class, 'destroy'])->name('admin.packages.destroy');
 });
 
-Route::middleware('check_permission:inventory')->group(function() {
+Route::middleware('check_permission:inventory')->group(function () {
     Route::get('/admin/inventory', [InventoryController::class, 'index'])->name('admin.inventory.index');
     Route::get('/admin/inventory/create', [InventoryController::class, 'create'])->name('admin.inventory.create');
     Route::post('/admin/inventory', [InventoryController::class, 'store'])->name('admin.inventory.store');
@@ -187,7 +188,7 @@ Route::middleware('check_permission:inventory')->group(function() {
 });
 
 // ── Installations ─────────────────────────────────────────────────────────────
-Route::middleware('check_permission:installations')->group(function() {
+Route::middleware('check_permission:installations')->group(function () {
     Route::get('/admin/installations', [InstallationController::class, 'index'])->name('admin.installations.index');
     Route::get('/admin/installations/create', [InstallationController::class, 'create'])->name('admin.installations.create');
     Route::post('/admin/installations', [InstallationController::class, 'store'])->name('admin.installations.store');
@@ -201,7 +202,7 @@ Route::middleware('check_permission:installations')->group(function() {
     Route::delete('/admin/installations/{id}', [InstallationController::class, 'destroy'])->name('admin.installations.destroy');
 });
 
-Route::middleware('check_permission:services')->group(function() {
+Route::middleware('check_permission:services')->group(function () {
     Route::get('/admin/services', [ServiceController::class, 'index'])->name('admin.services.index');
     Route::get('/admin/services/create', [ServiceController::class, 'create'])->name('admin.services.create');
     Route::post('/admin/services', [ServiceController::class, 'store'])->name('admin.services.store');
@@ -211,7 +212,7 @@ Route::middleware('check_permission:services')->group(function() {
     Route::delete('/admin/services/{id}', [ServiceController::class, 'destroy'])->name('admin.services.destroy');
 });
 
-Route::middleware('check_permission:employees')->group(function() {
+Route::middleware('check_permission:employees')->group(function () {
     Route::get('/admin/employees', [EmployeeController::class, 'index'])->name('admin.employees.index');
     Route::get('/admin/employees/create', [EmployeeController::class, 'create'])->name('admin.employees.create');
     Route::post('/admin/employees', [EmployeeController::class, 'store'])->name('admin.employees.store');
@@ -227,14 +228,14 @@ Route::middleware('check_permission:employees')->group(function() {
     Route::get('/admin/employees/{employeeId}/salary/{recordId}/print', [EmployeeController::class, 'printSalarySlip'])->name('admin.employees.salary.print');
 });
 
-Route::middleware('check_permission:notifications')->group(function() {
+Route::middleware('check_permission:notifications')->group(function () {
     Route::get('/admin/notifications', [NotificationController::class, 'index'])->name('admin.notifications.index');
     Route::post('/admin/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('admin.notifications.read');
     Route::post('/admin/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('admin.notifications.read-all');
     Route::get('/admin/notifications/count', [NotificationController::class, 'count'])->name('admin.notifications.count');
 });
 
-Route::middleware('check_permission:roles')->group(function() {
+Route::middleware('check_permission:roles')->group(function () {
     Route::get('/admin/roles', [RoleController::class, 'index'])->name('admin.roles.index');
     Route::get('/admin/roles/create', [RoleController::class, 'create'])->name('admin.roles.create');
     Route::post('/admin/roles', [RoleController::class, 'store'])->name('admin.roles.store');
@@ -250,7 +251,7 @@ Route::middleware('check_permission:roles')->group(function() {
 });
 
 // ── Mobile Technician Flow ────────────────────────────────────────────────────
-Route::middleware('auth:admin')->group(function() {
+Route::middleware('auth:admin')->group(function () {
     Route::get('/admin/mobile/dashboard', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'dashboard'])->name('admin.mobile.dashboard');
     Route::get('/admin/mobile/task/{type}/{id}', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'showTask'])->name('admin.mobile.task');
     Route::post('/admin/mobile/task/{type}/{id}/start', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'startTask'])->name('admin.mobile.task.start');
@@ -261,13 +262,13 @@ Route::middleware('auth:admin')->group(function() {
 });
 
 // ── Data Health Checks ────────────────────────────────────────────────────────
-Route::middleware('check_permission:settings')->group(function() {
+Route::middleware('check_permission:settings')->group(function () {
     Route::get('/admin/data-health', [\App\Http\Controllers\Admin\DataHealthController::class, 'index'])->name('admin.data-health.index');
     Route::get('/admin/data-health/check', [\App\Http\Controllers\Admin\DataHealthController::class, 'check'])->name('admin.data-health.check');
     Route::get('/admin/data-health/export', [\App\Http\Controllers\Admin\DataHealthController::class, 'export'])->name('admin.data-health.export');
 });
 
-Route::middleware('check_permission:settings')->group(function() {
+Route::middleware('check_permission:settings')->group(function () {
     Route::get('/admin/settings', [SettingsController::class, 'index'])->name('admin.settings.index');
     Route::post('/admin/settings', [SettingsController::class, 'update'])->name('admin.settings.update');
     Route::get('/admin/settings/email', [SettingsController::class, 'email'])->name('admin.settings.email');
@@ -292,7 +293,7 @@ Route::middleware('check_permission:settings')->group(function() {
     Route::delete('/admin/settings/print-formats/{id}', [PrintFormatController::class, 'destroy'])->name('admin.settings.print-formats.destroy');
 });
 
-Route::middleware('check_permission:reports')->group(function() {
+Route::middleware('check_permission:reports')->group(function () {
     Route::get('/admin/reports', [ReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/admin/reports/sales', [ReportController::class, 'sales'])->name('admin.reports.sales');
     Route::get('/admin/reports/purchase', [ReportController::class, 'purchase'])->name('admin.reports.purchase');
@@ -311,19 +312,19 @@ Route::middleware('check_permission:reports')->group(function() {
     Route::get('/admin/reports/inventory/export', [ReportController::class, 'inventoryExport'])->name('admin.reports.inventory.export');
     Route::get('/admin/reports/profit-loss/export', [ReportController::class, 'profitLossExport'])->name('admin.reports.profit-loss.export');
 
-// ── Documents ─────────────────────────────────────────────────────────────────
-Route::post('/admin/documents/upload', [DocumentController::class, 'upload'])->name('admin.documents.upload');
-Route::get('/admin/documents/{id}/download', [DocumentController::class, 'download'])->name('admin.documents.download');
-Route::get('/admin/documents/{id}/preview', [DocumentController::class, 'preview'])->name('admin.documents.preview');
-Route::get('/admin/documents/{id}/versions', [DocumentController::class, 'versions'])->name('admin.documents.versions');
-Route::post('/admin/documents/{id}/replace', [DocumentController::class, 'replace'])->name('admin.documents.replace');
-Route::delete('/admin/documents/{id}', [DocumentController::class, 'destroy'])->name('admin.documents.destroy');
-Route::post('/admin/documents/{id}/archive', [DocumentController::class, 'archive'])->name('admin.documents.archive');
-Route::post('/admin/documents/{id}/restore', [DocumentController::class, 'restore'])->name('admin.documents.restore');
-Route::delete('/admin/documents/{id}/permanent', [DocumentController::class, 'permanentDelete'])->name('admin.documents.permanent-delete');
+    // ── Documents ─────────────────────────────────────────────────────────────────
+    Route::post('/admin/documents/upload', [DocumentController::class, 'upload'])->name('admin.documents.upload');
+    Route::get('/admin/documents/{id}/download', [DocumentController::class, 'download'])->name('admin.documents.download');
+    Route::get('/admin/documents/{id}/preview', [DocumentController::class, 'preview'])->name('admin.documents.preview');
+    Route::get('/admin/documents/{id}/versions', [DocumentController::class, 'versions'])->name('admin.documents.versions');
+    Route::post('/admin/documents/{id}/replace', [DocumentController::class, 'replace'])->name('admin.documents.replace');
+    Route::delete('/admin/documents/{id}', [DocumentController::class, 'destroy'])->name('admin.documents.destroy');
+    Route::post('/admin/documents/{id}/archive', [DocumentController::class, 'archive'])->name('admin.documents.archive');
+    Route::post('/admin/documents/{id}/restore', [DocumentController::class, 'restore'])->name('admin.documents.restore');
+    Route::delete('/admin/documents/{id}/permanent', [DocumentController::class, 'permanentDelete'])->name('admin.documents.permanent-delete');
 });
 
-Route::middleware('check_permission:teams')->group(function() {
+Route::middleware('check_permission:teams')->group(function () {
     Route::get('/admin/teams', [TeamController::class, 'index'])->name('admin.teams.index');
     Route::get('/admin/teams/create', [TeamController::class, 'create'])->name('admin.teams.create');
     Route::post('/admin/teams', [TeamController::class, 'store'])->name('admin.teams.store');
@@ -332,7 +333,7 @@ Route::middleware('check_permission:teams')->group(function() {
     Route::delete('/admin/teams/{id}', [TeamController::class, 'destroy'])->name('admin.teams.destroy');
 });
 
-Route::middleware('check_permission:blogs')->group(function() {
+Route::middleware('check_permission:blogs')->group(function () {
     Route::get('/admin/blogs', [\App\Http\Controllers\Admin\BlogController::class, 'index'])->name('admin.blogs.index');
     Route::get('/admin/blogs/create', [\App\Http\Controllers\Admin\BlogController::class, 'create'])->name('admin.blogs.create');
     Route::post('/admin/blogs', [\App\Http\Controllers\Admin\BlogController::class, 'store'])->name('admin.blogs.store');
@@ -340,3 +341,8 @@ Route::middleware('check_permission:blogs')->group(function() {
     Route::put('/admin/blogs/{id}', [\App\Http\Controllers\Admin\BlogController::class, 'update'])->name('admin.blogs.update');
     Route::delete('/admin/blogs/{id}', [\App\Http\Controllers\Admin\BlogController::class, 'destroy'])->name('admin.blogs.destroy');
 });
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+Route::get('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'show'])->name('admin.profile');
+Route::put('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.profile.update');
+Route::put('/admin/profile/password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('admin.profile.password');
