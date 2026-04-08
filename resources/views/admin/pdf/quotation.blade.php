@@ -77,6 +77,9 @@
 
     <div class="doc-header">
         <div>
+            @if(!empty($settings['company_logo']))
+            <img src="{{ \App\Support\SupabaseStorage::url($settings['company_logo']) }}" style="max-height:50px;max-width:160px;object-fit:contain;margin-bottom:8px;display:block;">
+            @endif
             <div class="company-name">{{ $settings['company_name'] ?? 'SolarTech ERP' }}</div>
             @if(!empty($settings['company_tagline']))<div class="company-tagline">{{ $settings['company_tagline'] }}</div>@endif
             <div class="company-meta">

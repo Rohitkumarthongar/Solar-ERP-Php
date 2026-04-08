@@ -1064,8 +1064,8 @@ BLADE,
 
 @php
     $logoPath = !empty($settings['company_logo'])
-        ? asset('storage/' . $settings['company_logo'])
-        : asset('images/print-format-presets/quotation-logo.png');
+        ? \App\Support\SupabaseStorage::url($settings['company_logo'])
+        : 'https://miurrqqeervypgieqxzy.supabase.co/storage/v1/object/public/Solar_Ptc/printformat/quotation-logo.png';
     $quotationDate = optional($quotation->created_at)->format('d-m-Y') ?? now()->format('d-m-Y');
     $quotationNumber = $quotation->quotation_number ?? 'Q-000';
     $customerName = strtoupper($quotation->customer_name ?? 'CUSTOMER NAME');
@@ -1126,7 +1126,7 @@ BLADE,
             <div class="tagline">{{ $companyTagline }}</div>
         </div>
 
-        <img src="{{ asset('images/print-format-presets/quotation-cover-house.png') }}" alt="Solar House" class="hero-image">
+        <img src="https://miurrqqeervypgieqxzy.supabase.co/storage/v1/object/public/Solar_Ptc/printformat/quotation-cover-house.png" alt="Solar House" class="hero-image">
     </section>
 
     <section class="page">
@@ -1205,7 +1205,7 @@ BLADE,
             @endforeach
         </ul>
 
-        <img src="{{ asset('images/print-format-presets/quotation-roof-banner.png') }}" alt="Solar Roof" class="banner-image">
+        <img src="https://miurrqqeervypgieqxzy.supabase.co/storage/v1/object/public/Solar_Ptc/printformat/quotation-roof-banner.png" alt="Solar Roof" class="banner-image">
     </section>
 
     <section class="page">
@@ -1226,7 +1226,7 @@ BLADE,
 
     <section class="page">
         <img src="{{ $logoPath }}" alt="Watermark Logo" class="watermark">
-        <img src="{{ asset('images/print-format-presets/quotation-handshake.png') }}" alt="Handshake" class="handshake-image">
+        <img src="https://miurrqqeervypgieqxzy.supabase.co/storage/v1/object/public/Solar_Ptc/printformat/quotation-handshake.png" alt="Handshake" class="handshake-image">
 
         <div class="bank-title">OUR COMPANY BANKING DETAIL</div>
 
