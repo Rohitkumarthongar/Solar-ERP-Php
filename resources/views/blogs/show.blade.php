@@ -20,7 +20,7 @@
 
         @if($blog->image)
         <div class="rounded-3xl overflow-hidden shadow-xl shadow-amber-900/5 mb-16 relative aspect-video site-surface-alt group">
-            <img src="{{ asset('storage/' . $blog->image) }}" alt="{{ $blog->title }}" class="absolute inset-0 w-full h-full object-cover">
+            <img src="{{ \App\Support\SupabaseStorage::url($blog->image) }}" alt="{{ $blog->title }}" class="absolute inset-0 w-full h-full object-cover">
         </div>
         @endif
 

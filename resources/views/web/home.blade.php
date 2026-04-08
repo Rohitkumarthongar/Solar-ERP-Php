@@ -145,7 +145,7 @@
             <div class="glass rounded-[40px] overflow-hidden border border-white/5 card-hover flex flex-col h-full group">
                 <div class="aspect-square bg-[#111a2e] p-10 flex items-center justify-center relative overflow-hidden">
                     @if($product->image)
-                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="max-h-full max-w-full object-contain relative z-10 group-hover:scale-110 transition-transform duration-700">
+                        <img src="{{ \App\Support\SupabaseStorage::url($product->image) }}" alt="{{ $product->name }}" class="max-h-full max-w-full object-contain relative z-10 group-hover:scale-110 transition-transform duration-700">
                     @else
                         <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center">
                             <i class="fas fa-solar-panel text-4xl text-white/10"></i>

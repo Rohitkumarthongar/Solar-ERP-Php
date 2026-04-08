@@ -47,7 +47,7 @@
                         <label class="block text-xs font-semibold text-gray-600 mb-1.5">Cover Image</label>
                         @if($blog->image)
                         <div class="mb-3 rounded-lg overflow-hidden border border-gray-200 inline-block">
-                            <img src="{{ asset('storage/' . $blog->image) }}" class="max-h-32 object-contain bg-gray-50">
+                            <img src="{{ \App\Support\SupabaseStorage::url($blog->image) }}" class="max-h-32 object-contain bg-gray-50">
                         </div>
                         @else
                         <div class="mb-3 w-16 h-12 bg-gray-100 rounded text-gray-400 flex items-center justify-center text-xs"><i class="fas fa-image"></i></div>

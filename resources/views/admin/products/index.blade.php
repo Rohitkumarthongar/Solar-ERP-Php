@@ -37,7 +37,7 @@
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
                                     @if($product->image)
-                                    <img src="/storage/{{ $product->image }}" class="w-8 h-8 object-contain">
+                                    <img src="{{ \App\Support\SupabaseStorage::url($product->image) }}" class="w-8 h-8 object-contain">
                                     @else
                                     <i class="fas fa-solar-panel text-orange-400"></i>
                                     @endif

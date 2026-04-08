@@ -37,7 +37,7 @@
                         <td class="p-4 font-semibold">#{{ $blog->id }}</td>
                         <td class="p-4">
                             @if($blog->image)
-                            <img src="{{ asset('storage/' . $blog->image) }}" alt="{{ $blog->title }}" class="w-16 h-12 object-cover rounded shadow-sm">
+                            <img src="{{ \App\Support\SupabaseStorage::url($blog->image) }}" alt="{{ $blog->title }}" class="w-16 h-12 object-cover rounded shadow-sm">
                             @else
                             <div class="w-16 h-12 bg-gray-100 rounded text-gray-400 flex items-center justify-center text-xs"><i class="fas fa-image"></i></div>
                             @endif

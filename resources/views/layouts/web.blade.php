@@ -46,7 +46,7 @@
       "@@context": "https://schema.org",
       "@@type": "LocalBusiness",
       "name": "{{ $settings['company_name'] ?? 'Palawat Solar' }}",
-      "image": "{{ asset('storage/' . ($settings['company_logo'] ?? 'logo.png')) }}",
+      "image": "{{ \App\Support\SupabaseStorage::url($settings['company_logo'] ?? '') }}",
       "description": "Premium solar energy solutions provider offering solar panels, inverters, batteries, and complete installation services for residential, commercial, and industrial applications.",
       "address": {
         "@@type": "PostalAddress",
@@ -94,7 +94,7 @@
     </script>
     
     @if(!empty($settings['company_favicon']))
-        <link rel="icon" type="image/png" href="{{ asset('storage/' . $settings['company_favicon']) }}">
+        <link rel="icon" type="image/png" href="{{ \App\Support\SupabaseStorage::url($settings['company_favicon']) }}">
     @endif
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -278,7 +278,7 @@
             <a href="{{ route('home') }}" class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
                 @if(!empty($settings['company_logo']))
                     <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg sm:rounded-xl p-1.5 flex items-center justify-center shadow-lg shadow-white/5 border border-white/5">
-                        <img src="{{ asset('storage/' . $settings['company_logo']) }}" class="max-h-full max-w-full" alt="{{ $settings['company_name'] ?? 'Palawat Solar' }}">
+                        <img src="{{ \App\Support\SupabaseStorage::url($settings['company_logo']) }}" class="max-h-full max-w-full" alt="{{ $settings['company_name'] ?? 'Palawat Solar' }}">
                     </div>
                 @else
                     <div class="w-10 h-10 bg-amber-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">

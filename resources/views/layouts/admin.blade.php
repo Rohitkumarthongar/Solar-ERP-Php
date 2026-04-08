@@ -18,7 +18,7 @@
     @php $adminTheme = $settings['admin_theme'] ?? 'dark'; @endphp
     
     @if(!empty($settings['company_favicon']))
-        <link rel="icon" type="image/png" href="{{ asset('storage/' . $settings['company_favicon']) }}">
+        <link rel="icon" type="image/png" href="{{ \App\Support\SupabaseStorage::url($settings['company_favicon']) }}">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
@@ -215,7 +215,7 @@
             <div class="flex items-center space-x-3">
                 @if(!empty($settings['company_logo']))
                     <div class="w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
-                        <img src="{{ asset('storage/' . $settings['company_logo']) }}" class="max-h-full max-w-full">
+                        <img src="{{ \App\Support\SupabaseStorage::url($settings['company_logo']) }}" class="max-h-full max-w-full">
                     </div>
                 @else
                     <div class="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">

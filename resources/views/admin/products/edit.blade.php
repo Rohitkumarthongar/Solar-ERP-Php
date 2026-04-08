@@ -63,7 +63,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
-                    @if($product->image)<img src="/storage/{{ $product->image }}" class="w-16 h-16 object-contain rounded-lg mb-2 border">@endif
+                    @if($product->image)<img src="{{ \App\Support\SupabaseStorage::url($product->image) }}" class="w-16 h-16 object-contain rounded-lg mb-2 border">@endif
                     <input type="file" name="image" accept="image/*" class="w-full border border-gray-300 rounded-lg px-4 py-2.5">
                 </div>
                 <div class="flex items-center pt-6">

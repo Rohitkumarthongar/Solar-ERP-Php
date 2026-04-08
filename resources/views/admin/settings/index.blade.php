@@ -410,7 +410,7 @@
                         <label class="block text-xs font-semibold text-gray-600 mb-2">Company Logo</label>
                         @if(!empty($settings['company_logo']))
                         <div class="mb-3 p-3 bg-gray-50 rounded-xl flex items-center justify-center">
-                            <img src="{{ asset('storage/' . $settings['company_logo']) }}" alt="Logo"
+                            <img src="{{ \App\Support\SupabaseStorage::url($settings['company_logo']) }}" alt="Logo"
                                 class="max-h-16 object-contain">
                         </div>
                         @endif
@@ -424,7 +424,7 @@
                         <label class="block text-xs font-semibold text-gray-600 mb-2">Favicon</label>
                         @if(!empty($settings['company_favicon']))
                         <div class="mb-2">
-                            <img src="{{ asset('storage/' . $settings['company_favicon']) }}" alt="Favicon"
+                            <img src="{{ \App\Support\SupabaseStorage::url($settings['company_favicon']) }}" alt="Favicon"
                                 class="w-8 h-8 object-contain">
                         </div>
                         @endif
