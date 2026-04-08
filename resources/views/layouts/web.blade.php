@@ -96,6 +96,8 @@
     @if(!empty($settings['company_favicon']))
         <link rel="icon" type="image/png" href="{{ \App\Support\SupabaseStorage::url($settings['company_favicon']) }}">
     @endif
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/icon-192x192.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -485,19 +487,24 @@
         <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
             <div class="flex items-center gap-4 flex-1 min-w-0">
                 <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
-                    <i class="fas fa-mobile-alt text-white text-xl"></i>
+                    <i class="fas fa-solar-panel text-white text-xl"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="font-bold text-sm site-text-strong">Install Solar App</h3>
-                    <p class="text-xs site-muted">Quick access to solar solutions on your device</p>
+                    <h3 class="font-bold text-sm site-text-strong">📲 Install {{ $settings['company_name'] ?? 'Solar App' }}</h3>
+                    <p class="text-xs site-muted mt-0.5">Add to home screen for quick access — works offline too</p>
+                    <div class="flex items-center gap-3 mt-1.5">
+                        <span class="text-[10px] site-subtle flex items-center gap-1"><i class="fas fa-bolt text-amber-500"></i> Fast</span>
+                        <span class="text-[10px] site-subtle flex items-center gap-1"><i class="fas fa-wifi-slash text-amber-500"></i> Offline</span>
+                        <span class="text-[10px] site-subtle flex items-center gap-1"><i class="fas fa-bell text-amber-500"></i> Notifications</span>
+                    </div>
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
-                <button onclick="installPWA()" class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-500/20 active:scale-95">
-                    Install Now
+                <button id="pwaInstallNowBtn" onclick="installPWA()" class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 active:scale-95 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-download text-xs"></i> Install Now
                 </button>
-                <button onclick="dismissPWABanner()" class="site-muted hover:text-amber-500 px-3 py-2.5 rounded-xl transition-colors">
-                    <i class="fas fa-times"></i>
+                <button onclick="dismissPWABanner()" class="site-muted hover:text-amber-500 w-9 h-9 flex items-center justify-center rounded-xl transition-colors glass">
+                    <i class="fas fa-times text-xs"></i>
                 </button>
             </div>
         </div>
@@ -508,60 +515,77 @@
     // PWA Installation
     let deferredPrompt;
     const pwaInstallBanner = document.getElementById('pwaInstallBanner');
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    function _webPwaDismissed() {
+        const t = parseInt(localStorage.getItem('pwa-dismissed') || '0');
+        return t && (Date.now() - t < 7 * 24 * 60 * 60 * 1000);
+    }
+
+    function _showWebBanner() {
+        if (isInStandaloneMode || _webPwaDismissed()) return;
+        if (pwaInstallBanner) pwaInstallBanner.classList.remove('hidden');
+    }
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        
-        // Check if user has dismissed the banner before
-        if (!localStorage.getItem('pwa-dismissed')) {
+        setTimeout(_showWebBanner, 3000);
+    });
+
+    // Force-show on HTTP/localhost where beforeinstallprompt may not fire
+    window.addEventListener('load', () => {
+        if (!isInStandaloneMode && !_webPwaDismissed()) {
             setTimeout(() => {
-                pwaInstallBanner.classList.remove('hidden');
-            }, 5000); // Show after 5 seconds
+                if (pwaInstallBanner && pwaInstallBanner.classList.contains('hidden')) {
+                    _showWebBanner();
+                }
+            }, 4000);
         }
     });
 
+    // iOS: swap button text
+    if (isIOS && !isInStandaloneMode) {
+        window.addEventListener('load', () => {
+            const btn = document.getElementById('pwaInstallNowBtn');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-share-from-square text-xs"></i> Add to Home Screen';
+                btn.onclick = () => alert('Tap the Share button (⬆) in Safari, then select "Add to Home Screen"');
+            }
+        });
+    }
+
     async function installPWA() {
-        if (!deferredPrompt) {
-            alert('Installation is not available on this device/browser');
-            return;
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            if (pwaInstallBanner) pwaInstallBanner.classList.add('hidden');
+        } else {
+            // No native prompt — show manual instructions
+            const ua = navigator.userAgent;
+            let msg = '';
+            if (/iphone|ipad|ipod/i.test(ua)) {
+                msg = 'In Safari: tap the Share ⬆ button, then "Add to Home Screen"';
+            } else if (/android/i.test(ua)) {
+                msg = 'In Chrome: tap the ⋮ menu (top right), then "Add to Home screen"';
+            } else {
+                msg = 'In Chrome: click the ⊕ install icon in the address bar, or open the browser menu → "Install app".\n\nNote: Install requires HTTPS. On localhost, use Chrome\'s address bar install icon.';
+            }
+            alert(msg);
         }
-        
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        
-        if (outcome === 'accepted') {
-            console.log('PWA installed successfully');
-        }
-        
-        deferredPrompt = null;
-        pwaInstallBanner.classList.add('hidden');
     }
 
     function dismissPWABanner() {
-        pwaInstallBanner.classList.add('hidden');
-        localStorage.setItem('pwa-dismissed', 'true');
-        
-        // Clear dismissal after 7 days
-        setTimeout(() => {
-            localStorage.removeItem('pwa-dismissed');
-        }, 7 * 24 * 60 * 60 * 1000);
+        if (pwaInstallBanner) pwaInstallBanner.classList.add('hidden');
+        localStorage.setItem('pwa-dismissed', Date.now().toString());
     }
 
-    // Remove any previously installed service workers and cached offline data.
+    // Register service worker for PWA
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', async () => {
-            try {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                await Promise.all(registrations.map((registration) => registration.unregister()));
-
-                if ('caches' in window) {
-                    const cacheNames = await caches.keys();
-                    await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
-                }
-            } catch (error) {
-                console.log('Service worker cleanup failed:', error);
-            }
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
     }
 

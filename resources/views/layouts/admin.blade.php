@@ -19,11 +19,10 @@
     
     @if(!empty($settings['company_favicon']))
         <link rel="icon" type="image/png" href="{{ \App\Support\SupabaseStorage::url($settings['company_favicon']) }}">
-    
+    @endif
     <!-- PWA Manifest -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/icon-192x192.png') }}">
-    @endif
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -683,24 +682,31 @@
 </style>
 
 <!-- PWA Install Banner -->
-<div id="pwaInstallBanner" class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 shadow-2xl z-50 pwa-banner" style="display: none;">
-    <div class="max-w-4xl mx-auto flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-            <div class="bg-white/20 p-3 rounded-lg">
-                <i class="fas fa-mobile-alt text-2xl"></i>
+<div id="pwaInstallBanner" class="fixed bottom-0 left-0 right-0 z-50 pwa-banner" style="display:none; background: linear-gradient(135deg, #1e293b, #0f172a); border-top: 1px solid rgba(245,158,11,0.3); box-shadow: 0 -8px 32px rgba(0,0,0,0.4);">
+    <div class="max-w-4xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div class="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/30">
+                    <i class="fas fa-solar-panel text-white text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-sm text-white">📲 Install Solar ERP App</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Add to home screen — fast access, works offline</p>
+                    <div class="flex items-center gap-3 mt-1.5">
+                        <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fas fa-bolt text-orange-400"></i> Instant</span>
+                        <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fas fa-wifi-slash text-orange-400"></i> Offline</span>
+                        <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fas fa-lock text-orange-400"></i> Secure</span>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h3 class="font-bold text-lg">Install Solar ERP App</h3>
-                <p class="text-sm text-blue-100">Get quick access and work offline!</p>
+            <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                <button id="pwaInstallNowBtn" onclick="installPWA()" class="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-download text-xs"></i> Install Now
+                </button>
+                <button onclick="dismissPWABanner()" class="text-slate-400 hover:text-orange-400 w-9 h-9 flex items-center justify-center rounded-xl transition-colors bg-white/5">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
             </div>
-        </div>
-        <div class="flex space-x-2">
-            <button onclick="installPWA()" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
-                <i class="fas fa-download mr-2"></i> Install
-            </button>
-            <button onclick="dismissPWABanner()" class="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
-                <i class="fas fa-times"></i>
-            </button>
         </div>
     </div>
 </div>
@@ -712,11 +718,32 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
-                console.log('✅ Service Worker registered successfully:', registration.scope);
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New version available — show update toast
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Update Available',
+                                text: 'A new version is ready. Reload to update.',
+                                confirmButtonText: 'Reload',
+                                confirmButtonColor: '#f59e0b',
+                                showCancelButton: true,
+                                cancelButtonText: 'Later',
+                                toast: false,
+                            }).then((r) => {
+                                if (r.isConfirmed) {
+                                    newWorker.postMessage('skipWaiting');
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                    });
+                });
             })
-            .catch(error => {
-                console.log('❌ Service Worker registration failed:', error);
-            });
+            .catch(() => {});
     });
 }
 
@@ -724,74 +751,99 @@ if ('serviceWorker' in navigator) {
 let deferredPrompt;
 const installBanner = document.getElementById('pwaInstallBanner');
 const installBtn = document.getElementById('pwaInstallBtn');
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+function _pwaDismissed() {
+    const t = parseInt(localStorage.getItem('pwa_banner_dismissed_time') || '0');
+    return localStorage.getItem('pwa_banner_dismissed') && (Date.now() - t < 7 * 24 * 60 * 60 * 1000);
+}
+
+function _showBanner() {
+    if (isStandalone || _pwaDismissed()) return;
+    if (installBanner) installBanner.style.display = 'block';
+    if (installBtn) { installBtn.classList.remove('hidden'); installBtn.classList.add('flex'); }
+}
 
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    setTimeout(_showBanner, 3000);
+});
 
-    // Show header install button
-    if (installBtn) {
-        installBtn.classList.remove('hidden');
-        installBtn.classList.add('flex');
-    }
-
-    // Show bottom banner if not dismissed
-    const dismissed = localStorage.getItem('pwa_banner_dismissed');
-    const dismissedTime = localStorage.getItem('pwa_banner_dismissed_time');
-    if (!dismissed || (dismissedTime && Date.now() - parseInt(dismissedTime) > 7 * 24 * 60 * 60 * 1000)) {
-        installBanner.style.display = 'block';
+// Force-show on HTTP/localhost where beforeinstallprompt may not fire
+window.addEventListener('load', () => {
+    if (!isStandalone && !_pwaDismissed()) {
+        setTimeout(() => {
+            // Only show if not already shown by beforeinstallprompt
+            if (installBanner && installBanner.style.display !== 'block') {
+                _showBanner();
+            }
+        }, 4000);
     }
 });
 
-function installPWA() {
-    if (!deferredPrompt) {
-        alert('PWA installation is not available on this device/browser.');
-        return;
-    }
-
-    installBanner.style.display = 'none';
-    if (installBtn) { installBtn.classList.add('hidden'); installBtn.classList.remove('flex'); }
-
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-            localStorage.setItem('pwa_installed', 'true');
+// iOS: swap button text
+if (isIOS && !isStandalone) {
+    window.addEventListener('load', () => {
+        const btn = document.getElementById('pwaInstallNowBtn');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-share-from-square text-xs"></i> Add to Home Screen';
+            btn.onclick = () => Swal.fire({
+                icon: 'info',
+                title: 'Install on iOS',
+                html: 'Tap <strong>Share ⬆</strong> in Safari, then tap <strong>"Add to Home Screen"</strong>',
+                confirmButtonColor: '#f59e0b',
+            });
         }
-        deferredPrompt = null;
     });
 }
 
+function installPWA() {
+    if (deferredPrompt) {
+        // Native install prompt available (HTTPS)
+        installBanner.style.display = 'none';
+        if (installBtn) { installBtn.classList.add('hidden'); installBtn.classList.remove('flex'); }
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((r) => {
+            if (r.outcome === 'accepted') localStorage.setItem('pwa_installed', 'true');
+            deferredPrompt = null;
+        });
+    } else {
+        // No native prompt — show manual instructions based on browser
+        const ua = navigator.userAgent;
+        let html = '';
+        if (/iphone|ipad|ipod/i.test(ua)) {
+            html = 'In Safari: tap the <strong>Share ⬆</strong> button, then <strong>"Add to Home Screen"</strong>';
+        } else if (/android/i.test(ua)) {
+            html = 'In Chrome: tap the <strong>⋮ menu</strong> (top right), then <strong>"Add to Home screen"</strong>';
+        } else {
+            html = 'In Chrome: click the <strong>⊕ install icon</strong> in the address bar, or open the browser menu and select <strong>"Install app"</strong>.<br><br><small style="color:#94a3b8">Note: Install requires HTTPS. On localhost use Chrome\'s address bar install icon.</small>';
+        }
+        Swal.fire({
+            icon: 'info',
+            title: 'Install Solar ERP',
+            html: html,
+            confirmButtonColor: '#f59e0b',
+            confirmButtonText: 'Got it',
+            background: '#1e293b',
+            color: '#f8fafc',
+        });
+    }
+}
+
 function dismissPWABanner() {
-    installBanner.style.display = 'none';
+    if (installBanner) installBanner.style.display = 'none';
+    if (installBtn) { installBtn.classList.add('hidden'); installBtn.classList.remove('flex'); }
     localStorage.setItem('pwa_banner_dismissed', 'true');
     localStorage.setItem('pwa_banner_dismissed_time', Date.now().toString());
 }
 
-// Detect if app is running in standalone mode (installed as PWA)
-window.addEventListener('DOMContentLoaded', () => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                        window.navigator.standalone || 
-                        document.referrer.includes('android-app://');
-    
-    if (isStandalone) {
-        console.log('✅ Running as installed PWA');
-        // Hide install banner if already installed
-        if (installBanner) {
-            installBanner.style.display = 'none';
-        }
-        // Add PWA class to body for styling
-        document.body.classList.add('pwa-mode');
-    }
-});
-
-// Handle app updates
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Show update notification
-        if (confirm('A new version of Solar ERP is available! Reload to update?')) {
-            window.location.reload();
-        }
-    });
+// Hide banner if already installed
+if (isStandalone) {
+    document.body.classList.add('pwa-mode');
+    if (installBanner) installBanner.style.display = 'none';
+    if (installBtn) installBtn.classList.add('hidden');
 }
 </script>
 
