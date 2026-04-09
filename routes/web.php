@@ -25,6 +25,14 @@ use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\WebController;
 
+// ── PWA Files ─────────────────────────────────────────────────────────────────
+Route::get('/sw.js', function () {
+    return response()->file(public_path('sw.js'), ['Content-Type' => 'application/javascript']);
+});
+Route::get('/manifest.json', function () {
+    return response()->file(public_path('manifest.json'), ['Content-Type' => 'application/manifest+json']);
+});
+
 // ── Public Website ────────────────────────────────────────────────────────────
 Route::get('/', [WebController::class, 'home'])->name('home');
 Route::get('/about', [WebController::class, 'about'])->name('about');
