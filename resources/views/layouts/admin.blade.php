@@ -7,6 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f59e0b">
+    <!-- Capture beforeinstallprompt ASAP before any other script runs -->
+    <script>window.__pwaPrompt = null; window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); window.__pwaPrompt = e; });</script>
     
     <!-- Prevent Browser Caching -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
