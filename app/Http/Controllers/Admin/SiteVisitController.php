@@ -40,7 +40,9 @@ class SiteVisitController extends Controller
             $lead = Lead::findOrFail($request->lead_id);
         }
         $customers = Customer::all();
-        $employees = $this->getAssignableEmployees();
+        $employees = $this->canViewAllAssignedWork()
+            ? Employee::where('is_active', true)->orderBy('name')->get()
+            : $this->getAssignableEmployees();
         return view('admin.site-visits.create', compact('lead', 'customers', 'employees'));
     }
 
@@ -58,12 +60,7 @@ class SiteVisitController extends Controller
             'roof_details' => 'nullable|string',
             'system_size_kw' => 'nullable|numeric',
             'assigned_to' => 'nullable|string',
-            'assigned_employee_id' => [
-                'nullable',
-                Rule::exists('employees', 'id')->where(function ($query) {
-                    $query->whereIn('id', $this->getAssignableEmployees()->pluck('id'));
-                }),
-            ],
+            'assigned_employee_id' => 'nullable|exists:employees,id',
             'technical_notes' => 'nullable|string',
             'shadow_analysis' => 'nullable|string',
             'wiring_length_estimate' => 'nullable|string',
@@ -134,7 +131,9 @@ class SiteVisitController extends Controller
                 ->with('error', 'Completed site visits are locked for editing.');
         }
         $customers = Customer::all();
-        $employees = $this->getAssignableEmployees();
+        $employees = $this->canViewAllAssignedWork()
+            ? Employee::where('is_active', true)->orderBy('name')->get()
+            : $this->getAssignableEmployees();
         return view('admin.site-visits.edit', compact('siteVisit', 'customers', 'employees'));
     }
 
@@ -159,12 +158,7 @@ class SiteVisitController extends Controller
             'roof_details' => 'nullable|string',
             'system_size_kw' => 'nullable|numeric',
             'assigned_to' => 'nullable|string',
-            'assigned_employee_id' => [
-                'nullable',
-                Rule::exists('employees', 'id')->where(function ($query) {
-                    $query->whereIn('id', $this->getAssignableEmployees()->pluck('id'));
-                }),
-            ],
+            'assigned_employee_id' => 'nullable|exists:employees,id',
             'technical_notes' => 'nullable|string',
             'completion_notes' => 'nullable|string',
             'shadow_analysis' => 'nullable|string',

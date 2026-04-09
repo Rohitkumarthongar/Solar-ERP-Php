@@ -433,6 +433,24 @@
                         <p class="text-xs text-gray-400 mt-1">ICO or PNG — 32×32px</p>
                     </div>
 
+                    {{-- Hero Banner Image --}}
+                    <div class="mb-5">
+                        <label class="block text-xs font-semibold text-gray-600 mb-2">
+                            <i class="fas fa-image text-orange-400 mr-1"></i> Hero Banner Image
+                        </label>
+                        @if(!empty($settings['hero_banner']))
+                        <div class="mb-3 rounded-xl overflow-hidden border border-gray-200 relative group">
+                            <img src="{{ \App\Support\SupabaseStorage::url($settings['hero_banner']) }}" alt="Hero Banner" class="w-full h-28 object-cover">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                <span class="text-white text-xs font-semibold">Current Banner</span>
+                            </div>
+                        </div>
+                        @endif
+                        <input type="file" name="hero_banner" accept="image/*"
+                            class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                        <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — Recommended: 1920×1080px</p>
+                    </div>
+
                     {{-- Brand Color --}}
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-2">Brand / Accent Color</label>

@@ -13,6 +13,13 @@ class PrintFormatRenderer
             return null;
         }
 
+        // Build $images array from format's uploaded images so templates can use $images['key']
+        $images = [];
+        foreach ($format->images ?? [] as $img) {
+            $images[$img['key']] = $img['url'];
+        }
+        $data['images'] = $images;
+
         $header = $format->header_html
             ? Blade::render($format->header_html, $data)
             : '';

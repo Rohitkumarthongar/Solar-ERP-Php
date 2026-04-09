@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.settings.print-formats.update', $format->id) }}" method="POST" class="space-y-6" id="print-format-form">
+        <form action="{{ route('admin.settings.print-formats.update', $format->id) }}" method="POST" class="space-y-6" id="print-format-form" enctype="multipart/form-data">
             @csrf @method('PUT')
 
             @if(!empty($presets))
@@ -130,7 +130,8 @@
                         `site_visit_report`: use <code>$siteVisit</code> and <code>$settings</code><br>
                         `salary_slip`: use <code>$records</code>, <code>$totalPaid</code>, <code>$month</code>, <code>$year</code>, and <code>$settings</code>
                     </p>
-                    <p class="mt-2 text-xs text-orange-700">Header and footer now render together with the body in the final print output.</p>
+                    <p class="mt-2 text-xs text-orange-700">Header and footer render together with the body in the final output.</p>
+                    <p class="mt-1 text-xs text-orange-700">Use uploaded images in templates via: <code class="bg-orange-100 px-1 rounded">@verbatim<img src="{{ $images['your_key'] }}">@endverbatim</code> — keys shown in Image Library below.</p>
                 </div>
 
                 <div>
@@ -159,6 +160,47 @@
                 </div>
             </div>
 
+            {{-- Image Library --}}
+            <div class="rounded-2xl border border-gray-200 p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-bold text-gray-800"><i class="fas fa-images text-orange-500 mr-1"></i> Image Library</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Upload images and use them in your template. Example: <code class="bg-gray-100 px-1 rounded">@verbatim<img src="{{ $images['logo'] }}">@endverbatim</code></p>
+                    </div>
+                </div>
+
+                {{-- Existing images --}}
+                @if(!empty($format->images))
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="existing-images">
+                    @foreach($format->images as $img)
+                    <div class="relative group rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
+                        <img src="{{ $img['url'] }}" class="w-full h-24 object-contain p-2">
+                        <div class="px-2 pb-2">
+                            <p class="text-[10px] font-bold text-gray-600 truncate">{{ $img['label'] }}</p>
+                            <code class="text-[9px] text-orange-600 bg-orange-50 px-1 rounded">{{ '$images[\'' . $img['key'] . '\']' }}</code>
+                        </div>
+                        <label class="absolute top-1 right-1 flex items-center gap-1 bg-red-50 border border-red-200 rounded-lg px-1.5 py-0.5 cursor-pointer">
+                            <input type="checkbox" name="keep_images[{{ $loop->index }}][key]" value="{{ $img['key'] }}" checked
+                                class="w-3 h-3 accent-red-500"
+                                onchange="this.closest('.relative').style.opacity = this.checked ? '1' : '0.4'">
+                            <span class="text-[9px] text-red-600 font-bold">Keep</span>
+                        </label>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+
+                {{-- Upload new images --}}
+                <div id="new-image-rows" class="space-y-2">
+                    <div class="flex items-center gap-2 new-image-row">
+                        <input type="text" name="image_labels[]" placeholder="Label (e.g. company_logo)" class="w-40 border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-orange-300">
+                        <input type="file" name="images[]" accept="image/*" class="flex-1 text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700">
+                        <button type="button" onclick="addImageRow()" class="text-xs bg-orange-50 text-orange-600 px-2 py-1.5 rounded-lg hover:bg-orange-100 font-semibold whitespace-nowrap">+ Add</button>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400">Uncheck "Keep" to delete an existing image on save. Add label then pick file to upload new ones.</p>
+            </div>
+
             <div class="flex items-center justify-between pt-2 border-t border-gray-100">
                 <a href="{{ route('admin.settings.print-formats') }}"
                     class="text-sm text-gray-500 hover:text-gray-700">← Back to Print Formats</a>
@@ -173,6 +215,14 @@
 
 @if(!empty($presets))
 <script>
+    function addImageRow() {
+        const row = document.querySelector('.new-image-row').cloneNode(true);
+        row.querySelectorAll('input').forEach(i => { if(i.type !== 'button') i.value = ''; });
+        row.querySelector('button').textContent = '✕';
+        row.querySelector('button').onclick = function(){ this.closest('.new-image-row').remove(); };
+        document.getElementById('new-image-rows').appendChild(row);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const presets = @json($presets);
         const form = document.getElementById('print-format-form');

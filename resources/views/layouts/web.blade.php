@@ -169,8 +169,38 @@
         }
 
         .hero-bg {
-            background: linear-gradient(var(--site-hero-overlay-start), var(--site-hero-overlay-end)), url('{{ asset("images/hero-solar.jpg") }}');
+            background:
+                linear-gradient(var(--site-hero-overlay-start), var(--site-hero-overlay-end)),
+                @if(!empty($settings['hero_banner']))
+                url('{{ \App\Support\SupabaseStorage::url($settings['hero_banner']) }}'),
+                @endif
+                radial-gradient(ellipse at 80% 20%, rgba(245,158,11,0.18) 0%, transparent 55%),
+                radial-gradient(ellipse at 10% 80%, rgba(251,146,60,0.12) 0%, transparent 50%),
+                linear-gradient(135deg, #0f172a 0%, #1a2744 40%, #0f2027 100%);
             background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 2px 2px, rgba(245,158,11,0.08) 1px, transparent 0);
+            background-size: 48px 48px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            top: -200px; right: -100px;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 65%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
             background-position: center;
         }
         .nav-link { position: relative; transition: color 0.3s; }

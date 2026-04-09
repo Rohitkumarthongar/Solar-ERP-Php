@@ -47,6 +47,19 @@
     <div class="absolute right-0 bottom-0 top-0 w-1/3 opacity-20 hidden lg:block pointer-events-none">
         <div class="h-full w-full" style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 40px 40px;"></div>
     </div>
+
+    <!-- Decorative sun orb -->
+    <div class="absolute right-16 top-1/2 -translate-y-1/2 hidden xl:block pointer-events-none" style="z-index:1;">
+        <!-- Sun core -->
+        <div style="width:320px;height:320px;border-radius:50%;background:radial-gradient(circle, rgba(251,191,36,0.22) 0%, rgba(245,158,11,0.10) 45%, transparent 70%);box-shadow:0 0 120px 40px rgba(245,158,11,0.10);position:relative;">
+            <!-- Solar panel grid inside sun -->
+            <div style="position:absolute;inset:40px;border-radius:50%;overflow:hidden;opacity:0.18;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,0.6) 0px,rgba(255,255,255,0.6) 1px,transparent 1px,transparent 28px),repeating-linear-gradient(90deg,rgba(255,255,255,0.6) 0px,rgba(255,255,255,0.6) 1px,transparent 1px,transparent 28px);"></div>
+            <!-- Rays -->
+            @foreach(range(0,11) as $i)
+            <div style="position:absolute;top:50%;left:50%;width:2px;height:60px;background:linear-gradient(to top,rgba(245,158,11,0.4),transparent);transform-origin:bottom center;transform:translateX(-50%) rotate({{ $i * 30 }}deg) translateY(-190px);border-radius:2px;"></div>
+            @endforeach
+        </div>
+    </div>
 </section>
 
 <!-- Why Choose Us -->
