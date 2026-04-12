@@ -110,16 +110,18 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @php
                 $solutions = [
-                    ['img' => 'product-residential.jpg', 'title' => 'Residential Solar', 'desc' => 'Power your home with clean energy and eliminate your electricity bills forever.'],
-                    ['img' => 'product-commercial.jpg', 'title' => 'Commercial Solar', 'desc' => 'High-capacity solar systems for businesses, industries, and large-scale buildings.'],
-                    ['img' => 'product-portable.jpg', 'title' => 'Portable & Backup', 'desc' => 'Advanced battery storage and portable solar solutions for off-grid power anywhere.'],
+                    ['gradient' => 'linear-gradient(135deg,#1e3a5f,#0f2027)', 'icon' => 'fas fa-home', 'title' => 'Residential Solar', 'desc' => 'Power your home with clean energy and eliminate your electricity bills forever.'],
+                    ['gradient' => 'linear-gradient(135deg,#1a2744,#2d1b4e)', 'icon' => 'fas fa-building', 'title' => 'Commercial Solar', 'desc' => 'High-capacity solar systems for businesses, industries, and large-scale buildings.'],
+                    ['gradient' => 'linear-gradient(135deg,#0f2027,#1a3a2a)', 'icon' => 'fas fa-battery-full', 'title' => 'Portable & Backup', 'desc' => 'Advanced battery storage and portable solar solutions for off-grid power anywhere.'],
                 ];
             @endphp
 
             @foreach($solutions as $sol)
             <div class="group relative h-[550px] rounded-[60px] overflow-hidden border border-white/5 card-hover shadow-2xl">
                 <!-- Image with Zoom on Hover -->
-                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" style="background-image: url('{{ asset('images/'.$sol['img']) }}')"></div>
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" style="background: {{ $sol['gradient'] }}; display:flex; align-items:center; justify-content:center;">
+                    <i class="{{ $sol['icon'] }} text-white/10" style="font-size:8rem;"></i>
+                </div>
                 
                 <!-- Dark Overlay Gradient -->
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/60 to-transparent"></div>

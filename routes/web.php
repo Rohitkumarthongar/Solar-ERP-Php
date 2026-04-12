@@ -27,10 +27,14 @@ use App\Http\Controllers\WebController;
 
 // ── PWA Files ─────────────────────────────────────────────────────────────────
 Route::get('/sw.js', function () {
-    return response()->file(public_path('sw.js'), ['Content-Type' => 'application/javascript']);
+    $path = public_path('sw.js');
+    if (!file_exists($path)) abort(404);
+    return response()->file($path, ['Content-Type' => 'application/javascript; charset=utf-8']);
 });
 Route::get('/manifest.json', function () {
-    return response()->file(public_path('manifest.json'), ['Content-Type' => 'application/manifest+json']);
+    $path = public_path('manifest.json');
+    if (!file_exists($path)) abort(404);
+    return response()->file($path, ['Content-Type' => 'application/manifest+json; charset=utf-8']);
 });
 
 // ── Public Website ────────────────────────────────────────────────────────────
