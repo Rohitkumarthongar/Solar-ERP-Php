@@ -67,12 +67,20 @@
         .accent { color: #f97316; font-weight: 700; }
 
         @media print {
+            .no-print { display: none !important; }
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .page { padding: 20px; }
         }
     </style>
 </head>
 <body>
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#1e293b;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+    <span style="flex:1;font-size:13px;font-weight:600;">Quotation — {{ $quotation->quotation_number }}</span>
+    <span style="font-size:11px;color:#94a3b8;">Uncheck "Headers and footers" in print dialog</span>
+    <button onclick="window.print()" style="background:#f59e0b;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">⬇ Save as PDF</button>
+    <button onclick="window.close()" style="background:rgba(255,255,255,0.1);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;">✕ Close</button>
+</div>
+<div style="height:48px;" class="no-print"></div>
 <div class="page">
 
     <div class="doc-header">
@@ -195,5 +203,6 @@
     </div>
 
 </div>
+<script>window.addEventListener('load', function(){ setTimeout(function(){ window.print(); }, 800); });</script>
 </body>
 </html>

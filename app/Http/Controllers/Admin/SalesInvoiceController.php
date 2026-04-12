@@ -15,11 +15,13 @@ use App\Models\Notification;
 use App\Models\Team;
 use App\Services\SmsService;
 use App\Services\PrintFormatRenderer;
+use App\Support\GeneratesPdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
 
 class SalesInvoiceController extends Controller
 {
+    use GeneratesPdf;
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
@@ -145,7 +147,7 @@ class SalesInvoiceController extends Controller
             $html = view('admin.pdf.sales-invoice', compact('invoice', 'settings'))->render();
         }
 
-        return response($html)->header('Content-Type', 'text/html');
+        return $this->pdfResponse($html, 'invoice-' . $invoice->invoice_number . '.pdf');
     }
 
     public function addPayment(Request $request, $id)

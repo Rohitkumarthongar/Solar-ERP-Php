@@ -11,10 +11,12 @@ use App\Models\Notification;
 use App\Support\SupabaseStorage;
 use App\Models\Setting;
 use App\Services\PrintFormatRenderer;
+use App\Support\GeneratesPdf;
 use Illuminate\Http\Request;
 
 class PurchaseOrderController extends Controller
 {
+    use GeneratesPdf;
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
@@ -181,6 +183,6 @@ class PurchaseOrderController extends Controller
             $html = view('admin.pdf.purchase-order', compact('order', 'settings'))->render();
         }
 
-        return response($html)->header('Content-Type', 'text/html');
+        return $this->pdfResponse($html, 'purchase-order-' . $order->po_number . '.pdf');
     }
 }

@@ -46,8 +46,13 @@
     </style>
 </head>
 <body>
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#1e293b;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+    <span style="flex:1;font-size:13px;font-weight:600;">Invoice — {{ $invoice->invoice_number }}</span>
+    <button onclick="window.print()" style="background:#f59e0b;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">⬇ Save as PDF</button>
+    <button onclick="window.close()" style="background:rgba(255,255,255,0.1);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;">✕ Close</button>
+</div>
+<div style="height:48px;" class="no-print"></div>
 <div class="page">
-    <div class="doc-header">
         <div>
             @if(!empty($settings['company_logo']))
             <img src="{{ \App\Support\SupabaseStorage::url($settings['company_logo']) }}" style="max-height:50px;max-width:160px;object-fit:contain;margin-bottom:8px;display:block;">
@@ -138,5 +143,6 @@
         {{ $settings['company_name'] ?? 'SolarTech ERP' }}
     </div>
 </div>
+<script>window.addEventListener('load', function(){ setTimeout(function(){ window.print(); }, 800); });</script>
 </body>
 </html>
