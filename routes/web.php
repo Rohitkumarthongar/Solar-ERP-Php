@@ -38,18 +38,20 @@ Route::get('/manifest.json', function () {
 });
 
 // ── Public Website ────────────────────────────────────────────────────────────
-Route::get('/', [WebController::class, 'home'])->name('home');
-Route::get('/about', [WebController::class, 'about'])->name('about');
-Route::get('/products', [WebController::class, 'products'])->name('products');
-Route::get('/products/category/{slug}', [WebController::class, 'productCategory'])->name('products.category');
-Route::get('/packages', [WebController::class, 'packages'])->name('packages');
-Route::get('/contact', [WebController::class, 'contact'])->name('contact');
-Route::post('/contact', [WebController::class, 'contactStore'])->name('contact.store');
-Route::get('/get-quote', [WebController::class, 'getQuote'])->name('get.quote');
-Route::post('/get-quote', [WebController::class, 'getQuoteStore'])->name('get.quote.store');
-Route::get('/thank-you', [WebController::class, 'thankYou'])->name('thank.you');
-Route::get('/blogs', [\App\Http\Controllers\BlogController::class, 'index'])->name('blogs.index');
-Route::get('/blogs/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blogs.show');
+Route::middleware([\App\Http\Middleware\CheckWebsiteStatus::class])->group(function () {
+    Route::get('/', [WebController::class, 'home'])->name('home');
+    Route::get('/about', [WebController::class, 'about'])->name('about');
+    Route::get('/products', [WebController::class, 'products'])->name('products');
+    Route::get('/products/category/{slug}', [WebController::class, 'productCategory'])->name('products.category');
+    Route::get('/packages', [WebController::class, 'packages'])->name('packages');
+    Route::get('/contact', [WebController::class, 'contact'])->name('contact');
+    Route::post('/contact', [WebController::class, 'contactStore'])->name('contact.store');
+    Route::get('/get-quote', [WebController::class, 'getQuote'])->name('get.quote');
+    Route::post('/get-quote', [WebController::class, 'getQuoteStore'])->name('get.quote.store');
+    Route::get('/thank-you', [WebController::class, 'thankYou'])->name('thank.you');
+    Route::get('/blogs', [\App\Http\Controllers\BlogController::class, 'index'])->name('blogs.index');
+    Route::get('/blogs/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blogs.show');
+});
 
 // ── Admin Auth ────────────────────────────────────────────────────────────────
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');

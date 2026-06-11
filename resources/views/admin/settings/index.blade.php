@@ -291,6 +291,39 @@
                     </div>
                 </div>
 
+                {{-- Website Status --}}
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
+                        <i class="fas fa-toggle-on text-orange-500"></i> Website Status
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="relative flex items-start gap-4 p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-orange-300 transition">
+                            <input type="radio" name="website_status" value="enabled"
+                                {{ ($settings['website_status'] ?? 'enabled') === 'enabled' ? 'checked' : '' }}
+                                class="mt-1 w-4 h-4 accent-orange-500">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">Enabled</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Live</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Visitors can see and interact with the public website.</p>
+                            </div>
+                        </label>
+                        <label class="relative flex items-start gap-4 p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-orange-300 transition">
+                            <input type="radio" name="website_status" value="disabled"
+                                {{ ($settings['website_status'] ?? 'enabled') === 'disabled' ? 'checked' : '' }}
+                                class="mt-1 w-4 h-4 accent-orange-500">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">Disabled</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Offline</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Visitors will see a "Website Unavailable" message.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm p-6">
                     <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
                         <i class="fas fa-globe text-orange-500"></i> Website Appearance
