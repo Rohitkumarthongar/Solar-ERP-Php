@@ -1,7 +1,8 @@
-const CACHE_NAME = 'solar-erp-v3';
+const CACHE_NAME = 'solar-erp-v4';
 const STATIC_ASSETS = [
-    '/admin/dashboard',
+    '/',
     '/manifest.json',
+    '/offline.html',
     'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
 ];
@@ -49,7 +50,16 @@ self.addEventListener('fetch', (event) => {
                 }
                 return response;
             })
-            .catch(() => caches.match(event.request))
+            .catch(() => {
+                return caches.match(event.request).then((cachedResponse) => {
+                    if (cachedResponse) {
+                        return cachedResponse;
+                    }
+                    if (event.request.mode === 'navigate') {
+                        return caches.match('/offline.html');
+                    }
+                });
+            })
     );
 });
 

@@ -1,8 +1,9 @@
 {
+  "id": "/",
   "name": "Solar ERP - Management System",
   "short_name": "Solar ERP",
   "description": "Complete Solar Business Management System with CRM, Inventory, Sales & Reports",
-  "start_url": "/admin/dashboard",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#f59e0b",
@@ -61,13 +62,13 @@
   "screenshots": [
     {
       "src": "/images/screenshot-mobile.png",
-      "sizes": "540x720",
+      "sizes": "1024x1024",
       "type": "image/png",
       "form_factor": "narrow"
     },
     {
       "src": "/images/screenshot-desktop.png",
-      "sizes": "1280x720",
+      "sizes": "1024x1024",
       "type": "image/png",
       "form_factor": "wide"
     }
