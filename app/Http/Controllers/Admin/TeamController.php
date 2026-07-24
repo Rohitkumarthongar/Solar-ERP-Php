@@ -29,11 +29,13 @@ class TeamController extends Controller
             'name' => 'required|string|max:255|unique:teams,name',
             'leader_id' => 'nullable|exists:employees,id',
             'description' => 'nullable|string',
-            'installation_rate' => 'required|numeric|min:0',
+            'installation_rate' => 'nullable|numeric|min:0',
             'site_visit_rate' => 'required|numeric|min:0',
             'service_rate' => 'required|numeric|min:0',
             'status' => 'required|in:active,inactive'
         ]);
+
+        $validated['installation_rate'] = $validated['installation_rate'] ?? 0;
 
         Team::create($validated);
         return redirect()->route('admin.teams.index')->with('success', 'Team created successfully!');
@@ -55,11 +57,13 @@ class TeamController extends Controller
             'name' => 'required|string|max:255|unique:teams,name,' . $id,
             'leader_id' => 'nullable|exists:employees,id',
             'description' => 'nullable|string',
-            'installation_rate' => 'required|numeric|min:0',
+            'installation_rate' => 'nullable|numeric|min:0',
             'site_visit_rate' => 'required|numeric|min:0',
             'service_rate' => 'required|numeric|min:0',
             'status' => 'required|in:active,inactive'
         ]);
+
+        $validated['installation_rate'] = $validated['installation_rate'] ?? 0;
 
         $team->update($validated);
         return redirect()->route('admin.teams.index')->with('success', 'Team updated successfully!');

@@ -17,10 +17,34 @@
         </div>
         
         <div class="flex gap-2">
+            @if($installation->status !== 'completed')
             <a href="{{ route('admin.installations.edit', $installation->id) }}"
                 class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition shadow-sm">
                 <i class="fas fa-edit"></i> Update / Upload Proofs
             </a>
+            @endif
+            @if($completionReady && $installation->status !== 'completed')
+            <form action="{{ route('admin.installations.update', $installation->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="scheduled_date" value="{{ $installation->scheduled_date?->format('Y-m-d') }}">
+                <input type="hidden" name="status" value="completed">
+                <input type="hidden" name="completion_date" value="{{ now()->toDateString() }}">
+                <input type="hidden" name="system_size_kw" value="{{ $installation->system_size_kw }}">
+                <input type="hidden" name="installation_address" value="{{ $installation->installation_address }}">
+                <input type="hidden" name="roof_type" value="{{ $installation->roof_type }}">
+                @if($installation->sales_invoice_id)
+                <input type="hidden" name="sales_invoice_id" value="{{ $installation->sales_invoice_id }}">
+                @endif
+                @if($installation->assigned_team_id)
+                <input type="hidden" name="assigned_team_id" value="{{ $installation->assigned_team_id }}">
+                @endif
+                <button type="submit"
+                    class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition shadow-sm">
+                    <i class="fas fa-check-circle"></i> Mark Completed
+                </button>
+            </form>
+            @endif
         </div>
     </div>
 
@@ -273,7 +297,7 @@
                         </a>
                         <a href="{{ route('admin.installations.work-application', $installation->id) }}" target="_blank"
                             class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-xl transition shadow-lg shadow-amber-500/20">
-                            <i class="fas fa-file-invoice text-xs"></i> Work Application
+                            <i class="fas fa-file-invoice text-xs"></i> Work Application Preview
                         </a>
                     @else
                         <button onclick="alert('Please submit the DISCOM application first for this customer to enable compliance documents.')"
@@ -283,6 +307,50 @@
                     @endif
                 </div>
             </div>
+
+            @if($completionReady && $installation->status !== 'completed')
+            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-4 flex items-start gap-3">
+                <i class="fas fa-check-double text-emerald-600 mt-1"></i>
+                <div>
+                    <p class="text-sm font-bold text-emerald-900">Installation is ready for completion.</p>
+                    <p class="text-xs text-emerald-700 mt-1">All mandatory proof uploads and checklist photos are present. You can mark this installation completed now.</p>
+                </div>
+            </div>
+            @endif
+
+            @if($installation->status === 'completed')
+            <div class="bg-sky-50 border border-sky-200 rounded-2xl px-5 py-5">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-route text-sky-600 mt-1"></i>
+                    <div class="w-full">
+                        <p class="text-sm font-bold text-sky-900">Installation completed. Continue with compliance and customer handover.</p>
+                        <p class="text-xs text-sky-700 mt-1">This record is locked. Use the next actions below for DISCOM, documents, and invoice follow-up.</p>
+                        <div class="mt-4 flex flex-wrap gap-3">
+                            @if($installation->customer)
+                            <a href="{{ route('admin.customers.discom', $installation->customer->id) }}"
+                                class="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-black uppercase tracking-widest px-5 py-3 rounded-xl transition shadow-sm">
+                                <i class="fas fa-bolt"></i> Manage DISCOM
+                            </a>
+                            @endif
+                            <a href="{{ route('admin.installations.work-application', $installation->id) }}" target="_blank"
+                                class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-widest px-5 py-3 rounded-xl transition shadow-sm">
+                                <i class="fas fa-file-invoice"></i> Work Application
+                            </a>
+                            <a href="{{ route('admin.installations.dcr', $installation->id) }}" target="_blank"
+                                class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest px-5 py-3 rounded-xl transition shadow-sm">
+                                <i class="fas fa-certificate"></i> DCR Preview
+                            </a>
+                            @if($installation->salesInvoice)
+                            <a href="{{ route('admin.sales-invoices.show', $installation->salesInvoice->id) }}"
+                                class="inline-flex items-center gap-2 bg-white hover:bg-sky-100 text-sky-800 border border-sky-200 text-xs font-black uppercase tracking-widest px-5 py-3 rounded-xl transition shadow-sm">
+                                <i class="fas fa-file-invoice-dollar"></i> View Sales Invoice
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             {{-- Checklist Block --}}
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
@@ -348,9 +416,15 @@
                     </table>
                 </div>
                 <div class="p-4 bg-orange-50/30 flex justify-center">
+                    @if($installation->status !== 'completed')
                     <button onclick="document.getElementById('updateChecklistModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black px-6 py-2 rounded-xl text-xs uppercase tracking-widest transition active:scale-95 shadow-lg shadow-indigo-600/20">
                         Update Checklist & Upload Photos
                     </button>
+                    @else
+                    <span class="inline-flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest">
+                        <i class="fas fa-lock"></i> Checklist Locked
+                    </span>
+                    @endif
                 </div>
             </div>
 
@@ -502,7 +576,7 @@
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <div id="updateChecklistModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-md" onclick="this.parentElement.classList.add('hidden')"></div>
     <div class="bg-white rounded-[32px] shadow-2xl w-full max-w-2xl relative z-10 overflow-hidden animate-slide">
@@ -554,4 +628,4 @@
         </div>
     </div>
 </div>
-@endsection
+@endpush

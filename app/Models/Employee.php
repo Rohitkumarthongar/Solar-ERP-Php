@@ -13,6 +13,7 @@ class Employee extends Model
         'phone',
         'department',
         'designation',
+        'role',
         'employment_type',
         'basic_salary',
         'contract_start_date',
@@ -22,9 +23,13 @@ class Employee extends Model
         'installation_rate',
         'site_visit_rate',
         'service_rate',
+        'rate_per_watt',
+        'use_watt_based_pay',
         'joining_date',
         'address',
-        'is_active'
+        'status',
+        'is_active',
+        'team_id'
     ];
 
     protected $casts = [
@@ -36,6 +41,8 @@ class Employee extends Model
         'installation_rate' => 'decimal:2',
         'site_visit_rate' => 'decimal:2',
         'service_rate' => 'decimal:2',
+        'rate_per_watt' => 'decimal:4',
+        'use_watt_based_pay' => 'boolean',
         'joining_date' => 'date',
         'is_active' => 'boolean'
     ];
@@ -48,6 +55,16 @@ class Employee extends Model
     public function dailyWageRecords()
     {
         return $this->hasMany(DailyWageRecord::class);
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    public function adminUser()
+    {
+        return $this->hasOne(AdminUser::class);
     }
 
     public function taskPayments()
@@ -68,5 +85,42 @@ class Employee extends Model
     public function isDailyWage()
     {
         return $this->employment_type === 'daily_wage';
+    }
+
+    /**
+     * Calculate wage based on wattage
+     *
+     * @param float $watts Total wattage (e.g., 5000 for 5KW)
+     * @return float Calculated wage amount
+     */
+    public function calculateWattBasedWage($watts)
+    {
+        if (!$this->use_watt_based_pay || !$this->rate_per_watt) {
+            return 0;
+        }
+        
+        return $watts * $this->rate_per_watt;
+    }
+
+    /**
+     * Convert KW to watts
+     *
+     * @param float $kw Kilowatts
+     * @return float Watts
+     */
+    public static function kwToWatts($kw)
+    {
+        return $kw * 1000;
+    }
+
+    /**
+     * Convert watts to KW
+     *
+     * @param float $watts Watts
+     * @return float Kilowatts
+     */
+    public static function wattsToKw($watts)
+    {
+        return $watts / 1000;
     }
 }

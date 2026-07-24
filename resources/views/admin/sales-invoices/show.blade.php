@@ -25,9 +25,9 @@
                 <i class="fas fa-tools"></i> View Installation
             </a>
             @else
-            <a href="{{ route('admin.installations.create', ['sales_invoice_id' => $invoice->id]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm">
-                <i class="fas fa-plus-circle"></i> Create Installation
-            </a>
+            <button type="button" onclick="document.getElementById('installationAssignmentModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm">
+                <i class="fas fa-plus-circle"></i> Assign Installation Team
+            </button>
             @endif
             @if($invoice->balance_due > 0)
             <form action="{{ route('admin.sales-invoices.remind', $invoice->id) }}" method="POST">
@@ -222,6 +222,123 @@
     </div>
 </div>
 
+@if(!$linkedInstallation)
+<!-- Installation Assignment Modal -->
+<div id="installationAssignmentModal" class="fixed inset-0 bg-slate-950/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full overflow-hidden border border-slate-100">
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white px-6 py-5 flex items-start justify-between gap-4">
+            <div>
+                <p class="text-[11px] uppercase tracking-[0.35em] text-indigo-200 font-semibold">Installation Launch</p>
+                <h3 class="text-2xl font-bold mt-1">Assign Team From Invoice</h3>
+                <p class="text-sm text-slate-200 mt-2">Choose the responsible team here. The team leader will receive the assignment notification automatically, and managers will be notified again when the installation is marked completed.</p>
+            </div>
+            <button type="button" onclick="document.getElementById('installationAssignmentModal').classList.add('hidden')" class="text-slate-300 hover:text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="p-6 space-y-6">
+            @if(!$installationQuickCreate['can_quick_create'])
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+                <p class="text-sm font-semibold text-amber-900">Quick assignment is missing some setup data.</p>
+                <p class="text-sm text-amber-800 mt-1">
+                    Missing: {{ implode(', ', $installationQuickCreate['missing_fields']) }}.
+                    Use the full installation form to complete the remaining details first.
+                </p>
+            </div>
+            @endif
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="text-[11px] uppercase tracking-[0.3em] text-slate-500 font-semibold">Invoice Context</p>
+                    <div class="mt-4 space-y-4 text-sm">
+                        <div>
+                            <p class="text-slate-500 text-xs uppercase font-semibold">Invoice</p>
+                            <p class="font-bold text-slate-900">{{ $invoice->invoice_number }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-xs uppercase font-semibold">Customer</p>
+                            <p class="font-semibold text-slate-900">{{ $invoice->customer->name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-xs uppercase font-semibold">Address</p>
+                            <p class="font-medium text-slate-800">{{ $installationQuickCreate['source_summary']['address'] }}</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-slate-500 text-xs uppercase font-semibold">System Size</p>
+                                <p class="font-semibold text-slate-900">
+                                    {{ $installationQuickCreate['source_summary']['system_size_kw'] ? rtrim(rtrim(number_format($installationQuickCreate['source_summary']['system_size_kw'], 2), '0'), '.') . ' kW' : 'Not available' }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-slate-500 text-xs uppercase font-semibold">Roof Type</p>
+                                <p class="font-semibold text-slate-900">{{ $installationQuickCreate['source_summary']['roof_type'] }}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-xs uppercase font-semibold">Planned Date</p>
+                            <p class="font-semibold text-slate-900">{{ \Carbon\Carbon::parse($installationQuickCreate['source_summary']['scheduled_date'])->format('d M Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-sky-50 p-5">
+                    <form action="{{ route('admin.installations.store') }}" method="POST" class="space-y-5">
+                        @csrf
+                        @foreach($installationQuickCreate['payload'] as $field => $value)
+                            @if($value !== null && $value !== '')
+                                <input type="hidden" name="{{ $field }}" value="{{ old($field, $value) }}">
+                            @endif
+                        @endforeach
+
+                        <div>
+                            <p class="text-[11px] uppercase tracking-[0.3em] text-indigo-500 font-semibold">Assignment</p>
+                            <h4 class="text-xl font-bold text-slate-900 mt-1">Pick The Installation Team</h4>
+                            <p class="text-sm text-slate-600 mt-2">Once assigned, the team leader gets a work notification and can start execution from their panel.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-2">Team</label>
+                            <select name="assigned_team_id" required class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300">
+                                <option value="">Select team</option>
+                                @foreach($teams as $team)
+                                <option value="{{ $team->id }}" {{ old('assigned_team_id') == $team->id ? 'selected' : '' }}>
+                                    {{ $team->name }}{{ $team->leader ? ' - Lead: ' . $team->leader->name : '' }}
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('assigned_team_id')<p class="text-red-500 text-xs mt-2 font-semibold">{{ $message }}</p>@enderror
+                        </div>
+
+                        @if($teams->isEmpty())
+                        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                            No active teams are available right now. Create or activate a team first.
+                        </div>
+                        @endif
+
+                        <div class="rounded-2xl bg-white/80 border border-slate-200 px-4 py-3 text-sm text-slate-600">
+                            The installation record will be created from this invoice context, linked to the customer and order automatically.
+                        </div>
+
+                        <div class="flex flex-wrap gap-3 pt-2">
+                            @if($installationQuickCreate['can_quick_create'] && $teams->isNotEmpty())
+                            <button type="submit" class="flex-1 min-w-[220px] rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 transition shadow-lg shadow-slate-900/20">
+                                Create Installation And Notify Team
+                            </button>
+                            @endif
+                            <a href="{{ route('admin.installations.create', ['sales_invoice_id' => $invoice->id]) }}" class="flex-1 min-w-[220px] rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3.5 text-center transition">
+                                Open Full Installation Form
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <!-- Payment Modal -->
 <div id="paymentModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-slide">
@@ -269,4 +386,12 @@
         </form>
     </div>
 </div>
+
+@if(!$linkedInstallation && ($errors->has('assigned_team_id') || $errors->has('customer_id') || $errors->has('scheduled_date') || $errors->has('system_size_kw') || $errors->has('installation_address') || $errors->has('roof_type')))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('installationAssignmentModal')?.classList.remove('hidden');
+    });
+</script>
+@endif
 @endsection

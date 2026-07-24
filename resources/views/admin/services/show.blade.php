@@ -28,10 +28,12 @@
         </div>
         
         <div class="flex gap-2">
+            @if(!in_array($service->status, ['resolved', 'closed']))
             <a href="{{ route('admin.services.edit', $service->id) }}"
                 class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
                 <i class="fas fa-edit"></i> Update / Resolve
             </a>
+            @endif
         </div>
     </div>
 
@@ -177,6 +179,29 @@
                 </div>
             </div>
 
+            @if(in_array($service->status, ['resolved', 'closed']))
+            <div class="bg-emerald-50 rounded-2xl shadow-sm p-6 border border-emerald-200">
+                <h3 class="font-bold text-emerald-900 text-sm flex items-center gap-2 mb-3">
+                    <i class="fas fa-route text-emerald-600"></i> Next Action
+                </h3>
+                <p class="text-sm text-emerald-800 font-medium leading-relaxed">
+                    This ticket is completed and locked. Continue with the linked installation or open a fresh ticket if the customer raises another issue.
+                </p>
+                <div class="mt-4 flex flex-wrap gap-3">
+                    @if($service->installation)
+                    <a href="{{ route('admin.installations.show', $service->installation->id) }}"
+                        class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-widest px-5 py-3 rounded-xl transition shadow-sm">
+                        <i class="fas fa-solar-panel"></i> View Installation
+                    </a>
+                    @endif
+                    <a href="{{ route('admin.services.create') }}"
+                        class="inline-flex items-center gap-2 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-black uppercase tracking-widest px-5 py-3 rounded-xl transition shadow-sm">
+                        <i class="fas fa-plus-circle"></i> Create New Ticket
+                    </a>
+                </div>
+            </div>
+            @endif
+
             {{-- Logs --}}
             <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm text-[11px] space-y-2">
                 <div class="flex justify-between">
@@ -193,6 +218,7 @@
                 </div>
             </div>
 
+            @if(!in_array($service->status, ['resolved', 'closed']))
             <form action="{{ route('admin.services.destroy', $service->id) }}" method="POST"
                 onsubmit="return confirm('Careful! This will permanently delete this ticket record. Continue?');">
                 @csrf @method('DELETE')
@@ -200,6 +226,7 @@
                     <i class="fas fa-trash"></i> Delete This Ticket
                 </button>
             </form>
+            @endif
 
         </div>
 

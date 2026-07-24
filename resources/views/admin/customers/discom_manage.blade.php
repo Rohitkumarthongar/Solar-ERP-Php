@@ -139,45 +139,45 @@
                     <i class="fas fa-edit text-indigo-500"></i> Update DISCOM Details
                 </h3>
 
-                <form action="{{ route('admin.customers.discom.update', $discom->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <form action="{{ route('admin.customers.discom.update', $discom->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6" id="discomDetailsForm">
                     @csrf
                     @method('PUT')
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">DISCOM Name</label>
-                            <input type="text" name="discom_name" value="{{ $discom->discom_name }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
+                            <input type="text" name="discom_name" value="{{ old('discom_name', $discom->discom_name) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">K-Number (Account No)</label>
-                            <input type="text" name="k_number" value="{{ $discom->k_number }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm outline-none">
+                            <input type="text" name="k_number" value="{{ old('k_number', $discom->k_number) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Sanctioned Load</label>
-                            <input type="text" name="sanctioned_load" value="{{ $discom->sanctioned_load }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
+                            <input type="text" name="sanctioned_load" value="{{ old('sanctioned_load', $discom->sanctioned_load) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Required Load (kW)</label>
-                            <input type="text" name="required_load_kw" value="{{ $discom->required_load_kw }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" placeholder="Target solar capacity">
+                            <input type="text" name="required_load_kw" value="{{ old('required_load_kw', $discom->required_load_kw) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" placeholder="Target solar capacity">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Meter Type</label>
                             <select name="meter_type" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
-                                <option value="single_phase" {{ $discom->meter_type == 'single_phase' ? 'selected' : '' }}>Single Phase</option>
-                                <option value="three_phase" {{ $discom->meter_type == 'three_phase' ? 'selected' : '' }}>Three Phase</option>
+                                <option value="single_phase" {{ old('meter_type', $discom->meter_type) == 'single_phase' ? 'selected' : '' }}>Single Phase</option>
+                                <option value="three_phase" {{ old('meter_type', $discom->meter_type) == 'three_phase' ? 'selected' : '' }}>Three Phase</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Property Type</label>
-                            <input type="text" name="property_type" value="{{ $discom->property_type }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" placeholder="e.g. Residential, Shop">
+                            <input type="text" name="property_type" value="{{ old('property_type', $discom->property_type) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" placeholder="e.g. Residential, Shop">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Meter Number</label>
-                            <input type="text" name="meter_number" value="{{ $discom->meter_number }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" placeholder="Meter serial number">
+                            <input type="text" name="meter_number" value="{{ old('meter_number', $discom->meter_number) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" placeholder="Meter serial number">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Application Number</label>
-                            <input type="text" name="application_number" value="{{ $discom->application_number }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" placeholder="Application reference">
+                            <input type="text" name="application_number" value="{{ old('application_number', $discom->application_number) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" placeholder="Application reference">
                         </div>
                         <div class="md:col-span-2 p-6 bg-amber-50 rounded-3xl border border-amber-100/50">
                             <label class="block text-xs font-black text-amber-700 uppercase tracking-widest mb-3">Meter Testing Report (DCR Source)</label>
@@ -201,7 +201,7 @@
 
                     <div>
                         <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Internal Notes</label>
-                        <textarea name="notes" rows="3" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">{{ $discom->notes }}</textarea>
+                        <textarea name="notes" rows="3" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">{{ old('notes', $discom->notes) }}</textarea>
                     </div>
 
                     <div class="flex justify-end">
@@ -257,46 +257,53 @@
         
         <form action="{{ route('admin.customers.discom.application', $discom->id) }}" method="POST" class="p-8">
             @csrf
+            <input type="hidden" name="discom_name" value="{{ old('discom_name', $discom->discom_name) }}">
+            <input type="hidden" name="k_number" value="{{ old('k_number', $discom->k_number) }}">
+            <input type="hidden" name="sanctioned_load" value="{{ old('sanctioned_load', $discom->sanctioned_load) }}">
+            <input type="hidden" name="required_load_kw" value="{{ old('required_load_kw', $discom->required_load_kw) }}">
+            <input type="hidden" name="meter_type" value="{{ old('meter_type', $discom->meter_type) }}">
+            <input type="hidden" name="property_type" value="{{ old('property_type', $discom->property_type) }}">
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Application No</label>
-                    <input type="text" name="application_number" value="{{ $discom->application_number }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" required>
+                    <input type="text" name="application_number" value="{{ old('application_number', $discom->application_number) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" required>
                 </div>
                 <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Meter No</label>
-                    <input type="text" name="meter_number" value="{{ $discom->meter_number }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" required>
+                    <input type="text" name="meter_number" value="{{ old('meter_number', $discom->meter_number) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none" required>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Internal Submission No (Optional)</label>
-                    <input type="text" name="submission_number" value="{{ $discom->submission_number }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
+                    <input type="text" name="submission_number" value="{{ old('submission_number', $discom->submission_number) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
                 </div>
                 <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Application Date</label>
-                    <input type="date" name="application_date" value="{{ $discom->application_date ? $discom->application_date->format('Y-m-d') : date('Y-m-d') }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
+                    <input type="date" name="application_date" value="{{ old('application_date', $discom->application_date ? $discom->application_date->format('Y-m-d') : date('Y-m-d')) }}" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">
                 </div>
             </div>
 
             <div class="mb-6">
                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Internal Notes</label>
-                <textarea name="notes" rows="2" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">{{ $discom->notes }}</textarea>
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Internal Notes</label>
-                <textarea name="notes" rows="2" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">{{ $discom->notes }}</textarea>
+                <textarea name="notes" rows="2" class="w-full bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-2xl px-4 py-3 focus:bg-white focus:ring-2 focus:ring-indigo-500 transition-all text-sm outline-none">{{ old('notes', $discom->notes) }}</textarea>
             </div>
 
             <div id="dynamicFields" class="space-y-4 mb-8 pt-4 border-t border-gray-50 hidden">
                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2 mb-4">Portal Custom Parameters</p>
                 
-                @if($discom->application_data)
-                    @foreach($discom->application_data as $key => $value)
+                @php
+                    $applicationData = old('attr_keys') ? array_filter(array_map(function ($key, $value) {
+                        return filled($key) ? ['key' => $key, 'value' => $value] : null;
+                    }, old('attr_keys', []), old('attr_values', []))) : collect($discom->application_data ?? [])->map(fn ($value, $key) => ['key' => $key, 'value' => $value])->values()->all();
+                @endphp
+
+                @if(!empty($applicationData))
+                    @foreach($applicationData as $row)
                         <div class="flex gap-4 dynamic-row">
-                            <input type="text" name="attr_keys[]" value="{{ $key }}" placeholder="Key (e.g. Registered Mobile)" class="flex-1 bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-xl px-4 py-2 text-xs outline-none">
-                            <input type="text" name="attr_values[]" value="{{ $value }}" placeholder="Value" class="flex-1 bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-xl px-4 py-2 text-xs outline-none">
+                            <input type="text" name="attr_keys[]" value="{{ $row['key'] ?? '' }}" placeholder="Key (e.g. Registered Mobile)" class="flex-1 bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-xl px-4 py-2 text-xs outline-none">
+                            <input type="text" name="attr_values[]" value="{{ $row['value'] ?? '' }}" placeholder="Value" class="flex-1 bg-gray-50 border-gray-100 ring-1 ring-gray-200 rounded-xl px-4 py-2 text-xs outline-none">
                             <button type="button" onclick="removeField(this)" class="text-red-400 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
                         </div>
                     @endforeach
@@ -309,9 +316,21 @@
                 @endif
             </div>
 
-            <button type="button" onclick="addField()" class="hidden w-full py-3 border-2 border-dashed border-indigo-100 rounded-2xl text-indigo-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition font-bold text-xs flex items-center justify-center gap-2 mb-8">
+            <button type="button" onclick="addField()" class="w-full py-3 border-2 border-dashed border-indigo-100 rounded-2xl text-indigo-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition font-bold text-xs flex items-center justify-center gap-2 mb-8">
                 <i class="fas fa-plus-circle"></i> Add Custom Field
             </button>
+
+            @if(session('application_saved') && $discom->submission_number)
+            <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <p class="text-sm font-bold text-emerald-900">Application saved successfully.</p>
+                    <p class="text-xs text-emerald-700 mt-1">You can download the application form immediately from here.</p>
+                </div>
+                <a href="{{ route('admin.customers.discom.print', $discom->id) }}" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-5 py-3 rounded-2xl transition shadow-md">
+                    <i class="fas fa-download"></i> Download Application
+                </a>
+            </div>
+            @endif
 
             <div class="flex justify-end gap-3">
                 <button type="button" onclick="toggleModal('applicationModal')" class="px-6 py-3 font-bold text-gray-500 hover:text-gray-700 text-xs">Cancel</button>
@@ -366,6 +385,24 @@
         modal.classList.toggle('hidden');
     }
 
+    function syncApplicationModalFields() {
+        const sourceForm = document.getElementById('discomDetailsForm');
+        const applicationModal = document.getElementById('applicationModal');
+
+        if (!sourceForm || !applicationModal) {
+            return;
+        }
+
+        ['discom_name', 'k_number', 'sanctioned_load', 'required_load_kw', 'meter_type', 'property_type', 'meter_number', 'application_number', 'notes'].forEach((field) => {
+            const source = sourceForm.querySelector(`[name="${field}"]`);
+            const target = applicationModal.querySelector(`[name="${field}"]`);
+
+            if (source && target) {
+                target.value = source.value;
+            }
+        });
+    }
+
     function addField() {
         const container = document.getElementById('dynamicFields');
         const div = document.createElement('div');
@@ -400,5 +437,16 @@
             span.classList.add('text-indigo-600');
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const applicationToggle = document.querySelector('[onclick="toggleModal(\'applicationModal\')"]');
+        applicationToggle?.addEventListener('click', function () {
+            syncApplicationModalFields();
+        });
+
+        @if(session('show_application_modal') || $errors->has('application_number') || $errors->has('meter_number') || $errors->has('submission_number') || $errors->has('application_date'))
+        document.getElementById('applicationModal')?.classList.remove('hidden');
+        @endif
+    });
 </script>
 @endsection

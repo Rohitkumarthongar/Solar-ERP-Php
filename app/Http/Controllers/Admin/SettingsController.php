@@ -8,8 +8,10 @@ use App\Models\EmailTemplate;
 use App\Models\SmsConfiguration;
 use App\Models\SmsTemplate;
 use App\Models\PrintFormat;
+use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Support\PrintFormatPresets;
 
 class SettingsController extends Controller
 {
@@ -53,15 +55,8 @@ class SettingsController extends Controller
             'customer_discoms',
         ];
 
-        // Get database driver
-        $driver = DB::getDriverName();
-
-        // Disable foreign key checks based on database driver
-        if ($driver === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = OFF;');
-        } else {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        }
+        // Disable foreign key checks for MySQL
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         // Truncate tables (skip if table doesn't exist)
         foreach ($models as $table) {
@@ -73,12 +68,8 @@ class SettingsController extends Controller
             }
         }
 
-        // Re-enable foreign key checks based on database driver
-        if ($driver === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = ON;');
-        } else {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        }
+        // Re-enable foreign key checks for MySQL
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         return redirect()->back()->with('success', 'System data has been successfully reset. Settings preserved.');
     }
@@ -86,6 +77,7 @@ class SettingsController extends Controller
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        $this->ensureDefaultPrintFormats();
         $settings = Setting::pluck('value', 'key')->toArray();
         return view('admin.settings.index', compact('settings'));
     }
@@ -96,7 +88,7 @@ class SettingsController extends Controller
         $data = $request->except(['_token', '_method']);
         foreach ($data as $key => $value) {
             if ($request->hasFile($key)) {
-                $value = $request->file($key)->store('settings', 'public');
+                $value = SupabaseStorage::store($request->file($key), 'settings');
             }
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
@@ -236,6 +228,57 @@ class SettingsController extends Controller
         $sms  = app(\App\Services\SmsService::class);
         $sent = $sms->send($request->test_number, $request->test_message, 'test');
         return redirect()->back()->with($sent ? 'success' : 'error', $sent ? 'Test SMS sent!' : 'Test SMS failed. Check configuration.');
+    }
+
+    private function ensureDefaultPrintFormats(): void
+    {
+        $requiredPresets = [
+            'quotation_standard',
+            'sales_order_standard',
+            'sales_invoice_standard',
+            'purchase_order_standard',
+            'salary_slip_standard',
+            'work_application_standard',
+            'dcr_form_standard',
+            'installation_certificate_standard',
+            'service_report_standard',
+            'site_visit_report_standard',
+            'quotation_pdf_replica',
+        ];
+
+        $presets = PrintFormatPresets::all();
+
+        foreach ($requiredPresets as $presetKey) {
+            if (!isset($presets[$presetKey])) {
+                continue;
+            }
+
+            $preset = $presets[$presetKey];
+
+            $exists = PrintFormat::where('document_type', $preset['document_type'])
+                ->where('name', $preset['name'])
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            $hasDefault = PrintFormat::where('document_type', $preset['document_type'])
+                ->where('is_default', true)
+                ->exists();
+
+            PrintFormat::create([
+                'name' => $preset['name'],
+                'document_type' => $preset['document_type'],
+                'header_html' => $preset['header_html'] ?? '',
+                'footer_html' => $preset['footer_html'] ?? '',
+                'body_template' => $preset['body_template'],
+                'is_default' => !$hasDefault,
+                'is_active' => true,
+                'paper_size' => $preset['paper_size'] ?? 'A4',
+                'orientation' => $preset['orientation'] ?? 'portrait',
+            ]);
+        }
     }
 
     // ── Print Formats (delegated to PrintFormatController) handled via routes

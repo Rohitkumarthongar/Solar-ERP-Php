@@ -6,6 +6,14 @@
     <style>
         @page { margin: 15mm; }
         body { font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.5; margin: 0; padding: 0; font-size: 12px; }
+        .toolbar { position: sticky; top: 0; z-index: 20; background: rgba(15, 23, 42, 0.96); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .toolbar-title { font-size: 13px; font-weight: 700; letter-spacing: 0.04em; }
+        .toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .toolbar-actions a,
+        .toolbar-actions button { border: 0; border-radius: 999px; padding: 10px 16px; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
+        .btn-download { background: #f59e0b; color: #1f2937; }
+        .btn-print { background: #e2e8f0; color: #0f172a; }
+        .document-shell { padding: 24px; }
         .header { text-align: center; border-bottom: 3px solid #f59e0b; padding-bottom: 15px; margin-bottom: 25px; }
         .header h1 { margin: 0; color: #78350f; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
         .header p { margin: 5px 0; color: #b45309; font-weight: bold; font-size: 14px; }
@@ -30,9 +38,23 @@
         .stamp-box { width: 200px; height: 80px; border: 1px dashed #cbd5e1; display: inline-block; text-align: center; padding-top: 60px; color: #94a3b8; font-size: 10px; font-weight: bold; }
         
         .footer { position: fixed; bottom: 0; width: 100%; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 9px; color: #94a3b8; text-align: center; }
+
+        @media print {
+            .toolbar { display: none !important; }
+            .document-shell { padding: 0; }
+        }
     </style>
 </head>
 <body>
+    <div class="toolbar">
+        <div class="toolbar-title">Work Application Preview: {{ $installation->installation_number }}</div>
+        <div class="toolbar-actions">
+            <a href="{{ route('admin.installations.work-application', ['id' => $installation->id, 'download' => 1]) }}" class="btn-download">Download</a>
+            <button type="button" class="btn-print" onclick="window.print()">Print</button>
+        </div>
+    </div>
+
+    <div class="document-shell">
     <div class="header">
         <h1>Work Completion Application</h1>
         <p>{{ $settings['company_name'] ?? 'KODAIC SOLAR SOLUTIONS' }}</p>
@@ -150,6 +172,7 @@
 
     <div class="footer">
         Generated for {{ $installation->installation_number }} | {{ date('d M Y') }} | Built by Kodaic.cloud
+    </div>
     </div>
 </body>
 </html>

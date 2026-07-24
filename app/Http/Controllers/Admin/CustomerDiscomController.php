@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerDiscom;
+use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 
 class CustomerDiscomController extends Controller
@@ -39,7 +40,7 @@ class CustomerDiscomController extends Controller
         ]);
         
         if ($request->hasFile('dcr_report')) {
-            $validated['dcr_report_path'] = $request->file('dcr_report')->store('discom-reports', 'public');
+            $validated['dcr_report_path'] = SupabaseStorage::store($request->file('dcr_report'), 'discom-reports');
         }
         
         $discom->update($validated);
@@ -81,6 +82,21 @@ class CustomerDiscomController extends Controller
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
         
         $discom = CustomerDiscom::findOrFail($id);
+        $validated = $request->validate([
+            'discom_name' => 'nullable|string',
+            'k_number' => 'nullable|string',
+            'sanctioned_load' => 'nullable|string',
+            'required_load_kw' => 'nullable|string',
+            'meter_type' => 'nullable|string',
+            'property_type' => 'nullable|string',
+            'meter_number' => 'required|string',
+            'application_number' => 'required|string',
+            'notes' => 'nullable|string',
+            'submission_number' => 'nullable|string',
+            'application_date' => 'nullable|date',
+            'attr_keys' => 'nullable|array',
+            'attr_values' => 'nullable|array',
+        ]);
         
         // Dynamic key-value pairs
         $applicationData = [];
@@ -93,22 +109,25 @@ class CustomerDiscomController extends Controller
         }
         
         $discom->update([
-            'discom_name'       => $request->discom_name,
-            'k_number'          => $request->k_number,
-            'sanctioned_load'   => $request->sanctioned_load,
-            'required_load_kw'  => $request->required_load_kw,
-            'meter_type'        => $request->meter_type,
-            'property_type'     => $request->property_type,
-            'meter_number'      => $request->meter_number,
-            'application_number' => $request->application_number,
-            'notes'             => $request->notes,
+            'discom_name'       => $validated['discom_name'] ?: $discom->discom_name,
+            'k_number'          => $validated['k_number'] ?: $discom->k_number,
+            'sanctioned_load'   => $validated['sanctioned_load'] ?: $discom->sanctioned_load,
+            'required_load_kw'  => $validated['required_load_kw'] ?: $discom->required_load_kw,
+            'meter_type'        => $validated['meter_type'] ?: $discom->meter_type,
+            'property_type'     => $validated['property_type'] ?: $discom->property_type,
+            'meter_number'      => $validated['meter_number'],
+            'application_number' => $validated['application_number'],
+            'notes'             => $validated['notes'] ?? $discom->notes,
             'application_data'  => $applicationData,
-            'application_date'  => $request->application_date ?: now(),
-            'submission_number' => $request->submission_number,
+            'application_date'  => $validated['application_date'] ?: now(),
+            'submission_number' => $validated['submission_number'],
             'workflow_status'   => 'application_submitted'
         ]);
         
-        return redirect()->back()->with('success', 'Application details saved successfully');
+        return redirect()->back()
+            ->with('success', 'Application details saved successfully')
+            ->with('show_application_modal', true)
+            ->with('application_saved', true);
     }
 
     public function updateWorkflow(Request $request, $id)
@@ -123,5 +142,78 @@ class CustomerDiscomController extends Controller
         
         $discom->update($validated);
         return redirect()->back()->with('success', 'Workflow status updated successfully');
+    }
+
+    public function approval(Request $request, $id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        
+        $discom = CustomerDiscom::findOrFail($id);
+        
+        $validated = $request->validate([
+            'action' => 'required|in:approve,reject',
+            'approval_remarks' => 'nullable|string|max:1000',
+        ]);
+        
+        if ($validated['action'] === 'reject' && empty($validated['approval_remarks'])) {
+            return back()->withErrors(['approval_remarks' => 'Remarks are required when rejecting.']);
+        }
+        
+        try {
+            if ($validated['action'] === 'approve') {
+                $discom->approve($validated['approval_remarks'] ?? null);
+                $message = 'DISCOM application approved successfully!';
+                
+                // Notify relevant users
+                \App\Support\WorkNotification::notifyManagers(
+                    'DISCOM Application Approved',
+                    "DISCOM application for customer {$discom->customer->name} has been approved.",
+                    'discom',
+                    $discom->id,
+                    'CustomerDiscom'
+                );
+            } else {
+                $discom->reject($validated['approval_remarks']);
+                $message = 'DISCOM application rejected.';
+                
+                // Notify relevant users
+                \App\Support\WorkNotification::notifyManagers(
+                    'DISCOM Application Rejected',
+                    "DISCOM application for customer {$discom->customer->name} has been rejected. Reason: {$validated['approval_remarks']}",
+                    'discom',
+                    $discom->id,
+                    'CustomerDiscom'
+                );
+            }
+            
+            return redirect()->route('admin.customers.discom', $discom->customer_id)->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to process approval: ' . $e->getMessage()]);
+        }
+    }
+    
+    public function resetApproval($id)
+    {
+        if (!session('admin_logged_in')) return redirect()->route('admin.login');
+        
+        $discom = CustomerDiscom::findOrFail($id);
+        
+        try {
+            $discom->resetApproval();
+            
+            // Notify relevant users
+            \App\Support\WorkNotification::notifyManagers(
+                'DISCOM Application Approval Reset',
+                "DISCOM application for customer {$discom->customer->name} approval status has been reset to pending.",
+                'discom',
+                $discom->id,
+                'CustomerDiscom'
+            );
+            
+            return redirect()->route('admin.customers.discom', $discom->customer_id)
+                ->with('success', 'Approval status reset to pending.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to reset approval: ' . $e->getMessage()]);
+        }
     }
 }

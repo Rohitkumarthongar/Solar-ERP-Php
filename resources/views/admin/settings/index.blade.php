@@ -211,6 +211,54 @@
                     </div>
                 </div>
 
+                {{-- Default Print Formats --}}
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
+                        <i class="fas fa-print text-orange-500"></i> Default Print Formats
+                    </h3>
+                    <p class="text-sm text-gray-500 mb-4">Select default print format for each document type. These will be used when printing documents.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        @php
+                            $activePrintFormats = \App\Models\PrintFormat::where('is_active', true)->get();
+                            $printFormats = $activePrintFormats->groupBy('document_type');
+                            $printFormats['sales_invoice'] = $activePrintFormats->where('document_type', 'invoice')->values();
+                            $documentTypes = [
+                                'quotation' => 'Quotation',
+                                'sales_order' => 'Sales Order',
+                                'sales_invoice' => 'Sales Invoice',
+                                'purchase_order' => 'Purchase Order',
+                                'salary_slip' => 'Salary Slip',
+                                'discom_application' => 'DISCOM Application',
+                                'work_application' => 'Work Application',
+                                'dcr_form' => 'DCR Form',
+                            ];
+                        @endphp
+                        @foreach($documentTypes as $type => $label)
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1.5">{{ $label }}</label>
+                            <select name="default_print_format_{{ $type }}"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                                <option value="">System Default</option>
+                                @if(isset($printFormats[$type]))
+                                    @foreach($printFormats[$type] as $format)
+                                    <option value="{{ $format->id }}"
+                                        {{ ($settings['default_print_format_' . $type] ?? '') == $format->id ? 'selected' : '' }}>
+                                        {{ $format->name }}
+                                    </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                        <p class="text-xs text-blue-700 flex items-start gap-2">
+                            <i class="fas fa-info-circle mt-0.5"></i>
+                            <span>You can create and manage print formats from the <a href="{{ route('admin.settings.print-formats') }}" class="underline font-semibold">Print Formats</a> section. If no default is selected, the system will use the first active format for that document type.</span>
+                        </p>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm p-6">
                     <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
                         <i class="fas fa-palette text-orange-500"></i> Admin Appearance
@@ -238,6 +286,39 @@
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Clean</span>
                                 </div>
                                 <p class="text-sm text-gray-500 mt-1">Brighter workspace with softer surfaces and a lighter navigation feel.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Website Status --}}
+                <div class="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3 mb-5 flex items-center gap-2">
+                        <i class="fas fa-toggle-on text-orange-500"></i> Website Status
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="relative flex items-start gap-4 p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-orange-300 transition">
+                            <input type="radio" name="website_status" value="enabled"
+                                {{ ($settings['website_status'] ?? 'enabled') === 'enabled' ? 'checked' : '' }}
+                                class="mt-1 w-4 h-4 accent-orange-500">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">Enabled</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Live</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Visitors can see and interact with the public website.</p>
+                            </div>
+                        </label>
+                        <label class="relative flex items-start gap-4 p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-orange-300 transition">
+                            <input type="radio" name="website_status" value="disabled"
+                                {{ ($settings['website_status'] ?? 'enabled') === 'disabled' ? 'checked' : '' }}
+                                class="mt-1 w-4 h-4 accent-orange-500">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-gray-800">Disabled</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Offline</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1">Visitors will see a "Website Unavailable" message.</p>
                             </div>
                         </label>
                     </div>
@@ -362,7 +443,7 @@
                         <label class="block text-xs font-semibold text-gray-600 mb-2">Company Logo</label>
                         @if(!empty($settings['company_logo']))
                         <div class="mb-3 p-3 bg-gray-50 rounded-xl flex items-center justify-center">
-                            <img src="{{ asset('storage/' . $settings['company_logo']) }}" alt="Logo"
+                            <img src="{{ \App\Support\SupabaseStorage::url($settings['company_logo']) }}" alt="Logo"
                                 class="max-h-16 object-contain">
                         </div>
                         @endif
@@ -376,13 +457,31 @@
                         <label class="block text-xs font-semibold text-gray-600 mb-2">Favicon</label>
                         @if(!empty($settings['company_favicon']))
                         <div class="mb-2">
-                            <img src="{{ asset('storage/' . $settings['company_favicon']) }}" alt="Favicon"
+                            <img src="{{ \App\Support\SupabaseStorage::url($settings['company_favicon']) }}" alt="Favicon"
                                 class="w-8 h-8 object-contain">
                         </div>
                         @endif
                         <input type="file" name="company_favicon" accept="image/*"
                             class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
                         <p class="text-xs text-gray-400 mt-1">ICO or PNG — 32×32px</p>
+                    </div>
+
+                    {{-- Hero Banner Image --}}
+                    <div class="mb-5">
+                        <label class="block text-xs font-semibold text-gray-600 mb-2">
+                            <i class="fas fa-image text-orange-400 mr-1"></i> Hero Banner Image
+                        </label>
+                        @if(!empty($settings['hero_banner']))
+                        <div class="mb-3 rounded-xl overflow-hidden border border-gray-200 relative group">
+                            <img src="{{ \App\Support\SupabaseStorage::url($settings['hero_banner']) }}" alt="Hero Banner" class="w-full h-28 object-cover">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                <span class="text-white text-xs font-semibold">Current Banner</span>
+                            </div>
+                        </div>
+                        @endif
+                        <input type="file" name="hero_banner" accept="image/*"
+                            class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                        <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — Recommended: 1920×1080px</p>
                     </div>
 
                     {{-- Brand Color --}}

@@ -2,16 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Solar ERP') - {{ \App\Models\Setting::where('key','company_name')->value('value') ?? 'SolarTech Solutions' }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f59e0b">
+    <!-- Capture beforeinstallprompt ASAP before any other script runs -->
+    <script>window.__pwaPrompt = null; window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); window.__pwaPrompt = e; });</script>
+    
+    <!-- Prevent Browser Caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>@yield('title', 'Solar ERP') - {{ \App\Models\Setting::where('key','company_name')->value('value') ?? 'Palawat Solar' }}</title>
     @php $settings = \App\Models\Setting::pluck('value', 'key')->toArray(); @endphp
     @php $adminTheme = $settings['admin_theme'] ?? 'dark'; @endphp
+    
     @if(!empty($settings['company_favicon']))
-        <link rel="icon" type="image/png" href="{{ asset('storage/' . $settings['company_favicon']) }}">
+        <link rel="icon" type="image/png" href="{{ \App\Support\SupabaseStorage::url($settings['company_favicon']) }}">
     @endif
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/icon-192x192.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
     <style>
         :root {
             --admin-bg: #0f172a;
@@ -65,6 +82,22 @@
 
         @keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .animate-slide { animation: slideIn 0.3s ease; }
+
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .pwa-banner { animation: slideUp 0.5s ease-out; }
+
+        /* Mobile Responsive Tables */
+        @media (max-width: 768px) {
+            table { font-size: 0.875rem; }
+            table th, table td { padding: 0.5rem !important; }
+            .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+
+        /* Mobile Form Improvements */
+        @media (max-width: 640px) {
+            input, select, textarea { font-size: 16px !important; } /* Prevents zoom on iOS */
+            .grid { grid-template-columns: 1fr !important; }
+        }
 
         body {
             background: radial-gradient(circle at top, color-mix(in srgb, var(--admin-accent) 12%, transparent), transparent 32%), var(--admin-bg);
@@ -183,7 +216,7 @@
             <div class="flex items-center space-x-3">
                 @if(!empty($settings['company_logo']))
                     <div class="w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
-                        <img src="{{ asset('storage/' . $settings['company_logo']) }}" class="max-h-full max-w-full">
+                        <img src="{{ \App\Support\SupabaseStorage::url($settings['company_logo']) }}" class="max-h-full max-w-full">
                     </div>
                 @else
                     <div class="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
@@ -436,12 +469,9 @@
             @endcan_access
         </nav>
         <div class="p-4 border-t" style="border-color: var(--admin-border);">
-            <form action="{{ route('admin.logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="w-full flex items-center space-x-2 text-orange-200 hover:text-white text-sm p-2 rounded">
-                    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-                </button>
-            </form>
+            <a href="{{ route('admin.logout.get') }}" class="w-full flex items-center space-x-2 text-orange-200 hover:text-white text-sm p-2 rounded">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </a>
         </div>
     </div>
     <!-- Main Content -->
@@ -457,17 +487,30 @@
                 <a href="{{ route('home') }}" target="_blank" class="text-gray-500 hover:text-orange-600 text-sm flex items-center space-x-1">
                     <i class="fas fa-globe"></i><span class="hidden md:inline">View Website</span>
                 </a>
+                <button id="pwaInstallBtn" onclick="installPWA()" class="hidden items-center space-x-1 bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-download"></i><span class="hidden md:inline ml-1">Install App</span>
+                </button>
                 <a href="{{ route('admin.notifications.index') }}" class="relative text-gray-500 hover:text-orange-600">
                     <i class="fas fa-bell text-xl"></i>
-                    @php $unreadNotifCount = \App\Models\Notification::where('is_read',false)->count(); @endphp
+                    @php
+                        $unreadNotifCount = \App\Models\Notification::where('is_read', false)
+                            ->where(function ($query) {
+                                $query->whereNull('recipient_user_id');
+
+                                if (session('admin_user_id')) {
+                                    $query->orWhere('recipient_user_id', session('admin_user_id'));
+                                }
+                            })
+                            ->count();
+                    @endphp
                     @if($unreadNotifCount > 0)<span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ $unreadNotifCount }}</span>@endif
                 </a>
-                <div class="flex items-center space-x-2">
+                <a href="{{ route('admin.profile') }}" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                     <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                         {{ strtoupper(substr(session('admin_user', 'A'), 0, 1)) }}
                     </div>
                     <span class="text-gray-700 text-sm font-medium hidden md:block">{{ session('admin_user') }}</span>
-                </div>
+                </a>
             </div>
         </header>
         <div class="px-6 pt-4">
@@ -478,10 +521,22 @@
         </main>
     </div>
 </div>
+
 <script>
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('active');
     }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = e.target.closest('button[onclick="toggleSidebar()"]');
+        
+        if (window.innerWidth <= 1024 && sidebar.classList.contains('active') &&
+            !sidebar.contains(e.target) && !toggleBtn) {
+            sidebar.classList.remove('active');
+        }
+    });
 
     // Gesture / Swipe Operations
     let touchstartX = 0;
@@ -507,6 +562,31 @@
             sidebar.classList.remove('active');
         }
     }
+
+    // Handle online/offline status
+    window.addEventListener('online', () => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Back Online',
+            text: 'Your connection has been restored',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
+
+    window.addEventListener('offline', () => {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Connection',
+            text: 'You are currently offline. Some features may be limited.',
+            timer: 3000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    });
 
     // SweetAlert handling for flash messages
     @if(session('success'))
@@ -593,6 +673,7 @@
 
 
 </script>
+@stack('scripts')
 </body>
 </html>
 <!-- Extra script for UI fixes -->
@@ -600,4 +681,199 @@
     /* Ensure no horizontal scroll */
     body { overflow-x: hidden; }
     main { overflow-x: hidden; }
+</style>
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" class="fixed bottom-0 left-0 right-0 z-50 pwa-banner" style="display:none; background: linear-gradient(135deg, #1e293b, #0f172a); border-top: 1px solid rgba(245,158,11,0.3); box-shadow: 0 -8px 32px rgba(0,0,0,0.4);">
+    <div class="max-w-4xl mx-auto px-4 py-4">
+        <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+                <div class="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/30">
+                    <i class="fas fa-solar-panel text-white text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-sm text-white">📲 Install Solar ERP App</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Add to home screen — fast access, works offline</p>
+                    <div class="flex items-center gap-3 mt-1.5">
+                        <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fas fa-bolt text-orange-400"></i> Instant</span>
+                        <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fas fa-wifi-slash text-orange-400"></i> Offline</span>
+                        <span class="text-[10px] text-slate-500 flex items-center gap-1"><i class="fas fa-lock text-orange-400"></i> Secure</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                <button id="pwaInstallNowBtn" onclick="installPWA()" class="flex-1 sm:flex-none bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-download text-xs"></i> Install Now
+                </button>
+                <button onclick="dismissPWABanner()" class="text-slate-400 hover:text-orange-400 w-9 h-9 flex items-center justify-center rounded-xl transition-colors bg-white/5">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PWA Service Worker Registration -->
+<script>
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New version available — show update toast
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Update Available',
+                                text: 'A new version is ready. Reload to update.',
+                                confirmButtonText: 'Reload',
+                                confirmButtonColor: '#f59e0b',
+                                showCancelButton: true,
+                                cancelButtonText: 'Later',
+                                toast: false,
+                            }).then((r) => {
+                                if (r.isConfirmed) {
+                                    newWorker.postMessage('skipWaiting');
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                    });
+                });
+            })
+            .catch(() => {});
+    });
+}
+
+// PWA Install Prompt
+let deferredPrompt;
+const installBanner = document.getElementById('pwaInstallBanner');
+const installBtn = document.getElementById('pwaInstallBtn');
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+function _pwaDismissed() {
+    const t = parseInt(localStorage.getItem('pwa_banner_dismissed_time') || '0');
+    return localStorage.getItem('pwa_banner_dismissed') && (Date.now() - t < 7 * 24 * 60 * 60 * 1000);
+}
+
+function _showBanner() {
+    if (isStandalone || _pwaDismissed()) return;
+    if (installBanner) installBanner.style.display = 'block';
+    if (installBtn) { installBtn.classList.remove('hidden'); installBtn.classList.add('flex'); }
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(_showBanner, 3000);
+});
+
+// Force-show on HTTP/localhost where beforeinstallprompt may not fire
+window.addEventListener('load', () => {
+    if (!isStandalone && !_pwaDismissed()) {
+        setTimeout(() => {
+            // Only show if not already shown by beforeinstallprompt
+            if (installBanner && installBanner.style.display !== 'block') {
+                _showBanner();
+            }
+        }, 4000);
+    }
+});
+
+// iOS: swap button text
+if (isIOS && !isStandalone) {
+    window.addEventListener('load', () => {
+        const btn = document.getElementById('pwaInstallNowBtn');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-share-from-square text-xs"></i> Add to Home Screen';
+            btn.onclick = () => Swal.fire({
+                icon: 'info',
+                title: 'Install on iOS',
+                html: 'Tap <strong>Share ⬆</strong> in Safari, then tap <strong>"Add to Home Screen"</strong>',
+                confirmButtonColor: '#f59e0b',
+            });
+        }
+    });
+}
+
+function installPWA() {
+    if (deferredPrompt) {
+        // Native install prompt available (HTTPS)
+        installBanner.style.display = 'none';
+        if (installBtn) { installBtn.classList.add('hidden'); installBtn.classList.remove('flex'); }
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((r) => {
+            if (r.outcome === 'accepted') localStorage.setItem('pwa_installed', 'true');
+            deferredPrompt = null;
+        });
+    } else {
+        // No native prompt — show manual instructions based on browser
+        const ua = navigator.userAgent;
+        let html = '';
+        if (/iphone|ipad|ipod/i.test(ua)) {
+            html = 'In Safari: tap the <strong>Share ⬆</strong> button, then <strong>"Add to Home Screen"</strong>';
+        } else if (/android/i.test(ua)) {
+            html = 'In Chrome: tap the <strong>⋮ menu</strong> (top right), then <strong>"Add to Home screen"</strong>';
+        } else {
+            html = 'In Chrome: click the <strong>⊕ install icon</strong> in the address bar, or open the browser menu and select <strong>"Install app"</strong>.<br><br><small style="color:#94a3b8">Note: Install requires HTTPS. On localhost use Chrome\'s address bar install icon.</small>';
+        }
+        Swal.fire({
+            icon: 'info',
+            title: 'Install Solar ERP',
+            html: html,
+            confirmButtonColor: '#f59e0b',
+            confirmButtonText: 'Got it',
+            background: '#1e293b',
+            color: '#f8fafc',
+        });
+    }
+}
+
+function dismissPWABanner() {
+    if (installBanner) installBanner.style.display = 'none';
+    if (installBtn) { installBtn.classList.add('hidden'); installBtn.classList.remove('flex'); }
+    localStorage.setItem('pwa_banner_dismissed', 'true');
+    localStorage.setItem('pwa_banner_dismissed_time', Date.now().toString());
+}
+
+// Hide banner if already installed
+if (isStandalone) {
+    document.body.classList.add('pwa-mode');
+    if (installBanner) installBanner.style.display = 'none';
+    if (installBtn) installBtn.classList.add('hidden');
+}
+</script>
+
+<style>
+/* PWA Mode Styles */
+.pwa-mode {
+    /* Add extra padding for notch/safe areas on mobile */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Responsive PWA Banner */
+@media (max-width: 640px) {
+    #pwaInstallBanner {
+        padding: 1rem;
+    }
+    
+    #pwaInstallBanner .max-w-4xl {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #pwaInstallBanner .flex.space-x-2 {
+        width: 100%;
+    }
+    
+    #pwaInstallBanner button {
+        flex: 1;
+    }
+}
 </style>

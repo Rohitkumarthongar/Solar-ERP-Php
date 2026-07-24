@@ -1,5 +1,5 @@
 @extends('layouts.web')
-@section('title', $settings['company_name'] ?? 'SolarVolt Solutions')
+@section('title', $settings['company_name'] ?? 'Palawat Solar')
 @section('content')
 <!-- Hero -->
 <section class="hero-bg min-h-screen flex items-center relative overflow-hidden">
@@ -47,6 +47,19 @@
     <div class="absolute right-0 bottom-0 top-0 w-1/3 opacity-20 hidden lg:block pointer-events-none">
         <div class="h-full w-full" style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 40px 40px;"></div>
     </div>
+
+    <!-- Decorative sun orb -->
+    <div class="absolute right-16 top-1/2 -translate-y-1/2 hidden xl:block pointer-events-none" style="z-index:1;">
+        <!-- Sun core -->
+        <div style="width:320px;height:320px;border-radius:50%;background:radial-gradient(circle, rgba(251,191,36,0.22) 0%, rgba(245,158,11,0.10) 45%, transparent 70%);box-shadow:0 0 120px 40px rgba(245,158,11,0.10);position:relative;">
+            <!-- Solar panel grid inside sun -->
+            <div style="position:absolute;inset:40px;border-radius:50%;overflow:hidden;opacity:0.18;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,0.6) 0px,rgba(255,255,255,0.6) 1px,transparent 1px,transparent 28px),repeating-linear-gradient(90deg,rgba(255,255,255,0.6) 0px,rgba(255,255,255,0.6) 1px,transparent 1px,transparent 28px);"></div>
+            <!-- Rays -->
+            @foreach(range(0,11) as $i)
+            <div style="position:absolute;top:50%;left:50%;width:2px;height:60px;background:linear-gradient(to top,rgba(245,158,11,0.4),transparent);transform-origin:bottom center;transform:translateX(-50%) rotate({{ $i * 30 }}deg) translateY(-190px);border-radius:2px;"></div>
+            @endforeach
+        </div>
+    </div>
 </section>
 
 <!-- Why Choose Us -->
@@ -54,7 +67,7 @@
     <div class="max-w-7xl mx-auto px-4 relative z-10">
         <div class="text-center mb-20 fade-up">
             <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">Why Choose Us</span>
-            <h2 class="text-4xl md:text-5xl font-bold site-text-strong tracking-tight">The {{ explode(' ', $settings['company_name'] ?? 'SolarVolt Solutions')[0] }} Advantage</h2>
+            <h2 class="text-4xl md:text-5xl font-bold site-text-strong tracking-tight">The {{ explode(' ', $settings['company_name'] ?? 'Palawat Solar')[0] }} Advantage</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -97,16 +110,18 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @php
                 $solutions = [
-                    ['img' => 'product-residential.jpg', 'title' => 'Residential Solar', 'desc' => 'Power your home with clean energy and eliminate your electricity bills forever.'],
-                    ['img' => 'product-commercial.jpg', 'title' => 'Commercial Solar', 'desc' => 'High-capacity solar systems for businesses, industries, and large-scale buildings.'],
-                    ['img' => 'product-portable.jpg', 'title' => 'Portable & Backup', 'desc' => 'Advanced battery storage and portable solar solutions for off-grid power anywhere.'],
+                    ['gradient' => 'linear-gradient(135deg,#1e3a5f,#0f2027)', 'icon' => 'fas fa-home', 'title' => 'Residential Solar', 'desc' => 'Power your home with clean energy and eliminate your electricity bills forever.'],
+                    ['gradient' => 'linear-gradient(135deg,#1a2744,#2d1b4e)', 'icon' => 'fas fa-building', 'title' => 'Commercial Solar', 'desc' => 'High-capacity solar systems for businesses, industries, and large-scale buildings.'],
+                    ['gradient' => 'linear-gradient(135deg,#0f2027,#1a3a2a)', 'icon' => 'fas fa-battery-full', 'title' => 'Portable & Backup', 'desc' => 'Advanced battery storage and portable solar solutions for off-grid power anywhere.'],
                 ];
             @endphp
 
             @foreach($solutions as $sol)
             <div class="group relative h-[550px] rounded-[60px] overflow-hidden border border-white/5 card-hover shadow-2xl">
                 <!-- Image with Zoom on Hover -->
-                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" style="background-image: url('{{ asset('storage/'.$sol['img']) }}')"></div>
+                <div class="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110" style="background: {{ $sol['gradient'] }}; display:flex; align-items:center; justify-content:center;">
+                    <i class="{{ $sol['icon'] }} text-white/10" style="font-size:8rem;"></i>
+                </div>
                 
                 <!-- Dark Overlay Gradient -->
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/60 to-transparent"></div>
@@ -145,7 +160,7 @@
             <div class="glass rounded-[40px] overflow-hidden border border-white/5 card-hover flex flex-col h-full group">
                 <div class="aspect-square bg-[#111a2e] p-10 flex items-center justify-center relative overflow-hidden">
                     @if($product->image)
-                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="max-h-full max-w-full object-contain relative z-10 group-hover:scale-110 transition-transform duration-700">
+                        <img src="{{ \App\Support\SupabaseStorage::url($product->image) }}" alt="{{ $product->name }}" class="max-h-full max-w-full object-contain relative z-10 group-hover:scale-110 transition-transform duration-700">
                     @else
                         <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center">
                             <i class="fas fa-solar-panel text-4xl text-white/10"></i>

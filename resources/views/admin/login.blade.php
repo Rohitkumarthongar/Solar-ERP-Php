@@ -3,11 +3,17 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f59e0b">
     <title>{{ \App\Models\Setting::where('key', 'company_name')->first()->value ?? 'Palawat Solar' }} - Admin Gateway
     </title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet">
@@ -48,10 +54,41 @@
         .float {
             animation: float 4s ease-in-out infinite;
         }
+
+        /* Mobile Responsive Enhancements */
+        @media (max-width: 640px) {
+            .login-container {
+                padding: 1.5rem !important;
+            }
+
+            h1 {
+                font-size: 2rem !important;
+            }
+
+            h2 {
+                font-size: 1.25rem !important;
+            }
+
+            input {
+                font-size: 16px !important;
+                /* Prevents zoom on iOS */
+            }
+
+            .glass {
+                padding: 2rem !important;
+                border-radius: 2rem !important;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .fade-up {
+                margin-bottom: 2rem !important;
+            }
+        }
     </style>
 </head>
 
-<body class="min-h-screen login-bg flex items-center justify-center p-6 sm:p-12 relative overflow-hidden">
+<body class="min-h-screen login-bg flex items-center justify-center p-4 sm:p-6 md:p-12 relative overflow-hidden">
     <!-- Decorative Elements -->
     <div class="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-amber-500/5 rounded-full blur-[120px]"></div>
     <div class="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-amber-500/5 rounded-full blur-[120px]"></div>
@@ -74,13 +111,14 @@
 
             <h2 class="text-2xl font-bold text-white mb-8 tracking-tight">Identity Verification</h2>
 
-            @if($errors->any())
+            @if($errors->any() || session('error'))
                 <div
                     class="bg-red-500/10 border border-red-500/20 text-red-400 px-5 py-3 rounded-2xl mb-8 text-sm flex items-center gap-3">
                     <i class="fas fa-shield-alt opacity-50"></i>
-                    <p>{{ $errors->first() }}</p>
+                    <p>{{ $errors->first() ?: session('error') }}</p>
                 </div>
             @endif
+
 
             <form action="{{ route('admin.login.post') }}" method="POST" class="space-y-8">
                 @csrf
@@ -93,7 +131,7 @@
                             class="absolute inset-y-0 left-0 pl-6 flex items-center text-gray-600 transition-colors group-focus-within:text-amber-500">
                             <i class="fas fa-at"></i>
                         </span>
-                        <input type="email" name="email" value="{{ old('email', 'admin@solarerp.com') }}"
+                        <input type="email" name="email" value="{{ old('email') }}"
                             class="w-full bg-white/5 border border-white/5 rounded-2xl pl-16 pr-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:bg-white/10 transition-all font-inter"
                             required placeholder="email@address.com">
                     </div>
@@ -108,7 +146,7 @@
                             class="absolute inset-y-0 left-0 pl-6 flex items-center text-gray-600 transition-colors group-focus-within:text-amber-500">
                             <i class="fas fa-key"></i>
                         </span>
-                        <input type="password" id="password" name="password" value="admin123"
+                        <input type="password" id="password" name="password"
                             class="w-full bg-white/5 border border-white/5 rounded-2xl pl-16 pr-14 py-4 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:bg-white/10 transition-all font-inter"
                             required placeholder="••••••••">
                         <button type="button" onclick="togglePasswordVisibility()"
@@ -148,6 +186,22 @@
                 toggleIcon.classList.remove('fa-eye');
                 toggleIcon.classList.add('fa-eye-low-vision');
             }
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map((registration) => registration.unregister()));
+
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+                    }
+                } catch (error) {
+                    console.log('Service worker cleanup failed:', error);
+                }
+            });
         }
     </script>
 </body>

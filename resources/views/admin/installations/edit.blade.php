@@ -23,7 +23,47 @@
     </div>
     @endif
 
-    <form action="{{ route('admin.installations.update', $installation->id) }}" method="POST" enctype="multipart/form-data">
+    @php
+        $parseIniBytes = function ($value) {
+            $value = trim((string) $value);
+            if ($value === '') {
+                return 0;
+            }
+
+            $unit = strtolower(substr($value, -1));
+            $number = (float) $value;
+
+            return match ($unit) {
+                'g' => (int) round($number * 1024 * 1024 * 1024),
+                'm' => (int) round($number * 1024 * 1024),
+                'k' => (int) round($number * 1024),
+                default => (int) round((float) $value),
+            };
+        };
+
+        $formatBytes = function ($bytes) {
+            if ($bytes >= 1024 * 1024 * 1024) {
+                return number_format($bytes / 1024 / 1024 / 1024, 0) . ' GB';
+            }
+
+            if ($bytes >= 1024 * 1024) {
+                return number_format($bytes / 1024 / 1024, 0) . ' MB';
+            }
+
+            if ($bytes >= 1024) {
+                return number_format($bytes / 1024, 0) . ' KB';
+            }
+
+            return $bytes . ' bytes';
+        };
+
+        $postLimitBytes = $parseIniBytes(ini_get('post_max_size'));
+        $uploadLimitBytes = $parseIniBytes(ini_get('upload_max_filesize'));
+    @endphp
+
+    <form action="{{ route('admin.installations.update', $installation->id) }}" method="POST" enctype="multipart/form-data" id="installationUploadForm"
+        data-post-limit="{{ $postLimitBytes }}"
+        data-upload-limit="{{ $uploadLimitBytes }}">
         @csrf @method('PUT')
         
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -421,6 +461,14 @@
                         Upload photos of the installation progress. Existing photos will be preserved if you leave a field empty.
                     </p>
 
+                    <div class="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                        <p class="font-semibold">Upload guidance</p>
+                        <p class="mt-1">Per file limit: {{ $formatBytes($uploadLimitBytes) }}. Total form upload limit: {{ $formatBytes($postLimitBytes) }}.</p>
+                        <p class="mt-1 text-amber-800">Large photo sets should be compressed or uploaded in smaller batches.</p>
+                    </div>
+
+                    <div id="uploadLimitWarning" class="hidden mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+
                     <div class="space-y-4">
                         @php
                             $proofInputs = [
@@ -491,4 +539,202 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('installationUploadForm');
+        const warningBox = document.getElementById('uploadLimitWarning');
+
+        if (!form || !warningBox) {
+            return;
+        }
+
+        const postLimit = Number(form.dataset.postLimit || 0);
+        const uploadLimit = Number(form.dataset.uploadLimit || 0);
+        const fileInputs = Array.from(form.querySelectorAll('input[type="file"]'));
+        const imageInputs = fileInputs.filter((input) => (input.accept || '').includes('image'));
+
+        const formatBytes = (bytes) => {
+            if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+            if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+            if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${bytes} bytes`;
+        };
+
+        const loadImage = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const image = new Image();
+                image.onload = () => resolve(image);
+                image.onerror = reject;
+                image.src = reader.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        const canvasToBlob = (canvas, type, quality) => new Promise((resolve) => {
+            canvas.toBlob((blob) => resolve(blob), type, quality);
+        });
+
+        const compressImageFile = async (file, targetBytes) => {
+            if (!file.type.startsWith('image/')) {
+                return file;
+            }
+
+            const image = await loadImage(file);
+            let width = image.width;
+            let height = image.height;
+            const maxDimension = 1920;
+
+            if (width > maxDimension || height > maxDimension) {
+                const ratio = Math.min(maxDimension / width, maxDimension / height);
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const context = canvas.getContext('2d', { alpha: false });
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, width, height);
+            context.drawImage(image, 0, 0, width, height);
+
+            let quality = 0.88;
+            let currentBlob = await canvasToBlob(canvas, 'image/jpeg', quality);
+
+            while (currentBlob && currentBlob.size > targetBytes && quality > 0.4) {
+                quality -= 0.08;
+                currentBlob = await canvasToBlob(canvas, 'image/jpeg', quality);
+            }
+
+            if (currentBlob && currentBlob.size > targetBytes) {
+                let nextWidth = width;
+                let nextHeight = height;
+
+                while (currentBlob.size > targetBytes && nextWidth > 900 && nextHeight > 900) {
+                    nextWidth = Math.round(nextWidth * 0.85);
+                    nextHeight = Math.round(nextHeight * 0.85);
+                    canvas.width = nextWidth;
+                    canvas.height = nextHeight;
+                    context.fillStyle = '#ffffff';
+                    context.fillRect(0, 0, nextWidth, nextHeight);
+                    context.drawImage(image, 0, 0, nextWidth, nextHeight);
+                    currentBlob = await canvasToBlob(canvas, 'image/jpeg', Math.max(quality, 0.45));
+                }
+            }
+
+            if (!currentBlob || currentBlob.size >= file.size) {
+                return file;
+            }
+
+            const outputName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+
+            return new File([currentBlob], outputName, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+            });
+        };
+
+        const syncInputFiles = async (input) => {
+            const files = Array.from(input.files || []);
+
+            if (!files.length) {
+                return;
+            }
+
+            const compressedFiles = [];
+            let changed = false;
+
+            for (const file of files) {
+                if (!file.type.startsWith('image/') || (uploadLimit > 0 && file.size <= uploadLimit * 0.9)) {
+                    compressedFiles.push(file);
+                    continue;
+                }
+
+                const compressed = await compressImageFile(file, Math.floor(uploadLimit * 0.88));
+                compressedFiles.push(compressed);
+                changed = changed || compressed !== file;
+            }
+
+            if (changed) {
+                const transfer = new DataTransfer();
+                compressedFiles.forEach((file) => transfer.items.add(file));
+                input.files = transfer.files;
+            }
+        };
+
+        const getSelectionState = () => {
+            let total = 0;
+            let oversizeFile = null;
+
+            fileInputs.forEach((input) => {
+                Array.from(input.files || []).forEach((file) => {
+                    total += file.size;
+                    if (!oversizeFile && uploadLimit > 0 && file.size > uploadLimit) {
+                        oversizeFile = file;
+                    }
+                });
+            });
+
+            return { total, oversizeFile };
+        };
+
+        const renderWarning = () => {
+            const { total, oversizeFile } = getSelectionState();
+
+            if (oversizeFile) {
+                warningBox.textContent = `"${oversizeFile.name}" is larger than the per-file limit of ${formatBytes(uploadLimit)}. Please compress it or choose a smaller file.`;
+                warningBox.classList.remove('hidden');
+                return false;
+            }
+
+            if (postLimit > 0 && total > postLimit) {
+                warningBox.textContent = `Selected files total ${formatBytes(total)}, which is above the form upload limit of ${formatBytes(postLimit)}. Remove some files or upload them in smaller batches.`;
+                warningBox.classList.remove('hidden');
+                return false;
+            }
+
+            if (total > 0) {
+                warningBox.textContent = `Selected upload size: ${formatBytes(total)} of ${formatBytes(postLimit)} allowed.`;
+                warningBox.classList.remove('hidden');
+            } else {
+                warningBox.classList.add('hidden');
+                warningBox.textContent = '';
+            }
+
+            return true;
+        };
+
+        imageInputs.forEach((input) => {
+            input.addEventListener('change', async function () {
+                warningBox.textContent = 'Compressing selected image...';
+                warningBox.classList.remove('hidden');
+                await syncInputFiles(input);
+                renderWarning();
+            });
+        });
+
+        fileInputs
+            .filter((input) => !imageInputs.includes(input))
+            .forEach((input) => {
+                input.addEventListener('change', renderWarning);
+            });
+
+        fileInputs.forEach((input) => {
+            if (!input.dataset.compressionBound) {
+                input.dataset.compressionBound = '1';
+            }
+        });
+
+        form.addEventListener('submit', function (event) {
+            if (!renderWarning()) {
+                event.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    });
+</script>
 @endsection

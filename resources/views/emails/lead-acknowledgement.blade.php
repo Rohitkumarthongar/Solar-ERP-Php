@@ -25,7 +25,7 @@
   </div>
   <div class="body">
     <div class="badge">Reference: {{ $lead->lead_number }}</div>
-    <p style="color:#555;line-height:1.7">Thank you for reaching out to SolarTech Solutions. We're excited to help you switch to clean, affordable solar energy! Our expert team will review your requirements and get back to you within <strong>24 hours</strong>.</p>
+    <p style="color:#555;line-height:1.7">Thank you for reaching out to Palawat Solar. We're excited to help you switch to clean, affordable solar energy! Our expert team will review your requirements and get back to you within <strong>24 hours</strong>.</p>
     @if($lead->monthly_electricity_bill || $lead->required_load_kw || $lead->k_number)
     <div style="background:#fff7ed;border-radius:10px;padding:18px;margin:20px 0;border:1px solid #fed7aa">
       <p style="font-weight:700;color:#c2410c;margin:0 0 12px">Your Enquiry Details:</p>
@@ -58,7 +58,7 @@
     </div>
   </div>
   <div class="footer">
-    <p>© {{ date('Y') }} SolarTech Solutions | 123 Solar Park, Gujarat - 380001</p>
+    <p>© {{ date('Y') }} Palawat Solar | 123 Solar Park, Gujarat - 380001</p>
     <p>Made with ❤️ by <a href="https://kodaic.cloud/" style="color:#ea580c">Kodaic</a></p>
   </div>
 </div>

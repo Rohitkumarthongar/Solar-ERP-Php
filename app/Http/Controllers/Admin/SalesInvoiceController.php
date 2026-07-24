@@ -12,13 +12,16 @@ use App\Models\Customer;
 use App\Models\Package;
 use App\Models\PaymentReceipt;
 use App\Models\Notification;
+use App\Models\Team;
 use App\Services\SmsService;
 use App\Services\PrintFormatRenderer;
+use App\Support\GeneratesPdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
 
 class SalesInvoiceController extends Controller
 {
+    use GeneratesPdf;
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
@@ -94,7 +97,14 @@ class SalesInvoiceController extends Controller
     public function show($id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $with = ['customer', 'items', 'payments', 'salesOrder.installation'];
+        $with = [
+            'customer',
+            'items',
+            'payments',
+            'salesOrder.installation',
+            'salesOrder.siteVisit',
+            'salesOrder.quotation.lead.package',
+        ];
         $invoiceInstallation = null;
 
         if (Schema::hasColumn('installations', 'sales_invoice_id')) {
@@ -102,12 +112,17 @@ class SalesInvoiceController extends Controller
         }
 
         $invoice = SalesInvoice::with($with)->findOrFail($id);
+        $teams = Team::with('leader')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+        $installationQuickCreate = $this->buildInstallationQuickCreateData($invoice);
 
         if (Schema::hasColumn('installations', 'sales_invoice_id')) {
             $invoiceInstallation = $invoice->installation;
         }
 
-        return view('admin.sales-invoices.show', compact('invoice', 'invoiceInstallation'));
+        return view('admin.sales-invoices.show', compact('invoice', 'invoiceInstallation', 'teams', 'installationQuickCreate'));
     }
 
     public function downloadPdf($id)
@@ -132,7 +147,7 @@ class SalesInvoiceController extends Controller
             $html = view('admin.pdf.sales-invoice', compact('invoice', 'settings'))->render();
         }
 
-        return response($html)->header('Content-Type', 'text/html');
+        return $this->pdfResponse($html, 'invoice-' . $invoice->invoice_number . '.pdf');
     }
 
     public function addPayment(Request $request, $id)
@@ -200,5 +215,63 @@ class SalesInvoiceController extends Controller
             'balance_due' => $balanceDue,
             'status' => $balanceDue <= 0 ? 'paid' : ($paidAmount > 0 ? 'partially_paid' : 'unpaid'),
         ]);
+    }
+
+    private function buildInstallationQuickCreateData(SalesInvoice $invoice): array
+    {
+        $salesOrder = $invoice->salesOrder;
+        $quotation = $salesOrder?->quotation;
+        $lead = $quotation?->lead;
+        $siteVisit = $salesOrder?->siteVisit;
+
+        $address = trim((string) (
+            $salesOrder?->customer_address
+            ?: $lead?->address
+            ?: $invoice->customer?->address
+            ?: ''
+        ));
+
+        $systemSize = $siteVisit?->system_size_kw
+            ?? $lead?->system_size
+            ?? $quotation?->package?->system_size_kw;
+
+        $payload = [
+            'customer_id' => $invoice->customer_id,
+            'sales_order_id' => $invoice->sales_order_id,
+            'sales_invoice_id' => $invoice->id,
+            'scheduled_date' => optional($siteVisit?->scheduled_at)->toDateString() ?: now()->addDay()->toDateString(),
+            'system_size_kw' => $systemSize !== null ? (float) $systemSize : null,
+            'installation_address' => $address,
+            'roof_type' => trim((string) ($lead?->roof_type ?: 'Other')),
+            'latitude' => $siteVisit?->latitude ?? $lead?->latitude,
+            'longitude' => $siteVisit?->longitude ?? $lead?->longitude,
+            'notes' => 'Created from Sales Invoice ' . $invoice->invoice_number,
+        ];
+
+        $missing = [];
+
+        if (empty($payload['customer_id'])) {
+            $missing[] = 'customer';
+        }
+
+        if (empty($payload['installation_address'])) {
+            $missing[] = 'installation address';
+        }
+
+        if (empty($payload['system_size_kw'])) {
+            $missing[] = 'system size';
+        }
+
+        return [
+            'payload' => $payload,
+            'missing_fields' => $missing,
+            'can_quick_create' => empty($missing),
+            'source_summary' => [
+                'address' => $payload['installation_address'] ?: 'Not available',
+                'system_size_kw' => $payload['system_size_kw'],
+                'roof_type' => $payload['roof_type'],
+                'scheduled_date' => $payload['scheduled_date'],
+            ],
+        ];
     }
 }

@@ -11,10 +11,12 @@ use App\Models\Package;
 use App\Models\Notification;
 use App\Models\Setting;
 use App\Services\PrintFormatRenderer;
+use App\Support\GeneratesPdf;
 use Illuminate\Http\Request;
 
 class SalesOrderController extends Controller
 {
+    use GeneratesPdf;
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
@@ -178,6 +180,6 @@ class SalesOrderController extends Controller
             $html = view('admin.pdf.sales-order', compact('order', 'settings'))->render();
         }
 
-        return response($html)->header('Content-Type', 'text/html');
+        return $this->pdfResponse($html, 'sales-order-' . $order->order_number . '.pdf');
     }
 }

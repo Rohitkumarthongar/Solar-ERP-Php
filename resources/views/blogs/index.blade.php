@@ -20,7 +20,7 @@
             <article class="theme-panel rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 card-hover group border flex flex-col">
                 <a href="{{ route('blogs.show', $blog->slug) }}" class="block overflow-hidden relative pb-[60%] site-surface-alt">
                     @if($blog->image)
-                    <img src="{{ asset('storage/' . $blog->image) }}" alt="{{ $blog->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <img src="{{ \App\Support\SupabaseStorage::url($blog->image) }}" alt="{{ $blog->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     @else
                     <div class="absolute inset-0 flex items-center justify-center site-subtle">
                         <i class="fas fa-solar-panel text-6xl"></i>

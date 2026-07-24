@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProductCategory;
+use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -33,7 +34,7 @@ class ProductCategoryController extends Controller
             'sort_order'  => 'nullable|integer',
         ]);
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('categories', 'public');
+            $validated['image'] = SupabaseStorage::store($request->file('image'), 'categories');
         }
         $validated['slug']      = Str::slug($validated['name']);
         $validated['is_active'] = $request->has('is_active');
@@ -60,7 +61,7 @@ class ProductCategoryController extends Controller
             'sort_order'  => 'nullable|integer',
         ]);
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('categories', 'public');
+            $validated['image'] = SupabaseStorage::store($request->file('image'), 'categories');
         }
         $validated['slug']      = Str::slug($validated['name']);
         $validated['is_active'] = $request->has('is_active');

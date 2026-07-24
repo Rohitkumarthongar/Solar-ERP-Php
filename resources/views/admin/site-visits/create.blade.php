@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <form action="{{ route('admin.site-visits.store') }}" method="POST" class="space-y-8 animate-slide">
+    <form action="{{ route('admin.site-visits.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8 animate-slide">
         @csrf
         <div class="bg-white rounded-[30px] shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-8 space-y-8">
@@ -105,6 +105,8 @@
                         <textarea name="technical_notes" rows="3" placeholder="Any specific instructions or things to check during the visit..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300"></textarea>
                     </div>
 
+
+
                     @else
                     {{-- Full form when not from lead --}}
                     <!-- Scheduled At -->
@@ -187,6 +189,11 @@
                     <div class="md:col-span-2">
                         <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Technical Notes</label>
                         <textarea name="technical_notes" rows="4" placeholder="Any specific technical challenges, shadowing issues, structural concerns..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300"></textarea>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black text-gray-600 mb-2 uppercase tracking-widest">Site Photos (Optional)</label>
+                        <input type="file" name="site_photos[]" multiple accept="image/*" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-orange-300">
                     </div>
                     @endif
                 </div>

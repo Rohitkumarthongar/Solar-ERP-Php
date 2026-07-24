@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\WorkflowLockable;
 
 class SalesInvoice extends Model
 {
+    use WorkflowLockable;
+
     protected $fillable = [
         'customer_id',
         'sales_order_id',
@@ -58,5 +61,37 @@ class SalesInvoice extends Model
     public function installation()
     {
         return $this->hasOne(Installation::class);
+    }
+
+    /**
+     * Override locked statuses for sales invoices
+     */
+    protected function getLockedStatuses(): array
+    {
+        return ['paid', 'cancelled', 'void'];
+    }
+
+    /**
+     * Override status action map for sales invoices
+     */
+    protected function getStatusActionMap(): array
+    {
+        return [
+            'draft' => [
+                ['label' => 'Send Invoice', 'status' => 'sent', 'class' => 'btn-primary', 'icon' => 'fa-paper-plane'],
+                ['label' => 'Cancel', 'status' => 'cancelled', 'class' => 'btn-danger', 'icon' => 'fa-times'],
+            ],
+            'sent' => [
+                ['label' => 'Mark as Paid', 'status' => 'paid', 'class' => 'btn-success', 'icon' => 'fa-check'],
+                ['label' => 'Mark Overdue', 'status' => 'overdue', 'class' => 'btn-warning', 'icon' => 'fa-exclamation'],
+            ],
+            'overdue' => [
+                ['label' => 'Mark as Paid', 'status' => 'paid', 'class' => 'btn-success', 'icon' => 'fa-check'],
+                ['label' => 'Void Invoice', 'status' => 'void', 'class' => 'btn-danger', 'icon' => 'fa-ban'],
+            ],
+            'partial' => [
+                ['label' => 'Mark as Paid', 'status' => 'paid', 'class' => 'btn-success', 'icon' => 'fa-check'],
+            ],
+        ];
     }
 }

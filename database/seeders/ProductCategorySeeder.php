@@ -68,7 +68,7 @@ class ProductCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $cat) {
-            ProductCategory::create($cat);
+            ProductCategory::updateOrCreate(['slug' => $cat['slug']], $cat);
         }
 
         // Assign category_id to existing products by mapping old category enum

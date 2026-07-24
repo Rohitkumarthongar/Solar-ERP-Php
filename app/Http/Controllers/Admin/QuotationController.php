@@ -15,12 +15,14 @@ use App\Models\Notification;
 use App\Models\EmailTemplate;
 use App\Models\Setting;
 use App\Services\PrintFormatRenderer;
+use App\Support\GeneratesPdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 
 class QuotationController extends Controller
 {
+    use GeneratesPdf;
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
@@ -181,7 +183,7 @@ class QuotationController extends Controller
             $html = view('admin.pdf.quotation', compact('quotation', 'settings'))->render();
         }
 
-        return response($html)->header('Content-Type', 'text/html');
+        return $this->pdfResponse($html, 'quotation-' . $quotation->quotation_number . '.pdf');
     }
 
     public function sendEmail($id)

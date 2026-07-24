@@ -74,25 +74,15 @@ class RoleController extends Controller
     public function createUser()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $roles = Role::all();
-        return view('admin.roles.create-user', compact('roles'));
+        return redirect()->route('admin.employees.create')
+            ->with('success', 'Create login-enabled users from Employee Management so every user is linked to an employee record.');
     }
 
     public function storeUser(Request $request)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:admin_users,email',
-            'password' => 'required|min:6|confirmed',
-            'role_id' => 'required|exists:roles,id',
-            'is_active' => 'boolean'
-        ]);
-        $validated['password'] = Hash::make($validated['password']);
-        $validated['role'] = Role::find($validated['role_id'])->name ?? 'user';
-        $validated['is_active'] = $request->has('is_active');
-        AdminUser::create($validated);
-        return redirect()->route('admin.users.index')->with('success', 'User created!');
+        return redirect()->route('admin.employees.create')
+            ->with('error', 'Please create users from Employee Management so each login belongs to an employee.');
     }
 
     public function editUser($id)
