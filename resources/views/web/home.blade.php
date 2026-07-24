@@ -8,8 +8,8 @@
             <span class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-500 px-5 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-10 shadow-lg shadow-amber-500/10">
                 <i class="fas fa-bolt animate-pulse"></i> Powering a Sustainable Future
             </span>
-            <h1 class="text-7xl md:text-[7rem] font-black leading-[0.9] mb-10 text-white tracking-tight drop-shadow-2xl">
-                Harness the <br> <span class="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">Infinite Power</span>
+            <h1 class="text-6xl md:text-[6.5rem] font-black leading-[1.05] mb-8 text-white tracking-tight drop-shadow-2xl">
+                Power Your World With <br> <span class="bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 bg-clip-text text-transparent relative inline-block">Clean Solar Energy<div class="absolute -bottom-2 left-0 right-0 h-2 bg-amber-500/30 blur-sm rounded-full"></div></span>
             </h1>
             <p class="text-xl md:text-2xl text-gray-300 mb-14 leading-relaxed font-inter max-w-3xl font-medium opacity-90">
                 Premium solar energy solutions engineered for the world's most ambitious homes and businesses. Save more, power better.
@@ -62,6 +62,17 @@
     </div>
 </section>
 
+<!-- Trust Indicators -->
+<div class="border-y border-white/10 bg-[#0f172a]/80 backdrop-blur-md overflow-hidden py-6 relative z-20 -mt-10">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between opacity-60">
+        <div class="flex items-center gap-2"><i class="fas fa-certificate text-amber-500 text-xl"></i><span class="text-white font-semibold text-sm tracking-widest uppercase">ISO 9001 Certified</span></div>
+        <div class="flex items-center gap-2 hidden md:flex"><i class="fas fa-award text-amber-500 text-xl"></i><span class="text-white font-semibold text-sm tracking-widest uppercase">Tier-1 Modules</span></div>
+        <div class="flex items-center gap-2"><i class="fas fa-shield-check text-amber-500 text-xl"></i><span class="text-white font-semibold text-sm tracking-widest uppercase">25 Year Warranty</span></div>
+        <div class="flex items-center gap-2 hidden lg:flex"><i class="fas fa-leaf text-amber-500 text-xl"></i><span class="text-white font-semibold text-sm tracking-widest uppercase">Zero Carbon</span></div>
+        <div class="flex items-center gap-2"><i class="fas fa-bolt text-amber-500 text-xl"></i><span class="text-white font-semibold text-sm tracking-widest uppercase">High Efficiency</span></div>
+    </div>
+</div>
+
 <!-- Why Choose Us -->
 <section class="py-32 site-bg relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 relative z-10">
@@ -93,6 +104,41 @@
                 <p class="site-muted leading-relaxed font-inter font-medium text-lg opacity-80 group-hover:opacity-100 transition-opacity">
                     {{ $adv['desc'] }}
                 </p>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+
+<!-- How It Works -->
+<section class="py-24 relative bg-gradient-to-b from-[#0f172a] to-[#0a0f1c]">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16 fade-up">
+            <span class="text-amber-500 font-black text-xs uppercase tracking-[0.3em] block mb-4">Simple Process</span>
+            <h2 class="text-4xl md:text-5xl font-bold site-text-strong tracking-tight">Your Journey to Solar Energy</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+            <!-- Connecting Line (Desktop only) -->
+            <div class="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent -translate-y-1/2 z-0"></div>
+
+            @php
+                $steps = [
+                    ["num" => "01", "icon" => "fa-clipboard-list", "title" => "Consultation", "desc" => "Free site analysis and energy requirement assessment."],
+                    ["num" => "02", "icon" => "fa-drafting-compass", "title" => "Custom Design", "desc" => "Engineering a system tailored to maximize your savings."],
+                    ["num" => "03", "icon" => "fa-tools", "title" => "Installation", "desc" => "Professional setup by certified solar technicians."],
+                    ["num" => "04", "icon" => "fa-sun", "title" => "Start Saving", "desc" => "System activation and immediate reduction in energy bills."]
+                ];
+            @endphp
+
+            @foreach($steps as $step)
+            <div class="relative z-10 text-center flex flex-col items-center group">
+                <div class="w-24 h-24 rounded-full bg-[#1e293b] border-4 border-[#0f172a] flex items-center justify-center mb-6 shadow-xl group-hover:border-amber-500 transition-colors duration-300 relative">
+                    <span class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-amber-500 text-[#0f172a] font-black text-sm flex items-center justify-center">{{ $step["num"] }}</span>
+                    <i class="fas {{ $step["icon"] }} text-3xl text-gray-400 group-hover:text-amber-500 transition-colors"></i>
+                </div>
+                <h4 class="text-xl font-bold text-white mb-3">{{ $step["title"] }}</h4>
+                <p class="text-gray-400 text-sm font-medium leading-relaxed max-w-[200px]">{{ $step["desc"] }}</p>
             </div>
             @endforeach
         </div>
