@@ -11,10 +11,16 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 $q = App\Models\Quotation::first();
 if ($q) {
     try {
-        $html = app(App\Http\Controllers\Admin\QuotationController::class)->downloadPdf($q->id);
+        // The diagnostic runs only from the CLI and calls the controller directly.
+        session(['admin_logged_in' => true]);
+        $html = app(App\Http\Controllers\Admin\QuotationController::class)
+            ->downloadPdf(Illuminate\Http\Request::create('/admin/quotations/'.$q->id.'/pdf', 'GET'), $q->id);
+        if ($html->getStatusCode() !== 200) {
+            throw new RuntimeException('Quotation rendering returned HTTP '.$html->getStatusCode());
+        }
         file_put_contents('/tmp/quotation_test.html', $html->content());
         echo "OK rendered\n";
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         echo "Error: " . $e->getMessage() . "\n";
     }
 } else {

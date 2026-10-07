@@ -97,10 +97,12 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-2">Format Options</label>
                     <div class="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:gap-6">
                         <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="hidden" name="is_default" value="0">
                             <input type="checkbox" name="is_default" value="1" {{ old('is_default') ? 'checked' : '' }} class="w-4 h-4 text-orange-500 rounded">
                             <span class="text-sm text-gray-700">Set as Default</span>
                         </label>
                         <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="w-4 h-4 text-orange-500 rounded">
                             <span class="text-sm text-gray-700">Active</span>
                         </label>
@@ -122,7 +124,7 @@
                         `site_visit_report`: use <code>$siteVisit</code> and <code>$settings</code><br>
                         `salary_slip`: use <code>$records</code>, <code>$totalPaid</code>, <code>$month</code>, <code>$year</code>, and <code>$settings</code>
                     </p>
-                    <p class="mt-2 text-xs text-orange-700">Header and footer now render together with the body in the final print output.</p>
+                    <p class="mt-2 text-xs text-orange-700">Header, body and footer render as Blade/HTML. Set an active format as default to use it automatically, or choose any active quotation format on a quotation's Print / Preview menu. A template error will be shown instead of printing a different layout.</p>
                 </div>
 
                 <div>

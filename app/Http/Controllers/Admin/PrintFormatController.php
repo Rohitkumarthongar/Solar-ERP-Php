@@ -7,6 +7,7 @@ use App\Models\PrintFormat;
 use App\Support\PrintFormatPresets;
 use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PrintFormatController extends Controller
@@ -14,7 +15,7 @@ class PrintFormatController extends Controller
     public function index()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $formats = PrintFormat::orderBy('document_type')->get();
+        $formats = PrintFormat::orderBy('document_type')->orderBy('id')->get();
         return view('admin.settings.print-formats', compact('formats'));
     }
 
@@ -36,15 +37,23 @@ class PrintFormatController extends Controller
             'body_template' => 'required|string',
             'paper_size'    => 'required|in:A4,A5,Letter',
             'orientation'   => 'required|in:portrait,landscape',
+            'is_default'    => 'sometimes|boolean',
+            'is_active'     => 'sometimes|boolean',
             'images.*'      => 'nullable|image|max:4096',
         ]);
-        if ($request->has('is_default')) {
-            PrintFormat::where('document_type', $validated['document_type'])->update(['is_default' => false]);
+        $validated['is_default'] = $request->boolean('is_default');
+        $validated['is_active'] = $request->boolean('is_active');
+        if ($validated['is_default'] && !$validated['is_active']) {
+            return back()->withErrors(['is_default' => 'A default print format must be active.'])->withInput();
         }
-        $validated['is_default'] = $request->has('is_default');
-        $validated['is_active']  = $request->has('is_active');
         $validated['images']     = $this->handleImageUploads($request, []);
-        PrintFormat::create($validated);
+        DB::transaction(function () use ($validated) {
+            if ($validated['is_default']) {
+                PrintFormat::where('document_type', $validated['document_type'])->lockForUpdate()->get();
+                PrintFormat::where('document_type', $validated['document_type'])->update(['is_default' => false]);
+            }
+            PrintFormat::create($validated);
+        });
         return redirect()->route('admin.settings.print-formats')->with('success', 'Print format created!');
     }
 
@@ -80,14 +89,22 @@ class PrintFormatController extends Controller
             'paper_size'    => 'required|in:A4,A5,Letter',
             'orientation'   => 'required|in:portrait,landscape',
             'images.*'      => 'nullable|image|max:4096',
+            'is_default' => 'sometimes|boolean',
+            'is_active' => 'sometimes|boolean',
         ]);
-        if ($request->has('is_default')) {
-            PrintFormat::where('document_type', $validated['document_type'])->where('id', '!=', $id)->update(['is_default' => false]);
+        $validated['is_default'] = $request->boolean('is_default');
+        $validated['is_active'] = $request->boolean('is_active');
+        if ($validated['is_default'] && !$validated['is_active']) {
+            return back()->withErrors(['is_default' => 'A default print format must be active.'])->withInput();
         }
-        $validated['is_default'] = $request->has('is_default');
-        $validated['is_active']  = $request->has('is_active');
         $validated['images']     = $this->handleImageUploads($request, $format->images ?? []);
-        $format->update($validated);
+        DB::transaction(function () use ($format, $validated) {
+            if ($validated['is_default']) {
+                PrintFormat::where('document_type', $validated['document_type'])->lockForUpdate()->get();
+                PrintFormat::where('document_type', $validated['document_type'])->where('id', '!=', $format->id)->update(['is_default' => false]);
+            }
+            $format->update($validated);
+        });
         return redirect()->route('admin.settings.print-formats')->with('success', 'Print format updated!');
     }
 

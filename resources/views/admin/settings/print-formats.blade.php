@@ -46,7 +46,7 @@
             <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                 <i class="fas fa-print text-orange-500"></i> Print Format Templates
             </h2>
-            <p class="text-sm text-gray-500 mt-0.5">Manage header, footer and body templates for printed documents.</p>
+            <p class="text-sm text-gray-500 mt-0.5">Manage header, footer and body templates for printed documents. Active quotation formats can be selected on a quotation; without an active default, the built-in layout is used.</p>
         </div>
         <a href="{{ route('admin.settings.print-formats.create') }}"
             class="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-sm">
@@ -56,7 +56,8 @@
 
     {{-- Formats grouped by document type --}}
     @php
-        $grouped = $formats->groupBy('document_type');
+        // Groups are collections, so key-based selection needs a base collection.
+        $grouped = $formats->toBase()->groupBy('document_type');
         $typeLabels = [
             'quotation'                => ['label' => 'Quotation',                'icon' => 'file-invoice',    'color' => 'purple'],
             'sales_order'              => ['label' => 'Sales Order',              'icon' => 'shopping-cart',   'color' => 'green'],
@@ -78,7 +79,7 @@
             <i class="fas fa-print text-orange-400 text-2xl"></i>
         </div>
         <p class="text-gray-500 font-medium">No print formats yet</p>
-        <p class="text-gray-400 text-sm mt-1">Create your first print format template.</p>
+        <p class="text-gray-400 text-sm mt-1">Create your first print format template. Quotation printing uses the built-in layout until an active default is set.</p>
         <a href="{{ route('admin.settings.print-formats.create') }}"
             class="inline-flex items-center gap-2 mt-4 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
             <i class="fas fa-plus"></i> Create Format

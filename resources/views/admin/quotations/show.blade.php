@@ -17,10 +17,18 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.quotations.pdf', $quotation->id) }}"
-                class="inline-flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm">
-                <i class="fas fa-file-pdf text-red-500"></i> Download PDF
-            </a>
+            <form action="{{ route('admin.quotations.pdf', $quotation->id) }}" method="GET" class="flex items-center gap-2">
+                <label for="print_format_id" class="text-sm text-gray-600">Print format</label>
+                <select id="print_format_id" name="print_format_id" class="border border-gray-200 rounded-xl px-3 py-2 text-sm">
+                    <option value="">Default (built-in if none selected)</option>
+                    @foreach($printFormats as $printFormat)
+                        <option value="{{ $printFormat->id }}">{{ $printFormat->name }}{{ $printFormat->is_default ? ' (default)' : '' }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="inline-flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm">
+                    <i class="fas fa-print text-red-500"></i> Print / Preview
+                </button>
+            </form>
             <a href="{{ route('admin.quotations.edit', $quotation->id) }}"
                 class="inline-flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm">
                 <i class="fas fa-edit"></i> Edit
@@ -37,6 +45,9 @@
     </div>
 
     {{-- Flash Messages --}}
+    @if($errors->any())
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-3">{{ $errors->first() }}</div>
+    @endif
     @if(session('success'))
     <div class="bg-green-50 border border-green-200 text-green-700 rounded-xl px-5 py-3 flex items-center gap-3">
         <i class="fas fa-check-circle text-green-500"></i> {{ session('success') }}

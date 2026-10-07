@@ -101,12 +101,14 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-2">Format Options</label>
                     <div class="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:gap-6">
                         <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="hidden" name="is_default" value="0">
                             <input type="checkbox" name="is_default" value="1"
                                 {{ old('is_default', $format->is_default) ? 'checked' : '' }}
                                 class="w-4 h-4 text-orange-500 rounded">
                             <span class="text-sm text-gray-700">Set as Default</span>
                         </label>
                         <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1"
                                 {{ old('is_active', $format->is_active) ? 'checked' : '' }}
                                 class="w-4 h-4 text-orange-500 rounded">
@@ -132,6 +134,7 @@
                     </p>
                     <p class="mt-2 text-xs text-orange-700">Header and footer render together with the body in the final output.</p>
                     <p class="mt-1 text-xs text-orange-700">Use uploaded images in templates via: <code class="bg-orange-100 px-1 rounded">@verbatim<img src="{{ $images['your_key'] }}">@endverbatim</code> — keys shown in Image Library below.</p>
+                    <p class="mt-1 text-xs text-orange-700">Set an active format as default to use it automatically, or choose any active quotation format on a quotation's Print / Preview menu. A template error will be shown instead of printing a different layout.</p>
                 </div>
 
                 <div>
@@ -213,7 +216,6 @@
     </div>
 </div>
 
-@if(!empty($presets))
 <script>
     function addImageRow() {
         const row = document.querySelector('.new-image-row').cloneNode(true);
@@ -223,6 +225,7 @@
         document.getElementById('new-image-rows').appendChild(row);
     }
 
+@if(!empty($presets))
     document.addEventListener('DOMContentLoaded', function () {
         const presets = @json($presets);
         const form = document.getElementById('print-format-form');
@@ -259,6 +262,6 @@
             });
         });
     });
-</script>
 @endif
+</script>
 @endsection

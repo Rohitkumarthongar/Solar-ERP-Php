@@ -8,6 +8,8 @@ use App\Models\InventoryAdjustment;
 use App\Models\Product;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class InventoryController extends Controller
 {
@@ -71,39 +73,49 @@ class InventoryController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'adjustment_type' => 'required|in:add,remove,set',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:0',
             'reason' => 'required|string|max:255'
         ]);
 
-        $inventory = Inventory::where('product_id', $validated['product_id'])->firstOrFail();
-        $before = $inventory->quantity;
-
-        if ($validated['adjustment_type'] === 'add') {
-            $inventory->increment('quantity', $validated['quantity']);
-        } elseif ($validated['adjustment_type'] === 'remove') {
-            $inventory->decrement('quantity', min($validated['quantity'], $inventory->quantity));
-        } else {
-            $inventory->update(['quantity' => $validated['quantity']]);
+        if ($validated['adjustment_type'] !== 'set' && (int) $validated['quantity'] === 0) {
+            throw ValidationException::withMessages(['quantity' => 'Enter at least one unit to add or remove.']);
         }
 
-        InventoryAdjustment::create([
-            'inventory_id' => $inventory->id,
-            'product_id' => $validated['product_id'],
-            'adjustment_type' => $validated['adjustment_type'],
-            'quantity_before' => $before,
-            'quantity_adjusted' => $validated['quantity'],
-            'quantity_after' => $inventory->fresh()->quantity,
-            'reason' => $validated['reason'],
-            'adjusted_by' => session('admin_user')
-        ]);
+        DB::transaction(function () use ($validated) {
+            $inventory = Inventory::where('product_id', $validated['product_id'])->lockForUpdate()->firstOrFail();
+            $before = $inventory->quantity;
+            $quantity = (int) $validated['quantity'];
 
-        if ($inventory->fresh()->quantity <= $inventory->min_quantity) {
-            Notification::create([
-                'title' => 'Low Stock Alert',
-                'message' => $inventory->product->name . ' stock is below minimum level. Current: ' . $inventory->fresh()->quantity,
-                'type' => 'inventory', 'related_id' => $inventory->id, 'related_type' => 'Inventory'
+            if ($validated['adjustment_type'] === 'remove' && $quantity > $before) {
+                throw ValidationException::withMessages(['quantity' => 'Cannot remove more than the available stock.']);
+            }
+
+            $after = match ($validated['adjustment_type']) {
+                'add' => $before + $quantity,
+                'remove' => $before - $quantity,
+                'set' => $quantity,
+            };
+            $inventory->update(['quantity' => $after]);
+
+            InventoryAdjustment::create([
+                'inventory_id' => $inventory->id,
+                'product_id' => $validated['product_id'],
+                'adjustment_type' => $validated['adjustment_type'],
+                'quantity_before' => $before,
+                'quantity_adjusted' => $quantity,
+                'quantity_after' => $after,
+                'reason' => $validated['reason'],
+                'adjusted_by' => session('admin_user')
             ]);
-        }
+
+            if ($after <= $inventory->min_quantity) {
+                Notification::create([
+                    'title' => 'Low Stock Alert',
+                    'message' => $inventory->product->name . ' stock is below minimum level. Current: ' . $after,
+                    'type' => 'inventory', 'related_id' => $inventory->id, 'related_type' => 'Inventory'
+                ]);
+            }
+        });
 
         return redirect()->route('admin.inventory.index')->with('success', 'Inventory adjusted!');
     }

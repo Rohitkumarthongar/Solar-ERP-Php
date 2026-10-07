@@ -259,8 +259,8 @@
                     <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
                         @foreach($products as $product)
                         <button type="button"
-                            onclick="addItem('{{ addslashes($product->name) }} ({{ $product->sku ?? $product->brand }})', 1, {{ $product->selling_price }}, {{ $product->id }})"
-                            class="w-full text-left px-3 py-2.5 rounded-xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 transition group">
+                            data-product-id="{{ $product->id }}"
+                            class="quick-product w-full text-left px-3 py-2.5 rounded-xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 transition group">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">{{ $product->name }}</p>
@@ -281,16 +281,24 @@
 
 <script>
     // Products data for item rows
-    const products = {!! json_encode($products->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'price' => (float)$p->selling_price])->values()->all()) !!};
-    const existingItems = {!! json_encode($quotation->items->map(fn($i) => ['description' => $i->description, 'quantity' => $i->quantity, 'unit_price' => $i->unit_price, 'product_id' => $i->product_id])->values()->all()) !!};
-    const existingBom   = {!! json_encode($quotation->bom_items ?? []) !!};
+    const products = {{ Illuminate\Support\Js::from($products->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'sku' => $p->sku ?? $p->brand, 'price' => (float)$p->selling_price])->values()->all()) }};
+    const existingItems = {{ Illuminate\Support\Js::from(old('items', $quotation->items->map(fn($i) => ['description' => $i->description, 'quantity' => $i->quantity, 'unit_price' => $i->unit_price, 'product_id' => $i->product_id])->values()->all())) }};
+    const existingBom   = {{ Illuminate\Support\Js::from(old('bom_items', $quotation->bom_items ?? [])) }};
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[char]));
+    }
+    document.querySelectorAll('.quick-product').forEach(button => button.addEventListener('click', () => {
+        const product = products.find(p => p.id == button.dataset.productId);
+        if (product) addItem(`${product.name} (${product.sku ?? ''})`, 1, product.price, product.id);
+    }));
 
     let itemIndex = 0;
 
     function productOptions(selectedId = '') {
         let opts = '<option value="">— None —</option>';
         products.forEach(p => {
-            opts += `<option value="${p.id}" data-price="${p.price}" ${selectedId == p.id ? 'selected' : ''}>${p.name}</option>`;
+            opts += `<option value="${Number(p.id)}" data-price="${Number(p.price)}" ${selectedId == p.id ? 'selected' : ''}>${escapeHtml(p.name)}</option>`;
         });
         return opts;
     }
@@ -304,7 +312,7 @@
         row.innerHTML = `
             <td class="py-2 pr-2">
                 <input type="text" name="items[${idx}][description]"
-                    value="${description}"
+                     value="${escapeHtml(description)}"
                     class="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     placeholder="Item description" required>
             </td>
@@ -317,13 +325,13 @@
             </td>
             <td class="py-2 px-2">
                 <input type="number" name="items[${idx}][quantity]" id="qty-${idx}"
-                    value="${quantity}" min="1" step="0.01"
+                     value="${escapeHtml(quantity)}" min="1" step="0.01"
                     class="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 text-right min-w-[70px]"
                     oninput="calcRow(${idx})" required>
             </td>
             <td class="py-2 px-2">
                 <input type="number" name="items[${idx}][unit_price]" id="price-${idx}"
-                    value="${unitPrice}" min="0" step="0.01"
+                     value="${escapeHtml(unitPrice)}" min="0" step="0.01"
                     class="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 text-right min-w-[100px]"
                     oninput="calcRow(${idx})" required>
             </td>
@@ -407,7 +415,8 @@
         return items
             .map(item => ({
                 description: item.name || item.description || '',
-                quantity: item.quantity || 1
+                 quantity: item.quantity || 1,
+                 make: item.make || '', unit: item.unit || '', details: item.details || ''
             }))
             .filter(item => item.description);
     }
@@ -418,26 +427,29 @@
         bomIdx = 0;
 
         if (items.length) {
-            items.forEach(item => addBomItem(item.description, item.quantity));
+             items.forEach(item => addBomItem(item.description, item.quantity, item.make, item.unit, item.details));
         }
 
         checkBomEmpty();
     }
 
     let bomIdx = 0;
-    function addBomItem(description = '', quantity = 1) {
+     function addBomItem(description = '', quantity = 1, make = '', unit = '', details = '') {
         const body  = document.getElementById('bom-body');
         const idx   = bomIdx++;
         const tr    = document.createElement('tr');
         tr.className = 'hover:bg-gray-50 align-middle';
         tr.innerHTML = `
             <td class="py-2.5">
-                <input type="text" name="bom_items[${idx}][description]" value="${description}" required
+                 <input type="text" name="bom_items[${idx}][description]" value="${escapeHtml(description)}" required
                     placeholder="e.g. 550W Mono PERC Panels"
-                    class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-200">
+                     class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-200">
+                 <input type="hidden" name="bom_items[${idx}][make]" value="${escapeHtml(make)}">
+                 <input type="hidden" name="bom_items[${idx}][unit]" value="${escapeHtml(unit)}">
+                 <input type="hidden" name="bom_items[${idx}][details]" value="${escapeHtml(details)}">
             </td>
             <td class="py-2.5 text-center px-4">
-                <input type="number" name="bom_items[${idx}][quantity]" value="${quantity}" min="0" step="0.1" required
+                 <input type="number" name="bom_items[${idx}][quantity]" value="${escapeHtml(quantity)}" min="0.1" step="0.1" required
                     class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal-200">
             </td>
             <td class="text-right py-2.5">
@@ -457,8 +469,8 @@
     }
 
     // Load existing items
-    if (existingItems && existingItems.length > 0) {
-        existingItems.forEach(item => {
+     if (existingItems && Object.values(existingItems).length > 0) {
+         Object.values(existingItems).forEach(item => {
             addItem(item.description, item.quantity, item.unit_price, item.product_id);
         });
     } else {
@@ -466,8 +478,8 @@
     }
 
     // Load existing BOM
-    if (existingBom && existingBom.length > 0) {
-        existingBom.forEach(b => addBomItem(b.description, b.quantity));
+     if (existingBom && Object.values(existingBom).length > 0) {
+         Object.values(existingBom).forEach(b => addBomItem(b.description, b.quantity, b.make, b.unit, b.details));
     }
 
     // Run initial calc

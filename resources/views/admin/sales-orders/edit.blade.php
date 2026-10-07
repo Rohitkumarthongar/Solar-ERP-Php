@@ -231,17 +231,20 @@
 </div>
 
 @php
-    $productsJson = $products->map(function($p) {
-        return ['id' => $p->id, 'name' => $p->name, 'price' => $p->price ?? 0];
+     $productsJson = $products->map(function($p) {
+         return ['id' => $p->id, 'name' => $p->name, 'price' => $p->selling_price ?? 0];
     })->values()->toArray();
     $existingItemsJson = $order->items->map(function($i) {
         return ['description' => $i->description, 'quantity' => $i->quantity, 'unit_price' => $i->unit_price, 'product_id' => $i->product_id];
     })->values()->toArray();
 @endphp
 <script>
-    const products = @json($productsJson);
-    const existingItems = @json($existingItemsJson);
-    const existingBom = @json($order->bom_items ?? []);
+    const products = {{ Illuminate\Support\Js::from($productsJson) }};
+    const existingItems = {{ Illuminate\Support\Js::from(old('items', $existingItemsJson)) }};
+    const existingBom = {{ Illuminate\Support\Js::from(old('bom_items', $order->bom_items ?? [])) }};
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[char]));
+    }
 
     let itemIndex = 0;
     const container = document.getElementById('itemsContainer');
@@ -271,7 +274,7 @@
         div.innerHTML = `
             <div class="col-span-12 sm:col-span-5">
                 <label class="block text-xs text-gray-500 mb-1">Description</label>
-                <input type="text" name="items[${idx}][description]" value="${desc}" required
+                 <input type="text" name="items[${idx}][description]" value="${escapeHtml(desc)}" required
                     placeholder="e.g. 400W Solar Panel"
                     class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-300">
             </div>
@@ -279,17 +282,17 @@
                 <label class="block text-xs text-gray-500 mb-1">Product</label>
                 <select name="items[${idx}][product_id]" class="item-product w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-300">
                     <option value="">— Custom —</option>
-                    ${products.map(p => `<option value="${p.id}" data-price="${p.price}" ${p.id == productId ? 'selected' : ''}>${p.name}</option>`).join('')}
+                     ${products.map(p => `<option value="${Number(p.id)}" data-price="${Number(p.price)}" ${p.id == productId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}
                 </select>
             </div>
             <div class="col-span-3 sm:col-span-1">
                 <label class="block text-xs text-gray-500 mb-1">Qty</label>
-                <input type="number" name="items[${idx}][quantity]" value="${qty}" min="1" required
+                 <input type="number" name="items[${idx}][quantity]" value="${escapeHtml(qty)}" min="1" step="0.01" required
                     class="item-qty w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-300">
             </div>
             <div class="col-span-5 sm:col-span-2">
                 <label class="block text-xs text-gray-500 mb-1">Unit Price (₹)</label>
-                <input type="number" name="items[${idx}][unit_price]" value="${price}" min="0" step="0.01" required
+                 <input type="number" name="items[${idx}][unit_price]" value="${escapeHtml(price)}" min="0" step="0.01" required
                     class="item-price w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-300">
             </div>
             <div class="col-span-5 sm:col-span-1 flex flex-col items-end">
@@ -318,7 +321,7 @@
     }
 
     let bomIdx = 0;
-    function addBomItem(description = '', quantity = 1) {
+    function addBomItem(description = '', quantity = 1, make = '', unit = '', details = '') {
         const body  = document.getElementById('bom-body');
         const empty = document.getElementById('bom-empty');
         const idx   = bomIdx++;
@@ -326,12 +329,15 @@
         tr.className = 'hover:bg-gray-50 align-middle';
         tr.innerHTML = `
             <td class="py-2.5">
-                <input type="text" name="bom_items[${idx}][description]" value="${description}" required
+                 <input type="text" name="bom_items[${idx}][description]" value="${escapeHtml(description)}" required
                     placeholder="e.g. 550W Mono PERC Panels"
-                    class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-200">
+                     class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-200">
+                 <input type="hidden" name="bom_items[${idx}][make]" value="${escapeHtml(make)}">
+                 <input type="hidden" name="bom_items[${idx}][unit]" value="${escapeHtml(unit)}">
+                 <input type="hidden" name="bom_items[${idx}][details]" value="${escapeHtml(details)}">
             </td>
             <td class="py-2.5 text-center px-4">
-                <input type="number" name="bom_items[${idx}][quantity]" value="${quantity}" min="0" step="0.1" required
+                 <input type="number" name="bom_items[${idx}][quantity]" value="${escapeHtml(quantity)}" min="0.1" step="0.1" required
                     class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-teal-200">
             </td>
             <td class="text-right py-2.5">
@@ -354,7 +360,8 @@
         return items
             .map(item => ({
                 description: item.name || item.description || '',
-                quantity: item.quantity || 1
+                 quantity: item.quantity || 1,
+                 make: item.make || '', unit: item.unit || '', details: item.details || ''
             }))
             .filter(item => item.description);
     }
@@ -365,7 +372,7 @@
         bomIdx = 0;
 
         if (items.length) {
-            items.forEach(item => addBomItem(item.description, item.quantity));
+             items.forEach(item => addBomItem(item.description, item.quantity, item.make, item.unit, item.details));
         }
 
         checkBomEmpty();
@@ -406,11 +413,11 @@
     }
 
     // Load existing items
-    existingItems.forEach(i => addItem(i.description, i.quantity, i.unit_price, i.product_id));
+     Object.values(existingItems).forEach(i => addItem(i.description, i.quantity, i.unit_price, i.product_id));
 
     // Load existing BOM
     if (existingBom && existingBom.length > 0) {
-        existingBom.forEach(b => addBomItem(b.description, b.quantity));
+         Object.values(existingBom).forEach(b => addBomItem(b.description, b.quantity, b.make, b.unit, b.details));
     }
 </script>
 @endsection

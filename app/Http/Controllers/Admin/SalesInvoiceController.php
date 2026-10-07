@@ -18,6 +18,8 @@ use App\Services\PrintFormatRenderer;
 use App\Support\GeneratesPdf;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class SalesInvoiceController extends Controller
 {
@@ -153,28 +155,35 @@ class SalesInvoiceController extends Controller
     public function addPayment(Request $request, $id)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        $invoice = SalesInvoice::findOrFail($id);
-        
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:'.$invoice->balance_due,
+            'amount' => 'required|numeric|min:0.01|decimal:0,2',
             'payment_method' => 'required|string',
             'payment_date' => 'required|date',
             'reference_number' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
 
-        $receiptNum = 'REC-' . strtoupper(Str::random(6));
-        PaymentReceipt::create([
-            'sales_invoice_id' => $invoice->id,
-            'receipt_number' => $receiptNum,
-            'payment_date' => $validated['payment_date'],
-            'amount' => $validated['amount'],
-            'payment_method' => $validated['payment_method'],
-            'reference_number' => $validated['reference_number'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        DB::transaction(function () use ($id, $validated) {
+            $invoice = SalesInvoice::whereKey($id)->lockForUpdate()->firstOrFail();
+            $paidAmount = round((float) $invoice->payments()->sum('amount'), 2);
+            $remaining = round((float) $invoice->grand_total - $paidAmount, 2);
+            if ($invoice->status === 'cancelled' || $invoice->status === 'paid' ||
+                $remaining <= 0 || round((float) $validated['amount'], 2) > $remaining) {
+                throw ValidationException::withMessages(['amount' => 'This invoice cannot accept that payment amount.']);
+            }
 
-        $this->syncInvoiceBalances($invoice);
+            PaymentReceipt::create([
+                'sales_invoice_id' => $invoice->id,
+                'receipt_number' => 'REC-' . strtoupper(Str::random(6)),
+                'payment_date' => $validated['payment_date'],
+                'amount' => $validated['amount'],
+                'payment_method' => $validated['payment_method'],
+                'reference_number' => $validated['reference_number'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            $this->syncInvoiceBalances($invoice);
+        });
 
         return redirect()->back()->with('success', 'Payment recorded successfully.');
     }
@@ -204,9 +213,7 @@ class SalesInvoiceController extends Controller
 
     protected function syncInvoiceBalances(SalesInvoice $invoice): void
     {
-        $invoice->loadMissing('payments');
-
-        $paidAmount = round((float) $invoice->payments->sum('amount'), 2);
+        $paidAmount = round((float) $invoice->payments()->sum('amount'), 2);
         $grandTotal = round((float) $invoice->grand_total, 2);
         $balanceDue = round(max($grandTotal - $paidAmount, 0), 2);
 

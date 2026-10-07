@@ -229,9 +229,10 @@ class ReportController extends Controller
         $purchases = PurchaseOrder::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->sum('final_amount');
         $salaries = SalaryRecord::whereBetween('payment_date', [$from, $to])->sum('net_salary');
         $serviceExpenses = ServiceRequest::whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->sum('service_cost');
-        $directExpenses = Expense::whereBetween('expense_date', [$from, $to])->sum('amount');
-        
-        $totalExpenses = $purchases + $salaries + $serviceExpenses + $directExpenses;
+        $teamPayments = Expense::where('category', 'Team Payment')->whereBetween('expense_date', [$from, $to])->sum('amount');
+        $directExpenses = Expense::where('category', '!=', 'Team Payment')->whereBetween('expense_date', [$from, $to])->sum('amount');
+
+        $totalExpenses = $purchases + $salaries + $serviceExpenses + $teamPayments + $directExpenses;
         $profit = $sales - $totalExpenses;
         
         $settings = Setting::pluck('value', 'key')->toArray();

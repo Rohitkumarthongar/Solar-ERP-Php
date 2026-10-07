@@ -17,6 +17,8 @@ use App\Models\PaymentReceipt;
 use App\Models\AdminUser;
 use App\Models\SiteVisit;
 use App\Models\TaskPayment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -46,8 +48,13 @@ class DashboardController extends Controller
         $recentOrders = SalesOrder::with('customer')->orderBy('created_at', 'desc')->take(5)->get();
         $notifications = Notification::where('is_read', false)->orderBy('created_at', 'desc')->take(5)->get();
 
-        $monthlySales = SalesOrder::selectRaw('DATE_FORMAT(created_at, "%m") as month, SUM(total_amount) as total')
-            ->whereRaw('DATE_FORMAT(created_at, "%Y") = ?', [date('Y')])
+        $monthExpression = match (DB::getDriverName()) {
+            'sqlite' => "strftime('%m', created_at)",
+            'pgsql' => 'EXTRACT(MONTH FROM created_at)',
+            default => 'MONTH(created_at)',
+        };
+        $monthlySales = SalesOrder::selectRaw($monthExpression . ' as month, SUM(total_amount) as total')
+            ->whereYear('created_at', date('Y'))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
