@@ -9,7 +9,8 @@ return new class extends Migration {
         Schema::create('quotation_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('quotation_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->nullable()->constrained()->onDelete('set null');
+            // Products is created by a later historical migration.
+            $table->foreignId('product_id')->nullable();
             $table->string('description');
             $table->decimal('quantity', 8, 2);
             $table->decimal('unit_price', 12, 2);

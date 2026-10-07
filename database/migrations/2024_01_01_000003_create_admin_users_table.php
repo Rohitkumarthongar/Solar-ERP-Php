@@ -12,7 +12,8 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->string('password');
             $table->string('role')->default('user');
-            $table->foreignId('role_id')->nullable()->constrained('roles')->onDelete('set null');
+            // Added after roles exists by the deferred-foreign-keys migration.
+            $table->foreignId('role_id')->nullable();
             $table->json('permissions')->nullable();
             $table->boolean('is_active')->default(true);
             $table->rememberToken();

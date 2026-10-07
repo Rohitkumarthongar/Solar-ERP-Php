@@ -1,0 +1,9 @@
+# Private business uploads and legacy migration
+
+New purchase invoice attachments, DISCOM reports, and installation proofs are stored on Laravel's `local` disk (`storage/app/private`) and served only through the corresponding module's authenticated `admin/secure` routes. Public branding and blog images remain on the public disk; their upload validators accept only raster images with explicit size limits.
+
+Existing database records may still point to files under `storage/app/public/purchase-invoices`, `storage/app/public/discom-reports`, or `storage/app/public/installation-proofs`. The new private download endpoints intentionally return 404 for those records until the files are migrated. **No live files are moved automatically.** On a maintenance window, back up the database and files; inventory references and verify their original paths and file types; copy only verified files to the corresponding directory under `storage/app/private` using new random filenames; update the referencing database values (including each JSON array/checklist entry) in a transaction; verify module-authorized downloads and denial for other roles; only then remove original public copies and revoke public access. Do not expose a generic path-based fallback to the public disk.
+
+Existing plaintext `settings.mail_password` and `sms_configurations.auth_token`/`api_key` are encrypted by migration `2026_10_07_000002_encrypt_saved_messaging_credentials.php`. Back up the database and retain the same `APP_KEY` before migration; rotation or loss of the key will make stored credentials unreadable and require replacement through settings. Rolling back deliberately does not decrypt secrets.
+
+Apache's `public/.htaccess` blocks executable extensions under `/storage`. Deployments using Nginx or another server should also deny execution and serving of script extensions under the public storage mount at the web-server layer.

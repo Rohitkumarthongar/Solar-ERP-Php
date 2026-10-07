@@ -403,8 +403,8 @@
                                 </td>
                                 <td class="p-4">
                                     @if(isset($checklist[$task]['photo']))
-                                        <a href="{{ Storage::url($checklist[$task]['photo']) }}" target="_blank" class="w-10 h-10 rounded-lg border border-gray-200 overflow-hidden inline-block group">
-                                            <img src="{{ Storage::url($checklist[$task]['photo']) }}" class="w-full h-full object-cover group-hover:scale-110 transition">
+                                        <a href="{{ route('admin.secure.checklist-photo', [$installation->id, $task]) }}" target="_blank" class="w-10 h-10 rounded-lg border border-gray-200 overflow-hidden inline-block group">
+                                            <img src="{{ route('admin.secure.checklist-photo', [$installation->id, $task]) }}" class="w-full h-full object-cover group-hover:scale-110 transition">
                                         </a>
                                     @else
                                         <span class="text-gray-300 italic text-xs">No image proof</span>
@@ -466,7 +466,7 @@
                     @foreach($proofLabels as $field => $label)
                         @if(!empty($installation->$field))
                         <div class="border border-gray-200 rounded-xl overflow-hidden group relative bg-gray-50">
-                            @php $fileUrl = Storage::url($installation->$field); @endphp
+                            @php $fileUrl = route('admin.secure.installation-proof', [$installation->id, $field]); @endphp
                             <a href="{{ $fileUrl }}" target="_blank" class="block aspect-square overflow-hidden bg-gray-200">
                                 @if(\Illuminate\Support\Str::endsWith(strtolower($installation->$field), '.pdf'))
                                 <div class="w-full h-full flex flex-col items-center justify-center text-red-500 bg-red-50">
@@ -494,8 +494,8 @@
                     @if(!empty($installation->proof_photos) && is_array($installation->proof_photos))
                         @foreach($installation->proof_photos as $idx => $photo)
                         <div class="border border-gray-200 rounded-xl overflow-hidden group relative bg-gray-50">
-                            <a href="{{ Storage::url($photo) }}" target="_blank" class="block aspect-square overflow-hidden bg-gray-200">
-                                <img src="{{ Storage::url($photo) }}" alt="Extra Photo" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <a href="{{ route('admin.secure.installation-photo', [$installation->id, $idx]) }}" target="_blank" class="block aspect-square overflow-hidden bg-gray-200">
+                                <img src="{{ route('admin.secure.installation-photo', [$installation->id, $idx]) }}" alt="Extra Photo" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                             </a>
                             <div class="p-2 text-center text-xs font-semibold text-gray-700 bg-white border-t border-gray-200">
                                 Extra Photo {{ $idx+1 }}

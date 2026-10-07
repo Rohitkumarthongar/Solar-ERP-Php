@@ -12,6 +12,8 @@
 /.vscode
 /.zed
 /auth.json
+# Local attachments can contain private database dumps and credentials.
+/.opencode/omnirush/inbox/
 /node_modules
 /public/build
 /public/hot

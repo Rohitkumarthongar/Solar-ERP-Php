@@ -52,6 +52,7 @@
                 <div class="p-6 border-b border-gray-50 flex items-center gap-2">
                     <i class="fas fa-key text-indigo-500"></i>
                     <h3 class="font-bold text-gray-800 text-sm">Security Matrix</h3>
+                    <span class="text-xs text-gray-500">Use 12+ characters with uppercase, lowercase, a number and a symbol.</span>
                 </div>
                 <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>

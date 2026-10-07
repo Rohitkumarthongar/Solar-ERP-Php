@@ -1,9 +1,23 @@
 <IfModule mod_rewrite.c>
+    Options -Indexes
     <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
+        Options -MultiViews
     </IfModule>
 
     RewriteEngine On
+
+    # Root document roots may serve only the front controller and files in public/.
+    # Block hidden paths and PHP execution within public/ (including uploaded files).
+    RewriteRule (^|/)\. - [F]
+    RewriteRule ^public/.*\.(?:php[0-9]?|phtml|phar)(?:[./]|$) - [F,NC]
+    RewriteRule ^$ index.php [L]
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule !^(index\.php|public/.*)$ - [F]
+
+    # Resolve public assets when the web server points at the repository root.
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(.+)$ public/$1 [L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

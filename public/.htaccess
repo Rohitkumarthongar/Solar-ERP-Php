@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Never execute or serve uploaded PHP/scripts, even if an upload predates validation.
+    RewriteRule ^storage/.*\.(?:php[0-9]?|phtml|phar|cgi|pl|py|sh|shtml|htaccess)(?:\.|/|$) - [F,NC,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

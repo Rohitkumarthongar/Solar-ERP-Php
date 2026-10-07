@@ -69,7 +69,6 @@
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 @error('mail_driver') border-red-400 @enderror">
                                 <option value="smtp"     {{ ($settings['mail_driver'] ?? 'smtp') === 'smtp'     ? 'selected' : '' }}>SMTP</option>
                                 <option value="sendmail" {{ ($settings['mail_driver'] ?? '') === 'sendmail' ? 'selected' : '' }}>Sendmail</option>
-                                <option value="mailgun"  {{ ($settings['mail_driver'] ?? '') === 'mailgun'  ? 'selected' : '' }}>Mailgun</option>
                             </select>
                         </div>
 
@@ -120,10 +119,10 @@
                             <label class="block text-xs font-semibold text-gray-600 mb-1.5">SMTP Password <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <input type="password" name="mail_password" id="mail_password"
-                                    value="{{ old('mail_password', $settings['mail_password'] ?? '') }}"
-                                    placeholder="App password or SMTP password"
+                                    value=""
+                                    placeholder="Leave blank to keep saved password"
                                     class="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 @error('mail_password') border-red-400 @enderror"
-                                    required>
+                                    >
                                 <button type="button" onclick="togglePass()"
                                     class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600">
                                     <i class="fas fa-eye text-sm" id="pass-eye"></i>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\AdminUser;
+use App\Rules\AdminPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -74,15 +75,25 @@ class RoleController extends Controller
     public function createUser()
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        return redirect()->route('admin.employees.create')
-            ->with('success', 'Create login-enabled users from Employee Management so every user is linked to an employee record.');
+        $roles = Role::all();
+        return view('admin.roles.create-user', compact('roles'));
     }
 
     public function storeUser(Request $request)
     {
         if (!session('admin_logged_in')) return redirect()->route('admin.login');
-        return redirect()->route('admin.employees.create')
-            ->with('error', 'Please create users from Employee Management so each login belongs to an employee.');
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:admin_users,email',
+            'password' => ['required', 'confirmed', AdminPassword::rule()],
+            'role_id' => 'required|exists:roles,id',
+            'is_active' => 'boolean'
+        ]);
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['role'] = Role::find($validated['role_id'])->name ?? 'user';
+        $validated['is_active'] = $request->has('is_active');
+        AdminUser::create($validated);
+        return redirect()->route('admin.users.index')->with('success', 'User created!');
     }
 
     public function editUser($id)
@@ -100,14 +111,18 @@ class RoleController extends Controller
         $validated = $request->validate([
             'name' => 'required|string',
             'email' => 'required|email|unique:admin_users,email,' . $id,
-            'role_id' => 'required|exists:roles,id'
+            'role_id' => 'required|exists:roles,id',
+            'password' => ['nullable', 'confirmed', AdminPassword::rule()],
         ]);
-        if ($request->password) {
-            $validated['password'] = Hash::make($request->password);
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+            $user->session_version++;
+        } else {
+            unset($validated['password']);
         }
         $validated['role'] = Role::find($validated['role_id'])->name ?? 'user';
         $validated['is_active'] = $request->has('is_active');
-        $user->update($validated);
+        $user->fill($validated)->save();
         return redirect()->route('admin.users.index')->with('success', 'User updated!');
     }
 

@@ -8,6 +8,6 @@ class SmsConfiguration extends Model
 {
     protected $table = 'sms_configurations';
     protected $fillable = ['provider', 'account_sid', 'auth_token', 'from_number', 'api_key', 'sender_id', 'region', 'is_active'];
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = ['is_active' => 'boolean', 'auth_token' => 'encrypted', 'api_key' => 'encrypted'];
     protected $hidden = ['auth_token', 'api_key'];
 }

@@ -45,9 +45,9 @@ Route::middleware([\App\Http\Middleware\CheckWebsiteStatus::class])->group(funct
     Route::get('/products/category/{slug}', [WebController::class, 'productCategory'])->name('products.category');
     Route::get('/packages', [WebController::class, 'packages'])->name('packages');
     Route::get('/contact', [WebController::class, 'contact'])->name('contact');
-    Route::post('/contact', [WebController::class, 'contactStore'])->name('contact.store');
+    Route::post('/contact', [WebController::class, 'contactStore'])->middleware('throttle:10,1')->name('contact.store');
     Route::get('/get-quote', [WebController::class, 'getQuote'])->name('get.quote');
-    Route::post('/get-quote', [WebController::class, 'getQuoteStore'])->name('get.quote.store');
+    Route::post('/get-quote', [WebController::class, 'getQuoteStore'])->middleware('throttle:10,1')->name('get.quote.store');
     Route::get('/thank-you', [WebController::class, 'thankYou'])->name('thank.you');
     Route::get('/blogs', [\App\Http\Controllers\BlogController::class, 'index'])->name('blogs.index');
     Route::get('/blogs/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blogs.show');
@@ -55,9 +55,13 @@ Route::middleware([\App\Http\Middleware\CheckWebsiteStatus::class])->group(funct
 
 // ── Admin Auth ────────────────────────────────────────────────────────────────
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
-Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.post');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->middleware('throttle:5,1,admin-login')->name('admin.login.post');
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 Route::get('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout.get');
+Route::get('/admin/forgot-password', [AdminAuthController::class, 'showForgotPassword'])->name('admin.password.request');
+Route::post('/admin/forgot-password', [AdminAuthController::class, 'sendResetLink'])->middleware('throttle:5,1,admin-recovery')->name('admin.password.email');
+Route::get('/admin/reset-password/{token}', [AdminAuthController::class, 'showResetPassword'])->name('admin.password.reset');
+Route::post('/admin/reset-password', [AdminAuthController::class, 'resetPassword'])->middleware('throttle:5,1,admin-reset')->name('admin.password.update');
 
 // ── Admin Dashboard ───────────────────────────────────────────────────────────
 Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard')->middleware('check_permission:dashboard');
@@ -249,7 +253,7 @@ Route::middleware('check_permission:notifications')->group(function () {
     Route::get('/admin/notifications/count', [NotificationController::class, 'count'])->name('admin.notifications.count');
 });
 
-Route::middleware('check_permission:roles')->group(function () {
+Route::middleware(['check_permission:roles', 'check_permission:trusted_admin'])->group(function () {
     Route::get('/admin/roles', [RoleController::class, 'index'])->name('admin.roles.index');
     Route::get('/admin/roles/create', [RoleController::class, 'create'])->name('admin.roles.create');
     Route::post('/admin/roles', [RoleController::class, 'store'])->name('admin.roles.store');
@@ -265,7 +269,7 @@ Route::middleware('check_permission:roles')->group(function () {
 });
 
 // ── Mobile Technician Flow ────────────────────────────────────────────────────
-Route::middleware('auth:admin')->group(function () {
+Route::middleware(['check_permission:dashboard', 'auth:admin'])->group(function () {
     Route::get('/admin/mobile/dashboard', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'dashboard'])->name('admin.mobile.dashboard');
     Route::get('/admin/mobile/task/{type}/{id}', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'showTask'])->name('admin.mobile.task');
     Route::post('/admin/mobile/task/{type}/{id}/start', [\App\Http\Controllers\Admin\MobileTechnicianController::class, 'startTask'])->name('admin.mobile.task.start');
@@ -276,13 +280,13 @@ Route::middleware('auth:admin')->group(function () {
 });
 
 // ── Data Health Checks ────────────────────────────────────────────────────────
-Route::middleware('check_permission:settings')->group(function () {
+Route::middleware(['check_permission:settings', 'check_permission:trusted_admin'])->group(function () {
     Route::get('/admin/data-health', [\App\Http\Controllers\Admin\DataHealthController::class, 'index'])->name('admin.data-health.index');
     Route::get('/admin/data-health/check', [\App\Http\Controllers\Admin\DataHealthController::class, 'check'])->name('admin.data-health.check');
     Route::get('/admin/data-health/export', [\App\Http\Controllers\Admin\DataHealthController::class, 'export'])->name('admin.data-health.export');
 });
 
-Route::middleware('check_permission:settings')->group(function () {
+Route::middleware(['check_permission:settings', 'check_permission:trusted_admin'])->group(function () {
     Route::get('/admin/settings', [SettingsController::class, 'index'])->name('admin.settings.index');
     Route::post('/admin/settings', [SettingsController::class, 'update'])->name('admin.settings.update');
     Route::get('/admin/settings/email', [SettingsController::class, 'email'])->name('admin.settings.email');
@@ -357,6 +361,10 @@ Route::middleware('check_permission:blogs')->group(function () {
 });
 
 // ── Profile ───────────────────────────────────────────────────────────────────
-Route::get('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'show'])->name('admin.profile');
-Route::put('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('admin.profile.update');
-Route::put('/admin/profile/password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('admin.profile.password');
+Route::middleware('check_permission:dashboard')->group(function () {
+    Route::get('/admin/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'show'])->name('admin.profile');
+    Route::put('/admin/profile', [AdminAuthController::class, 'updateProfile'])->name('admin.profile.update');
+    Route::put('/admin/profile/password', [AdminAuthController::class, 'updateProfilePassword'])->name('admin.profile.password');
+});
+
+require __DIR__.'/security.php';

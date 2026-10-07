@@ -41,7 +41,7 @@
                 </div>
                 <div id="twilioAuth">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Twilio Auth Token</label>
-                    <input type="password" name="auth_token" value="{{ $config->auth_token ?? '' }}" placeholder="Your Twilio Auth Token" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <input type="password" name="auth_token" value="" placeholder="Leave blank to keep saved token" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 </div>
                 <div id="fromNumber">
                     <label class="block text-sm font-medium text-gray-700 mb-2">From Number (Twilio)</label>
@@ -51,7 +51,7 @@
                 <!-- API Key (for other providers) -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">API Key (MSG91 / Fast2SMS / TextLocal)</label>
-                    <input type="password" name="api_key" value="{{ $config->api_key ?? '' }}" placeholder="Your API Key" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    <input type="password" name="api_key" value="" placeholder="Leave blank to keep saved key" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Sender ID / Name</label>

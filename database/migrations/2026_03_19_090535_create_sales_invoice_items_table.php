@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('sales_invoice_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sales_invoice_id')->constrained()->onDelete('cascade');
+            // Invoices sorts after invoice items in the historical filenames.
+            $table->foreignId('sales_invoice_id');
             $table->foreignId('product_id')->nullable()->constrained()->onDelete('set null');
             $table->string('product_name');
             $table->integer('quantity');

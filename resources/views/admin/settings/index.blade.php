@@ -449,7 +449,7 @@
                         @endif
                         <input type="file" name="company_logo" accept="image/*"
                             class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
-                        <p class="text-xs text-gray-400 mt-1">PNG, JPG, SVG — Max 2MB. Recommended: 200×60px</p>
+                        <p class="text-xs text-gray-400 mt-1">PNG, JPG, WEBP — Max 2MB. Recommended: 200×60px</p>
                     </div>
 
                     {{-- Favicon --}}
@@ -463,7 +463,7 @@
                         @endif
                         <input type="file" name="company_favicon" accept="image/*"
                             class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
-                        <p class="text-xs text-gray-400 mt-1">ICO or PNG — 32×32px</p>
+                        <p class="text-xs text-gray-400 mt-1">PNG, JPG or WEBP — Max 2MB, 32×32px recommended</p>
                     </div>
 
                     {{-- Hero Banner Image --}}
@@ -563,6 +563,7 @@
     </form>
 
     {{-- Danger Zone --}}
+    @if(!app()->environment('production') && config('security.allow_data_reset', false))
     <div class="mt-12 max-w-4xl mx-auto">
         <div class="bg-red-50 border border-red-100 rounded-[30px] p-8">
             <h3 class="text-lg font-black text-red-800 flex items-center gap-3 mb-2">
@@ -574,6 +575,9 @@
                 data-title="RESET ALL DATA?" 
                 data-text="This will wipe all business records except settings. This action is IRREVERSIBLE. Are you ABSOLUTELY sure?">
                 @csrf
+                <label for="reset-password" class="block text-sm font-semibold text-red-800 mb-2">Confirm your administrator password</label>
+                <input id="reset-password" type="password" name="password" required autocomplete="current-password" class="block border border-red-300 rounded-lg p-2 mb-3">
+                @error('password') <p class="text-red-700 mb-3">{{ $message }}</p> @enderror
                 <button type="submit" 
                     class="bg-white border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white font-black px-6 py-3 rounded-2xl transition-all active:scale-95 flex items-center gap-2">
                     <i class="fas fa-trash-alt text-xs"></i> <span>Factory Reset (Clear All Data)</span>
@@ -581,6 +585,7 @@
             </form>
         </div>
     </div>
+    @endif
 </div>
 
 <script>

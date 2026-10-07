@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerDiscom;
-use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 
 class CustomerDiscomController extends Controller
@@ -36,11 +35,11 @@ class CustomerDiscomController extends Controller
             'meter_number' => 'nullable|string',
             'application_number' => 'nullable|string',
             'notes' => 'nullable|string',
-            'dcr_report' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
+            'dcr_report' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
         
         if ($request->hasFile('dcr_report')) {
-            $validated['dcr_report_path'] = SupabaseStorage::store($request->file('dcr_report'), 'discom-reports');
+            $validated['dcr_report_path'] = $request->file('dcr_report')->store('discom-reports', 'local');
         }
         
         $discom->update($validated);

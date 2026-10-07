@@ -93,6 +93,14 @@
                 <p class="text-sm text-gray-600 leading-relaxed">{{ $order->notes }}</p>
             </div>
             @endif
+            @if(!empty($order->invoice_attachments))
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+                <h3 class="font-bold text-gray-800 mb-3">Invoice Attachments</h3>
+                @foreach($order->invoice_attachments as $index => $attachment)
+                    <a class="block text-purple-700 underline mb-2" href="{{ route('admin.secure.purchase-invoice', [$order->id, $index]) }}">Attachment {{ $index + 1 }}</a>
+                @endforeach
+            </div>
+            @endif
         </div>
 
         {{-- RIGHT: Details --}}

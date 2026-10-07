@@ -56,7 +56,8 @@
                 <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div class="md:col-span-2">
                          <div class="bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase px-3 py-2 rounded-lg mb-4 border border-indigo-100">
-                             Note: Leave password fields empty to maintain current security credentials.
+                              Note: Leave password fields empty to maintain current security credentials.
+                              New passwords need 12+ characters with uppercase, lowercase, a number and a symbol.
                          </div>
                     </div>
                     <div>

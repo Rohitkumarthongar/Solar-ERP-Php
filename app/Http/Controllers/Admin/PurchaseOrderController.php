@@ -8,10 +8,10 @@ use App\Models\PurchaseOrderItem;
 use App\Models\Product;
 use App\Models\Inventory;
 use App\Models\Notification;
-use App\Support\SupabaseStorage;
 use App\Models\Setting;
 use App\Services\PrintFormatRenderer;
 use App\Support\GeneratesPdf;
+use App\Services\UniqueDocumentNumber;
 use Illuminate\Http\Request;
 
 class PurchaseOrderController extends Controller
@@ -44,17 +44,18 @@ class PurchaseOrderController extends Controller
             'items.*.description' => 'required|string',
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
-            'invoice_attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240'
+            'invoice_attachments' => 'nullable|array|max:10',
+            'invoice_attachments.*' => 'file|mimes:jpg,jpeg,png,pdf|max:10240'
         ]);
 
-        $poNumber = 'PO-' . date('Ymd') . '-' . rand(100, 999);
+        $poNumber = UniqueDocumentNumber::next('purchase_orders', 'po_number', 'PO-');
         $totalAmount = collect($request->items)->sum(fn($i) => $i['quantity'] * $i['unit_price']);
 
         // Handle invoice attachments
         $invoiceAttachments = [];
         if ($request->hasFile('invoice_attachments')) {
             foreach ($request->file('invoice_attachments') as $file) {
-                $invoiceAttachments[] = SupabaseStorage::store($file, 'purchase-invoices');
+                $invoiceAttachments[] = $file->store('purchase-invoices', 'local');
             }
         }
 

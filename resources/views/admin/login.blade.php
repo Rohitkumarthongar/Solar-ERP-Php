@@ -118,6 +118,9 @@
                     <p>{{ $errors->first() ?: session('error') }}</p>
                 </div>
             @endif
+            @if(session('status'))
+                <p class="text-green-400 mb-6 text-sm">{{ session('status') }}</p>
+            @endif
 
 
             <form action="{{ route('admin.login.post') }}" method="POST" class="space-y-8">
@@ -131,7 +134,7 @@
                             class="absolute inset-y-0 left-0 pl-6 flex items-center text-gray-600 transition-colors group-focus-within:text-amber-500">
                             <i class="fas fa-at"></i>
                         </span>
-                        <input type="email" name="email" value="{{ old('email') }}"
+                        <input type="email" name="email" value="{{ old('email') }}" autocomplete="username"
                             class="w-full bg-white/5 border border-white/5 rounded-2xl pl-16 pr-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:bg-white/10 transition-all font-inter"
                             required placeholder="email@address.com">
                     </div>
@@ -146,7 +149,7 @@
                             class="absolute inset-y-0 left-0 pl-6 flex items-center text-gray-600 transition-colors group-focus-within:text-amber-500">
                             <i class="fas fa-key"></i>
                         </span>
-                        <input type="password" id="password" name="password"
+                        <input type="password" id="password" name="password" autocomplete="current-password"
                             class="w-full bg-white/5 border border-white/5 rounded-2xl pl-16 pr-14 py-4 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:bg-white/10 transition-all font-inter"
                             required placeholder="••••••••">
                         <button type="button" onclick="togglePasswordVisibility()"
@@ -163,6 +166,7 @@
                     </button>
                 </div>
             </form>
+            <a href="{{ route('admin.password.request') }}" class="block text-center text-amber-400 text-sm mt-6 hover:underline">Forgot password?</a>
         </div>
 
         <p class="text-center mt-10">

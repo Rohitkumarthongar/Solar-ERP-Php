@@ -57,9 +57,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         \Blade::if('can_access', function ($permission) {
-            $role = str_replace(' ', '', strtolower(session('admin_role', '')));
-            if ($role === 'superadmin') return true;
-            return in_array($permission, session('admin_permissions', []));
+            if (!session('admin_logged_in')) return false;
+            $permissions = \App\Models\Role::permissionList(session('admin_permissions', []));
+            return in_array('all_forms', $permissions, true) || in_array($permission, $permissions, true);
         });
     }
 }

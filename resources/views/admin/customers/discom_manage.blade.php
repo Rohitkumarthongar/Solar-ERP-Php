@@ -190,7 +190,7 @@
                                     </label>
                                 </div>
                                 @if($discom->dcr_report_path)
-                                <a href="{{ Storage::url($discom->dcr_report_path) }}" target="_blank" class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 hover:-translate-y-1 transition">
+                                <a href="{{ route('admin.secure.discom-report', $discom->id) }}" target="_blank" class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200 hover:-translate-y-1 transition">
                                     <i class="fas fa-file-pdf text-xl"></i>
                                 </a>
                                 @endif

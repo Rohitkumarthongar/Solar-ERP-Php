@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Support\SupabaseStorage;
 use Illuminate\Http\Request;
 use App\Models\Blog;
+use App\Services\BlogHtmlSanitizer;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
@@ -31,9 +32,10 @@ class BlogController extends Controller
             'short_description' => 'nullable|string|max:500',
             'content' => 'required|string',
             'overview_url' => 'nullable|url|max:2048',
-            'image' => 'nullable|image',
+            'image' => 'nullable|mimes:jpg,jpeg,png,webp|image|max:2048',
         ]);
 
+        $validated['content'] = app(BlogHtmlSanitizer::class)->clean($validated['content']);
         $validated['slug'] = Str::slug($validated['title']) . '-' . time();
         $validated['is_active'] = $request->has('is_active');
 
@@ -62,9 +64,10 @@ class BlogController extends Controller
             'short_description' => 'nullable|string|max:500',
             'content' => 'required|string',
             'overview_url' => 'nullable|url|max:2048',
-            'image' => 'nullable|image',
+            'image' => 'nullable|mimes:jpg,jpeg,png,webp|image|max:2048',
         ]);
 
+        $validated['content'] = app(BlogHtmlSanitizer::class)->clean($validated['content']);
         $validated['is_active'] = $request->has('is_active');
         if ($request->hasFile('image')) {
             $validated['image'] = SupabaseStorage::store($request->file('image'), 'blogs');

@@ -12,6 +12,7 @@ use App\Models\Notification;
 use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class WebController extends Controller
 {
@@ -87,7 +88,7 @@ class WebController extends Controller
             'message' => 'required|string|min:10',
         ]);
 
-        $leadNumber = 'LEAD-' . date('Ymd') . '-' . rand(100, 999);
+        $leadNumber = self::newLeadNumber();
         $lead = Lead::create([
             'lead_number' => $leadNumber,
             'name'        => $request->name,
@@ -131,7 +132,7 @@ class WebController extends Controller
             'monthly_bill'            => 'nullable|string',
         ]);
 
-        $leadNumber = 'LEAD-' . date('Ymd') . '-' . rand(100, 999);
+        $leadNumber = self::newLeadNumber();
         $lead = Lead::create([
             'lead_number'             => $leadNumber,
             'name'                    => $request->name,
@@ -163,6 +164,13 @@ class WebController extends Controller
         $settings = $this->getSettings();
         $type     = $request->query('type', 'contact');
         return view('web.thank-you', compact('settings', 'type'));
+    }
+
+    public static function newLeadNumber(): string
+    {
+        // The leads.lead_number unique index enforces uniqueness even across app instances.
+        // UUIDs avoid the 900-number daily suffix shared with older lead records.
+        return 'LEAD-' . now()->format('Ymd') . '-' . Str::uuid();
     }
 
     private function sendLeadAcknowledgement(Lead $lead): void

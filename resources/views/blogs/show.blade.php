@@ -25,7 +25,7 @@
         @endif
 
         <div class="prose prose-lg prose-amber mx-auto font-inter text-gray-700 max-w-3xl prose-headings:font-outfit prose-headings:font-black prose-headings:text-gray-900 prose-a:text-amber-600 hover:prose-a:text-amber-500 transition-colors prose-img:rounded-3xl prose-img:shadow-lg prose-p:leading-relaxed">
-            {!! $blog->content !!}
+            {!! app(\App\Services\BlogHtmlSanitizer::class)->clean($blog->content) !!}
         </div>
 
         @if($blog->overview_url)

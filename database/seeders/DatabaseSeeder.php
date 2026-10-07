@@ -37,11 +37,13 @@ class DatabaseSeeder extends Seeder
             ['description' => 'Standard sales floor access', 'permissions' => ['dashboard','customers','leads','quotations','sales_orders']]
         );
 
-        // Default admin user
-        AdminUser::firstOrCreate(
-            ['email' => 'admin@solarerp.com'],
-            ['name' => 'Super Admin', 'password' => Hash::make('admin123'), 'role' => 'admin', 'role_id' => $adminRole->id, 'is_active' => true]
-        );
+        // Demo credentials are only available in non-production environments.
+        if (!app()->environment('production')) {
+            AdminUser::firstOrCreate(
+                ['email' => 'admin@solarerp.com'],
+                ['name' => 'Super Admin', 'password' => Hash::make('admin123'), 'role' => 'admin', 'role_id' => $adminRole->id, 'is_active' => true]
+            );
+        }
 
         // Seed supporting data
         $this->call([
