@@ -7,6 +7,7 @@ use App\Models\AdminUser;
 use App\Models\Employee;
 use App\Models\Role;
 use App\Models\SalaryRecord;
+use App\Rules\AdminPassword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -37,7 +38,7 @@ class EmployeeController extends Controller
             'department' => 'required|in:sales,installation,service,admin,accounts',
             'designation' => 'required|string',
             'role_id' => 'required|exists:roles,id',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'string', 'confirmed', AdminPassword::rule()],
             'employment_type' => 'required|in:permanent,contract,daily_wage',
             'basic_salary' => 'nullable|numeric|min:0',
             'contract_start_date' => 'nullable|date',
@@ -103,7 +104,7 @@ class EmployeeController extends Controller
             'department' => 'required|string',
             'designation' => 'required|string',
             'role_id' => 'required|exists:roles,id',
-            'password' => 'nullable|string|min:6|confirmed',
+            'password' => ['nullable', 'string', 'confirmed', AdminPassword::rule()],
             'employment_type' => 'required|in:permanent,contract,daily_wage',
             'basic_salary' => 'nullable|numeric|min:0',
             'contract_start_date' => 'nullable|date',
@@ -151,6 +152,9 @@ class EmployeeController extends Controller
 
             if ($employee->adminUser) {
                 $employee->adminUser->update($userData);
+                if (!empty($validated['password'])) {
+                    $employee->adminUser->increment('session_version');
+                }
             } else {
                 $userData['password'] = Hash::make($validated['password']);
                 AdminUser::create($userData);

@@ -115,4 +115,49 @@ class AdminPasswordRecoveryTest extends TestCase
         $this->withSession(['admin_logged_in' => true, 'admin_user_id' => $target->id, 'admin_session_version' => 0])
             ->get('/admin/dashboard')->assertRedirect('/admin/login');
     }
+
+    public function test_remote_profile_password_flow_preserves_guard_and_revokes_sessions(): void
+    {
+        $admin = $this->admin();
+        $this->post('/admin/login', ['email' => $admin->email, 'password' => 'OldSecret!1234'])
+            ->assertRedirect('/admin/dashboard');
+        $this->assertTrue(\Illuminate\Support\Facades\Auth::guard('admin')->check());
+        $this->put('/admin/profile/password', ['current_password' => 'wrong',
+            'password' => 'NewSecret!1234', 'password_confirmation' => 'NewSecret!1234'])
+            ->assertSessionHasErrors('current_password');
+        $this->assertSame(0, $admin->fresh()->session_version);
+        $this->put('/admin/profile/password', ['current_password' => 'OldSecret!1234',
+            'password' => 'NewSecret!1234', 'password_confirmation' => 'NewSecret!1234'])
+            ->assertRedirect('/admin/login');
+        $this->assertSame(1, $admin->fresh()->session_version);
+        $this->assertFalse(\Illuminate\Support\Facades\Auth::guard('admin')->check());
+    }
+
+    public function test_employee_login_password_changes_use_strong_policy_and_revoke_sessions(): void
+    {
+        $operator = $this->admin();
+        $operator->role()->first()->update(['permissions' => ['dashboard', 'employees']]);
+        $employee = \App\Models\Employee::create([
+            'employee_code' => 'EMP-SECURITY-1', 'name' => 'Worker', 'email' => 'worker@example.test',
+            'phone' => '1234567890', 'department' => 'installation', 'designation' => 'Installer',
+            'employment_type' => 'permanent', 'basic_salary' => 100, 'joining_date' => '2026-01-01',
+        ]);
+        $account = AdminUser::create([
+            'name' => $employee->name, 'email' => $employee->email, 'employee_id' => $employee->id,
+            'role_id' => $operator->role_id, 'role' => 'admin',
+            'password' => Hash::make('OldSecret!1234'), 'is_active' => true,
+        ]);
+        $payload = ['name' => $employee->name, 'email' => $employee->email,
+            'phone' => $employee->phone, 'department' => 'installation', 'designation' => 'Installer',
+            'role_id' => $operator->role_id, 'employment_type' => 'permanent', 'basic_salary' => 100,
+            'joining_date' => '2026-01-01', 'is_active' => 1];
+        $this->withSession(['admin_logged_in' => true, 'admin_user_id' => $operator->id]);
+        $this->put('/admin/employees/'.$employee->id, [...$payload,
+            'password' => 'short1', 'password_confirmation' => 'short1'])->assertSessionHasErrors('password');
+        $this->assertSame(0, $account->fresh()->session_version);
+        $this->put('/admin/employees/'.$employee->id, [...$payload,
+            'password' => 'NewSecret!1234', 'password_confirmation' => 'NewSecret!1234'])->assertRedirect();
+        $this->assertSame(1, $account->fresh()->session_version);
+        $this->assertTrue(Hash::check('NewSecret!1234', $account->fresh()->password));
+    }
 }

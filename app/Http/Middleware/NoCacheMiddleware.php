@@ -19,9 +19,11 @@ class NoCacheMiddleware
         $response = $next($request);
 
         // Add cache control headers to prevent browser caching
-        return $response->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
-                        ->header('Pragma', 'no-cache')
-                        ->header('Expires', 'Fri, 01 Jan 1990 00:00:00 GMT');
+        // Symfony streamed and binary download responses have a HeaderBag, not Laravel's header() helper.
+        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', 'Fri, 01 Jan 1990 00:00:00 GMT');
+        return $response;
     }
 }
 

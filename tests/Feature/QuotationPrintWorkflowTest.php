@@ -79,7 +79,8 @@ class QuotationPrintWorkflowTest extends TestCase
         $this->assertStringContainsString('Known quotation layout', $html);
         $this->assertStringContainsString('Legacy report layout', $html);
         $this->assertStringContainsString('Legacy Report', $html);
-        $this->assertStringContainsString('Other</h3>', $html);
+        // Remote UI now names each unknown document group instead of a generic Other heading.
+        $this->assertStringContainsString('Legacy Report</h3>', $html);
     }
 
     public function test_explicit_active_format_wins_over_default_and_renders_saved_blade(): void
